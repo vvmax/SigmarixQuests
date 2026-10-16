@@ -2,3 +2,4 @@
 build/
 run/
 logs/
+__pycache__/

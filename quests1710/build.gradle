@@ -3,7 +3,7 @@ plugins {
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.6'
 }
 group = 'dev.sigmarix'
-version = '0.1.0'
+version = '0.2.0'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }
@@ -16,3 +16,46 @@ repositories {
 }
 
 dependencies { testImplementation 'junit:junit:4.13.2' }
+sourceSets {
+    rfApi { compileClasspath += sourceSets.main.compileClasspath }
+}
+tasks.named('compileJava') { classpath += sourceSets.rfApi.output }
+sourceSets.test.compileClasspath += sourceSets.rfApi.output
+sourceSets.test.runtimeClasspath += sourceSets.rfApi.output
+dependencies { testImplementation 'org.mockito:mockito-core:4.11.0' }
+sourceSets {
+    integrationTest {
+        compileClasspath += sourceSets.test.runtimeClasspath
+        runtimeClasspath += sourceSets.test.runtimeClasspath
+    }
+}
+tasks.register('forgeTest', JavaExec) {
+    dependsOn integrationTestClasses
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    mainClass = 'dev.sigmarix.quests.ForgeTestLauncher'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(8) }
+}
+tasks.named('check') { dependsOn 'forgeTest' }
+sourceSets {
+    visualTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+tasks.register('previewJar', Jar) {
+    dependsOn visualTestClasses
+    from sourceSets.visualTest.output
+    archiveFileName = 'quests-preview-fixture.jar'
+    destinationDirectory = layout.buildDirectory.dir('preview')
+}
+if (providers.gradleProperty('questPreview').isPresent()) {
+    tasks.named('runClient') {
+        dependsOn 'previewJar'
+        doFirst {
+            copy { from tasks.named('previewJar'); into 'run/mods' }
+        }
+        finalizedBy 'cleanPreviewFixture'
+    }
+}
+
+tasks.register('cleanPreviewFixture', Delete) { delete 'run/mods/quests-preview-fixture.jar' }

@@ -1,8 +1,101 @@
 {
   "quests": [
-    {"id":"welcome","title":"Добро пожаловать","description":"Выполни /quests check welcome и забери награду.","tasks":[{"type":"check"}],"rewards":[{"item":"minecraft:bread","count":4}]},
-    {"id":"stone","title":"Первые ресурсы","description":"Собери 16 булыжника. Предметы не расходуются.","dependencies":["welcome"],"tasks":[{"type":"item","target":"minecraft:cobblestone","count":16}],"rewards":[{"item":"minecraft:iron_ingot","count":2}]},
-    {"id":"hunter","title":"Охотник","description":"Убей трёх зомби после первого квеста.","dependencies":["welcome"],"tasks":[{"type":"kill","target":"Zombie","count":3}],"rewards":[{"item":"minecraft:torch","count":16}]},
-    {"id":"nether","title":"Нижний мир","description":"Проверь задание в Нижнем мире.","dependencies":["stone"],"tasks":[{"type":"dimension","dimension":-1}],"rewards":[{"item":"minecraft:diamond"}]}
+    {
+      "id": "welcome",
+      "title": "Добро пожаловать",
+      "description": "Выполни /quests check welcome и забери награду.",
+      "tasks": [
+        {
+          "type": "check"
+        }
+      ],
+      "rewards": [
+        {
+          "item": "minecraft:bread",
+          "count": 4
+        }
+      ],
+      "chapter": "start",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "stone",
+      "title": "Первые ресурсы",
+      "description": "Собери 16 булыжника. Предметы не расходуются.",
+      "dependencies": [
+        "welcome"
+      ],
+      "tasks": [
+        {
+          "type": "item",
+          "target": "minecraft:cobblestone",
+          "count": 16
+        }
+      ],
+      "rewards": [
+        {
+          "item": "minecraft:iron_ingot",
+          "count": 2
+        }
+      ],
+      "chapter": "start",
+      "x": 3,
+      "y": 0
+    },
+    {
+      "id": "hunter",
+      "title": "Охотник",
+      "description": "Убей трёх зомби после первого квеста.",
+      "dependencies": [
+        "welcome"
+      ],
+      "tasks": [
+        {
+          "type": "kill",
+          "target": "Zombie",
+          "count": 3
+        }
+      ],
+      "rewards": [
+        {
+          "item": "minecraft:torch",
+          "count": 16
+        }
+      ],
+      "chapter": "start",
+      "x": 3,
+      "y": 2
+    },
+    {
+      "id": "nether",
+      "title": "Нижний мир",
+      "description": "Проверь задание в Нижнем мире.",
+      "dependencies": [
+        "stone"
+      ],
+      "tasks": [
+        {
+          "type": "dimension",
+          "dimension": -1
+        }
+      ],
+      "rewards": [
+        {
+          "item": "minecraft:diamond"
+        }
+      ],
+      "chapter": "start",
+      "x": 6,
+      "y": 0
+    }
+  ],
+  "format": 2,
+  "title": "Начало приключения",
+  "chapters": [
+    {
+      "id": "start",
+      "title": "Первые шаги"
+    }
   ]
 }

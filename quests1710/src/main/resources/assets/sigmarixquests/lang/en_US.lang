@@ -1,0 +1,10 @@
+item.sigmarixquests.book.name=Quest Book
+item.sigmarixquests.loot_crate.name=Quest Loot Crate
+key.sigmarixquests.open=Open Quest Book
+tile.sigmarixquests.task_screen.name=Quest Task Terminal
+tile.sigmarixquests.progress_screen.name=Quest Progress Screen
+tile.sigmarixquests.quest_barrier.name=Quest Barrier
+tile.sigmarixquests.reward_collector.name=Quest Reward Collector
+tile.sigmarixquests.redstone_detector.name=Quest Redstone Detector
+tile.sigmarixquests.player_detector.name=Quest Player Detector
+tile.sigmarixquests.loot_crate_opener.name=Quest Loot Crate Opener

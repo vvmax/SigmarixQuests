@@ -1,0 +1,10 @@
+item.sigmarixquests.book.name=Книга заданий
+item.sigmarixquests.loot_crate.name=Квестовый лут-кейс
+key.sigmarixquests.open=Открыть книгу заданий
+tile.sigmarixquests.task_screen.name=Терминал заданий
+tile.sigmarixquests.progress_screen.name=Экран прогресса
+tile.sigmarixquests.quest_barrier.name=Квестовый барьер
+tile.sigmarixquests.reward_collector.name=Сборщик наград
+tile.sigmarixquests.redstone_detector.name=Детектор редстоуна
+tile.sigmarixquests.player_detector.name=Детектор игроков
+tile.sigmarixquests.loot_crate_opener.name=Открыватель лут-кейсов

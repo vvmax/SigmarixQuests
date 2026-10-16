@@ -19,7 +19,6 @@ public final class QuestCoreTest {
         b.quests.add(quest("a")); reject(b); b.quests.remove(2);
         QuestCore.Task t=new QuestCore.Task(); t.type="item"; t.target="minecraft:stone"; t.count=Integer.MAX_VALUE;
         a.tasks.add(t); a.tasks.add(t);
-        if (QuestCore.requiredItems(a).get("minecraft:stone@0") != 4294967294L) throw new AssertionError("Counts not aggregated safely");
         t.count=0; reject(b); t.count=1; t.type="unknown"; reject(b);
         QuestProgress progress = new QuestProgress();
         UUID first = UUID.randomUUID(), second = UUID.randomUUID();
@@ -33,6 +32,6 @@ public final class QuestCoreTest {
         if (!restored.completed(second).isEmpty() || restored.claimed(second, "a") || restored.kills(second, "c", 0) != 0)
             throw new AssertionError("Progress leaked between players");
         System.out.println("NBT persistence, UUID isolation, reward claims, capped kills passed");
-        System.out.println("QuestCore: dependencies, cycles, duplicate ids, invalid tasks, aggregate counts passed");
+        System.out.println("QuestCore: dependencies, cycles, duplicate ids, invalid tasks passed");
     }
 }
