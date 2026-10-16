@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.6'
+}
+group = 'dev.sigmarix'
+version = '0.1.0'
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(8) }
+}
+minecraft {
+    mcVersion = '1.7.10'
+    username = 'Developer'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies { testImplementation 'junit:junit:4.13.2' }
