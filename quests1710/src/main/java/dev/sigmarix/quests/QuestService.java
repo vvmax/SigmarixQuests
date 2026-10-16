@@ -64,7 +64,7 @@ public class QuestService {
                         for(String target:t.targets) validateItemTarget(target);
                         tag(t.nbt); break;
                     case "kill": if (!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: " + t.target); break;
-                    case "fluid": if (!FluidRegistry.isFluidRegistered(t.target)) throw new IllegalArgumentException("Unknown fluid: " + t.target); break;
+                    case "fluid": tag(t.nbt); if (!FluidRegistry.isFluidRegistered(t.target)) throw new IllegalArgumentException("Unknown fluid: " + t.target); break;
                     case "observation": case "interaction":
                         if(t.entity) { if(!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: "+t.target); }
                         else block(t.target); break;
@@ -77,7 +77,8 @@ public class QuestService {
         }
         for (List<QuestCore.Reward> table : next.lootTables.values()) for (QuestCore.Reward r : table) validateReward(r);
         QuestNetwork.Snapshot wire=new QuestNetwork.Snapshot(); wire.book=next;
-        for(QuestCore.Quest q:next.quests) { wire.states.put(q.id,"available"); for(QuestCore.Task t:q.tasks) wire.counters.put(q.id+":"+t.id,Long.MAX_VALUE); }
+        for(QuestCore.Chapter c:next.chapters) wire.chapterStates.put(c.id,"not_started");
+        for(QuestCore.Quest q:next.quests) { wire.states.put(q.id,"available"); for(QuestCore.Reward r:q.rewards) wire.rewardStates.put(q.id+":"+r.id,false); for(QuestCore.Task t:q.tasks) { wire.counters.put(q.id+":"+t.id,Long.MAX_VALUE); wire.taskStates.put(q.id+":"+t.id,false); } }
         try { QuestNetwork.encode(JSON.toJson(wire)); } catch(IOException e) { throw new IllegalArgumentException("Book cannot fit a safe network snapshot",e); }
         return result;
     }
@@ -123,7 +124,43 @@ public class QuestService {
     public static void say(ICommandSender sender, String message) { sender.addChatMessage(new ChatComponentText(message)); }
     public boolean active(EntityPlayerMP p, QuestCore.Quest q) {
         Set<String> done = progress().completed(p.getUniqueID());
-        return !done.contains(q.id) && QuestCore.unlocked(q, done);
+        return !done.contains(q.id) && unlocked(p.getUniqueID(),q);
+    }
+    public QuestDependencies dependencies(final UUID id) {
+        final QuestProgress data=progress();
+        return new QuestDependencies(book,quests,new QuestDependencies.Progress() {
+            public boolean completed(String quest) { return data.completed(id).contains(quest); }
+            public boolean started(String quest) { return data.started(id,quest); }
+            public boolean task(String quest,String task,boolean started) {
+                QuestCore.Quest q=quests.get(quest); if(q==null) return false;
+                for(QuestCore.Task t:q.tasks) if(t.id.equals(task)) {
+                    boolean complete=data.taskDone(id,quest,task) || data.value(id,quest,task)>=t.count || !q.anyTask && data.completed(id).contains(quest);
+                    return started ? complete || data.value(id,quest,task)>0 : complete;
+                }
+                return false;
+            }
+        });
+    }
+    public boolean unlocked(UUID id,QuestCore.Quest q) { return dependencies(id).unlocked(q); }
+    public String chapterState(UUID id,String chapter) {
+        QuestDependencies graph=dependencies(id);
+        return graph.chapter(chapter,false)?"complete":graph.chapter(chapter,true)?"started":"not_started";
+    }
+    public void start(EntityPlayerMP p,QuestCore.Quest q) {
+        if(!active(p,q)) throw new IllegalArgumentException("Quest is locked or complete"); progress().start(p.getUniqueID(),q.id);
+    }
+    public void confirm(EntityPlayerMP p,QuestCore.Quest q,String task) {
+        if(!active(p,q)) throw new IllegalArgumentException("Quest is locked or complete");
+        for(QuestCore.Task t:q.tasks) if(t.id.equals(task) && t.type.equals("check")) { progress().add(p.getUniqueID(),q.id,t.id,t.count,t.count); progress().markTask(p.getUniqueID(),q.id,t.id); return; }
+        throw new IllegalArgumentException("Not a confirmation task");
+    }
+    public boolean individual(QuestCore.Quest q,QuestCore.Reward r) { return (r.mode.equals("inherit")?q.rewardMode:r.mode).equals("individual"); }
+    private String rewardId(QuestCore.Reward r,int index) { return r.id==null?"r"+index:r.id; }
+    public boolean claimed(UUID id,QuestCore.Quest q) {
+        QuestProgress data=progress();
+        if(q.rewards.isEmpty()) return data.claimed(id,q.id);
+        for(int i=0;i<q.rewards.size();i++) if(!data.rewardClaimed(id,q.id,rewardId(q.rewards.get(i),i),individual(q,q.rewards.get(i)))) return false;
+        return true;
     }
     public void credit(EntityPlayerMP p, String type, String target, long amount) {
         QuestProgress data = progress();
@@ -165,9 +202,12 @@ public class QuestService {
             } else if(stack.getItem()==item(target) && (t.ignoreDamage || stack.getItemDamage()==t.meta)) matched=true;
         }
         if(!matched) return false;
-        if(t.nbt.isEmpty() || t.nbtMode.equals("ignore")) return true;
-        NBTTagCompound expected=tag(t.nbt), actual=stack.getTagCompound();
-        return t.nbtMode.equals("subset") ? subset(expected,actual) : expected.equals(actual);
+        return nbtMatches(t.nbt,t.nbtMode,stack.getTagCompound());
+    }
+    public static boolean nbtMatches(String nbt,String mode,NBTTagCompound actual) {
+        if(nbt.isEmpty() || mode.equals("ignore")) return true;
+        NBTTagCompound expected=tag(nbt);
+        return mode.equals("subset")?subset(expected,actual):expected.equals(actual);
     }
     private static boolean subset(NBTBase expected,NBTBase actual) {
         if(expected instanceof NBTTagCompound && actual instanceof NBTTagCompound) {
@@ -184,7 +224,7 @@ public class QuestService {
     private boolean ordinary(EntityPlayerMP p, QuestCore.Quest q, QuestCore.Task t) {
         if(t.sticky && counter(p,q,t)>=t.count) return true;
         switch (t.type) {
-            case "check": return true;
+            case "check": return !t.manual || counter(p,q,t)>=t.count;
             case "kill": case "interaction": case "energy": return counter(p,q,t) >= t.count;
             case "custom": return counter(p,q,t) >= t.count || QuestHooks.TASKS.get(t.target).complete(p,t);
             case "dimension": return p.dimension == t.dimension;
@@ -224,9 +264,16 @@ public class QuestService {
     }
     /** Latch visited locations/dimensions and observed state independently of final completion. */
     public void detect(EntityPlayerMP p) {
-        for(QuestCore.Quest q:quests.values()) if(active(p,q)) for(QuestCore.Task t:q.tasks)
-            if(t.sticky && Arrays.asList("dimension","biome","location","stat","achievement","observation","custom").contains(t.type) && counter(p,q,t)<t.count && ordinary(p,q,t))
-                progress().add(p.getUniqueID(),q.id,t.id,t.count,t.count);
+        for(QuestCore.Quest q:quests.values()) if(active(p,q)) for(QuestCore.Task t:q.tasks) {
+            if(!t.sticky || progress().taskDone(p.getUniqueID(),q.id,t.id)) continue;
+            boolean persistent=counter(p,q,t)>=t.count;
+            boolean readOnly=!t.type.equals("check") && (!t.type.equals("item") && !t.type.equals("xp") && !t.type.equals("fluid") || !t.consume);
+            if(!persistent && readOnly) {
+                QuestCore.Quest one=JSON.fromJson(JSON.toJson(q),QuestCore.Quest.class); one.anyTask=false; one.tasks=Collections.singletonList(t);
+                persistent=check(p,one,false);
+            }
+            if(persistent) progress().markTask(p.getUniqueID(),q.id,t.id);
+        }
     }
     /** Preflight on copies; no consumption if any requirement is incomplete. */
     public boolean check(EntityPlayerMP p, QuestCore.Quest q, boolean commit) {
@@ -243,6 +290,7 @@ public class QuestService {
         List<ItemStack> containers = new ArrayList<ItemStack>();
         int xp = XP.total(p.experienceLevel, p.experience), xpResult = xp, xpOriginal = xp;
         for (QuestCore.Task t : q.tasks) {
+            if(t.sticky && progress().taskDone(p.getUniqueID(),q.id,t.id)) continue;
             if (t.type.equals("item")) {
                 if(t.craftingOnly) { if(counter(p,q,t)<t.count) return false; else continue; }
                 long remaining = Math.max(0,t.count-(t.consume||t.craftingOnly?counter(p,q,t):0));
@@ -252,19 +300,7 @@ public class QuestService {
                 }
                 if (remaining != 0) return false;
             } else if (t.type.equals("fluid")) {
-                long remaining = Math.max(0, t.count-counter(p,q,t));
-                for (int i=0; i<reserved.length && remaining>0; i++) {
-                    ItemStack stack = reserved[i]; if (stack == null) continue;
-                    FluidStack fluid = FluidContainerRegistry.getFluidForFilledItem(stack);
-                    if (fluid == null || !fluid.getFluid().getName().equals(t.target)) continue;
-                    // Whole registered containers only; never silently discard a partial bucket.
-                    int take = (int)Math.min(stack.stackSize, remaining/fluid.amount);
-                    if (take <= 0) continue;
-                    ItemStack empty = FluidContainerRegistry.drainFluidContainer(stack);
-                    remaining -= (long)take*fluid.amount; reduce(reserved,i,take);
-                    if (t.consume) { reduce(result,i,take); if (empty != null) for(int n=0;n<take;n++) containers.add(empty.copy()); }
-                }
-                if (remaining != 0) return false;
+                if(!QuestFluids.reserve(t,Math.max(0,t.count-counter(p,q,t)),reserved,result,containers)) return false;
             } else if (t.type.equals("xp")) {
                 long needed=Math.max(0,t.count-counter(p,q,t));
                 int cost;
@@ -278,6 +314,7 @@ public class QuestService {
             if(xpResult != xpOriginal) XP.set(p,xpResult);
             for (ItemStack empty : containers) give(p,empty);
             p.inventory.markDirty(); p.inventoryContainer.detectAndSendChanges();
+            for(QuestCore.Task t:q.tasks) progress().markTask(p.getUniqueID(),q.id,t.id);
             progress().complete(p.getUniqueID(),q.id); progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime());
         }
         return true;
@@ -316,38 +353,47 @@ public class QuestService {
     public static void give(EntityPlayerMP player, ItemStack stack) {
         if (!player.inventory.addItemStackToInventory(stack)) player.dropPlayerItemWithRandomChoice(stack,false);
     }
-    private void flatten(QuestCore.Reward r, Iterator<Integer> choices, Random random, List<QuestCore.Reward> out) {
-        List<QuestCore.Reward> options;
-        switch (r.type) {
-            case "choice":
-                if (!choices.hasNext()) throw new IllegalArgumentException("Choose a reward option (zero-based index)");
-                int index = choices.next(); if (index<0 || index>=r.options.size()) throw new IllegalArgumentException("Invalid reward choice");
-                flatten(r.options.get(index),choices,random,out); return;
-            case "loot": options = book.lootTables.get(r.target); break;
-            case "random": options = r.options; break;
-            default: out.add(r); return;
+    private void flatten(QuestCore.Reward r,Iterator<Integer> choices,Random random,List<QuestCore.Reward> out,int[] budget,int depth) {
+        if(depth>32 || ++budget[0]>4096) throw new IllegalArgumentException("Reward expansion exceeds safe limit");
+        if(r.type.equals("choice")) {
+            if(!choices.hasNext()) throw new IllegalArgumentException("Choose a reward option (zero-based index)");
+            int index=choices.next(); if(index<0 || index>=r.options.size()) throw new IllegalArgumentException("Invalid reward choice");
+            flatten(r.options.get(index),choices,random,out,budget,depth+1); return;
         }
-        int total=0; for(QuestCore.Reward o:options) total = Math.addExact(total,o.weight);
-        int pick=random.nextInt(total);
-        for(QuestCore.Reward o:options) { pick-=o.weight; if(pick<0) { flatten(o,choices,random,out); return; } }
+        if(!r.type.equals("loot") && !r.type.equals("random")) { out.add(r); return; }
+        QuestCore.LootSettings settings=r.type.equals("loot")?book.lootSettings.get(r.target):null;
+        List<QuestCore.Reward> options=r.type.equals("loot")?book.lootTables.get(r.target):r.options;
+        int empty=settings==null?0:settings.emptyWeight,rolls=settings==null?1:settings.rolls,total=empty;
+        for(QuestCore.Reward o:options) total=Math.addExact(total,o.weight);
+        if(total<=0) throw new IllegalArgumentException("Empty loot distribution");
+        for(int roll=0;roll<rolls;roll++) {
+            int pick=random.nextInt(total); if(pick<empty) continue; pick-=empty;
+            for(QuestCore.Reward o:options) { pick-=o.weight; if(pick<0) { flatten(o,choices,random,out,budget,depth+1); break; } }
+        }
     }
     public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices) { claim(p,q,choices,null); }
     public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink) {
         QuestProgress data=progress(); UUID id=p.getUniqueID();
-        if (!data.completed(id).contains(q.id) || data.claimed(id,q.id)) throw new IllegalArgumentException("Reward unavailable");
+        if (!data.completed(id).contains(q.id) || claimed(id,q)) throw new IllegalArgumentException("Reward unavailable");
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>(); Iterator<Integer> selected=choices.iterator();
-        for(QuestCore.Reward r:q.rewards) flatten(r,selected,p.getRNG(),leaves);
+        List<Integer> pending=new ArrayList<Integer>(); boolean allShared=true; int[] budget={0};
+        for(int i=0;i<q.rewards.size();i++) {
+            QuestCore.Reward r=q.rewards.get(i); boolean personal=individual(q,r); allShared&=!personal;
+            if(data.rewardClaimed(id,q.id,rewardId(r,i),personal)) continue;
+            List<QuestCore.Reward> expanded=new ArrayList<QuestCore.Reward>(); flatten(r,selected,p.getRNG(),expanded,budget,0);
+            pending.add(i); leaves.addAll(expanded);
+        }
         if(selected.hasNext()) throw new IllegalArgumentException("Too many reward choices");
-        // Resolve all definitions before marking the claim. Client only supplies choices, never reward data.
         for(QuestCore.Reward r:leaves) validateReward(r);
-        data.claim(id,q.id);
+        for(int index:pending) { QuestCore.Reward r=q.rewards.get(index); data.claimReward(id,q.id,rewardId(r,index),individual(q,r)); }
+        if(allShared) data.claim(id,q.id);
         applyRewards(p,leaves,itemSink);
     }
     public void openLoot(EntityPlayerMP p,String table,ItemStack crate) {
         if(!book.lootTables.containsKey(table)) throw new IllegalArgumentException("Unknown loot table");
         QuestCore.Reward roll=new QuestCore.Reward(); roll.type="loot"; roll.target=table;
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>();
-        flatten(roll,Collections.<Integer>emptyList().iterator(),p.getRNG(),leaves);
+        flatten(roll,Collections.<Integer>emptyList().iterator(),p.getRNG(),leaves,new int[]{0},0);
         for(QuestCore.Reward r:leaves) validateReward(r);
         if(crate.stackSize<=0) throw new IllegalArgumentException("Empty crate stack");
         crate.stackSize--; applyRewards(p,leaves,null);
@@ -380,8 +426,10 @@ public class QuestService {
     }
     public void repeat(EntityPlayerMP p,QuestCore.Quest q) {
         QuestProgress data=progress(); UUID id=p.getUniqueID();
-        if(!q.repeatable || !data.claimed(id,q.id) || p.worldObj.getTotalWorldTime()-data.completedAt(id,q.id)<(long)q.cooldownSeconds*20)
+        if(!q.repeatable || !claimed(id,q) || p.worldObj.getTotalWorldTime()-data.completedAt(id,q.id)<(long)q.cooldownSeconds*20)
             throw new IllegalArgumentException("Quest cannot be repeated yet");
+        if(!data.team(id).isEmpty() && !data.leader(id)) throw new IllegalArgumentException("Only the team leader can repeat a quest");
+        for(UUID member:data.members(id)) if(!claimed(member,q)) throw new IllegalArgumentException("Team members still have unclaimed rewards");
         data.reset(id,q.id);
     }
     public static final class XP {

@@ -257,4 +257,101 @@ public class QuestSystemsTest {
         assertEquals("Edited",actual.book.title);
         java.nio.file.Files.deleteIfExists(file.toPath()); java.nio.file.Files.deleteIfExists(folder.resolve("quests.json.bak")); java.nio.file.Files.deleteIfExists(folder);
     }
+    @Test public void manualConfirmationAndStartedDependenciesAreIndependent() {
+        QuestCore.Task confirmation=task("check",null,1,false); confirmation.manual=true;
+        QuestCore.Quest next=new QuestCore.Quest(); next.id="next"; next.dependencies.add("quest:test"); next.dependencyState="started";
+        assertFalse(service.unlocked(player.getUniqueID(),next));
+        service.start(player,quest); assertTrue(service.unlocked(player.getUniqueID(),next));
+        assertFalse(service.check(player,quest,true));
+        service.confirm(player,quest,confirmation.id); assertTrue(service.check(player,quest,true));
+    }
+    @Test public void taskDependencyUnlocksBeforeWholeQuestCompletes() {
+        QuestCore.Task first=task("check",null,1,false); first.manual=true;
+        task("dimension",null,1,false).dimension=-1;
+        QuestCore.Quest next=new QuestCore.Quest(); next.id="next"; next.dependencies.add("task:test/"+first.id);
+        assertFalse(service.unlocked(player.getUniqueID(),next)); service.confirm(player,quest,first.id);
+        assertTrue(service.unlocked(player.getUniqueID(),next)); assertFalse(service.check(player,quest,true));
+    }
+    private EntityPlayerMP teammate() {
+        EntityPlayerMP other=mock(EntityPlayerMP.class); when(other.getUniqueID()).thenReturn(UUID.randomUUID()); when(other.getRNG()).thenReturn(new Random(2));
+        other.inventory=new InventoryPlayer(other); other.inventoryContainer=mock(Container.class); other.worldObj=player.worldObj;
+        data.createTeam(player.getUniqueID(),"Test"); data.invite(player.getUniqueID(),other.getUniqueID()); data.join(other.getUniqueID(),player.getUniqueID()); return other;
+    }
+    private QuestCore.Reward xpReward(int amount,String mode) {
+        QuestCore.Reward r=new QuestCore.Reward(); r.type="xp"; r.count=amount; r.mode=mode; r.id="r"+quest.rewards.size(); quest.rewards.add(r); return r;
+    }
+    @Test public void mixedRewardsPaySharedOnceAndIndividualForEachMember() {
+        EntityPlayerMP other=teammate(); task("check",null,1,false); xpReward(3,"team"); xpReward(7,"individual");
+        assertTrue(service.check(player,quest,true)); service.claim(player,quest,Collections.<Integer>emptyList());
+        assertTrue(service.claimed(player.getUniqueID(),quest)); assertFalse(service.claimed(other.getUniqueID(),quest));
+        service.claim(other,quest,Collections.<Integer>emptyList()); verify(other,never()).addExperience(3); verify(other).addExperience(7);
+        verify(player).addExperience(3); verify(player).addExperience(7);
+        try { service.claim(other,quest,Collections.<Integer>emptyList()); fail(); } catch(IllegalArgumentException expected) {}
+    }
+    @Test public void alreadyClaimedSharedChoicesDoNotRequireAnotherSelection() {
+        EntityPlayerMP other=teammate(); task("check",null,1,false);
+        QuestCore.Reward choice=new QuestCore.Reward(); choice.id="choice"; choice.type="choice"; choice.mode="team";
+        QuestCore.Reward option=new QuestCore.Reward(); option.type="xp"; option.count=2; choice.options.add(option); quest.rewards.add(choice); xpReward(7,"individual");
+        service.check(player,quest,true); service.claim(player,quest,Collections.singletonList(0));
+        service.claim(other,quest,Collections.<Integer>emptyList()); verify(other).addExperience(7); verify(other,never()).addExperience(2);
+    }
+    @Test public void individualRewardsPersistAndRepeatWaitsForEveryMember() {
+        EntityPlayerMP other=teammate(); task("check",null,1,false); xpReward(4,"individual"); quest.repeatable=true;
+        service.check(player,quest,true); service.claim(player,quest,Collections.<Integer>emptyList());
+        NBTTagCompound saved=new NBTTagCompound(); data.writeToNBT(saved); data=new QuestProgress(); data.readFromNBT(saved); doReturn(data).when(service).progress();
+        assertTrue(service.claimed(player.getUniqueID(),quest)); assertFalse(service.claimed(other.getUniqueID(),quest));
+        try { service.repeat(player,quest); fail(); } catch(IllegalArgumentException expected) {}
+        service.claim(other,quest,Collections.<Integer>emptyList()); service.repeat(player,quest);
+        service.check(player,quest,true); service.claim(player,quest,Collections.<Integer>emptyList()); verify(player,times(2)).addExperience(4);
+    }
+    @Test public void leavingTeamAfterRepeatDoesNotResurrectOldSoloCounters() {
+        UUID member=UUID.randomUUID(); data.add(member,"test","t0",10,10); data.markTask(member,"test","t0"); data.complete(member,"test");
+        data.createTeam(player.getUniqueID(),"Test"); data.invite(player.getUniqueID(),member); data.join(member,player.getUniqueID());
+        data.reset(player.getUniqueID(),"test"); data.add(player.getUniqueID(),"test","t0",2,10); data.leave(member);
+        assertEquals(2,data.value(member,"test","t0")); assertFalse(data.taskDone(member,"test","t0")); assertFalse(data.completed(member).contains("test"));
+    }
+    @Test public void chapterCompletionIgnoresOptionalQuestsAndRejectsUnknownChapters() {
+        QuestCore.Chapter c=new QuestCore.Chapter(); c.id="chapter"; c.title="Chapter"; service.book.chapters.add(c); quest.chapter=c.id;
+        QuestCore.Quest optional=new QuestCore.Quest(); optional.id="optional"; optional.chapter=c.id; optional.optional=true; service.quests.put(optional.id,optional);
+        assertEquals("not_started",service.chapterState(player.getUniqueID(),c.id)); data.complete(player.getUniqueID(),quest.id);
+        assertEquals("complete",service.chapterState(player.getUniqueID(),c.id)); assertFalse(service.dependencies(player.getUniqueID()).chapter("missing",false));
+    }
+    @Test public void lootRollCountAndEmptyResultsAreSupported() {
+        QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=2;
+        service.book.lootTables.put("roll",Collections.singletonList(xp)); QuestCore.LootSettings settings=new QuestCore.LootSettings(); settings.rolls=3; service.book.lootSettings.put("roll",settings);
+        ItemStack crate=new ItemStack(Items.paper,2); service.openLoot(player,"roll",crate); verify(player,times(3)).addExperience(2); assertEquals(1,crate.stackSize);
+        service.book.lootTables.put("empty",Collections.<QuestCore.Reward>emptyList()); settings=new QuestCore.LootSettings(); settings.emptyWeight=1; service.book.lootSettings.put("empty",settings);
+        service.openLoot(player,"empty",crate); assertEquals(0,crate.stackSize); verify(player,times(3)).addExperience(2);
+    }
+    @Test public void lootExpansionLimitDoesNotConsumeCrateOrAwardPartialRewards() {
+        QuestCore.Reward nested=new QuestCore.Reward(); nested.type="loot"; nested.target="inner";
+        QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=2;
+        service.book.lootTables.put("outer",Collections.singletonList(nested)); service.book.lootTables.put("inner",Collections.singletonList(xp));
+        QuestCore.LootSettings settings=new QuestCore.LootSettings(); settings.rolls=64; service.book.lootSettings.put("outer",settings); service.book.lootSettings.put("inner",settings);
+        ItemStack crate=new ItemStack(Items.paper); try { service.openLoot(player,"outer",crate); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(1,crate.stackSize); verify(player,never()).addExperience(anyInt());
+    }
+    private static final class TestTank extends net.minecraft.item.Item implements IFluidContainerItem {
+        public FluidStack getFluid(ItemStack s) { return s.hasTagCompound()?FluidStack.loadFluidStackFromNBT(s.getTagCompound()):null; }
+        public int getCapacity(ItemStack s) { return 4000; }
+        public int fill(ItemStack s,FluidStack fluid,boolean commit) { if(commit) s.setTagCompound(fluid.writeToNBT(new NBTTagCompound())); return fluid.amount; }
+        public FluidStack drain(ItemStack s,int amount,boolean commit) {
+            FluidStack fluid=getFluid(s); if(fluid==null) return null; FluidStack out=fluid.copy(); out.amount=Math.min(amount,fluid.amount);
+            if(commit) { fluid.amount-=out.amount; s.setTagCompound(fluid.amount==0?null:fluid.writeToNBT(new NBTTagCompound())); } return out;
+        }
+    }
+    @Test public void dynamicFluidContainersDrainOnlyRequiredAmount() {
+        TestTank tank=new TestTank(); ItemStack stack=new ItemStack(tank); tank.fill(stack,new FluidStack(FluidRegistry.WATER,2000),true); player.inventory.mainInventory[0]=stack;
+        task("fluid","water",750,true); assertTrue(service.check(player,quest,true)); assertEquals(1250,tank.getFluid(player.inventory.mainInventory[0]).amount);
+    }
+    @Test public void failedFluidPreflightPreservesOriginalContainer() {
+        TestTank tank=new TestTank(); ItemStack stack=new ItemStack(tank); tank.fill(stack,new FluidStack(FluidRegistry.WATER,2000),true); player.inventory.mainInventory[0]=stack;
+        task("fluid","water",750,true); task("dimension",null,1,false).dimension=-1;
+        assertFalse(service.check(player,quest,true)); assertEquals(2000,tank.getFluid(stack).amount);
+    }
+    @Test public void fluidNbtAndReadOnlyDynamicContainersAreRespected() {
+        TestTank tank=new TestTank(); ItemStack stack=new ItemStack(tank); FluidStack water=new FluidStack(FluidRegistry.WATER,2000); water.tag=new NBTTagCompound(); water.tag.setInteger("quality",2); tank.fill(stack,water,true); player.inventory.mainInventory[0]=stack;
+        QuestCore.Task t=task("fluid","water",750,false); t.nbt="{quality:1}"; assertFalse(service.check(player,quest,true));
+        t.nbt="{quality:2}"; assertTrue(service.check(player,quest,true)); assertEquals(2000,tank.getFluid(player.inventory.mainInventory[0]).amount);
+    }
 }

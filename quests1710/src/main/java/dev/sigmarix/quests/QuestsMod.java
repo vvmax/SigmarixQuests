@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.2.0", acceptableRemoteVersions="[0.2.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.3.0", acceptableRemoteVersions="[0.3.0]")
 public final class QuestsMod {
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
     public static CommonProxy proxy;
@@ -109,6 +109,8 @@ public final class QuestsMod {
             List<Integer> choices=new ArrayList<Integer>(); for(int c:action.choices) choices.add(c);
             switch(action.action) {
                 case "view": break;
+                case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
+                case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message="Task confirmed"; break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
                 case "claim": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.claim(player,quest,choices); message="Rewards claimed"; break;
                 case "repeat": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.repeat(player,quest); message="Quest reset"; break;
@@ -122,17 +124,22 @@ public final class QuestsMod {
         QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot(); snapshot.revision=service.revision; snapshot.canEdit=editor(player); snapshot.message=message;
         QuestProgress data=service.progress(); UUID id=player.getUniqueID(); Set<String> done=data.completed(id);
         snapshot.team=data.teamName(id);
+        for(QuestCore.Chapter chapter:service.book.chapters) snapshot.chapterStates.put(chapter.id,service.chapterState(id,chapter.id));
         snapshot.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(service.book),QuestCore.Book.class);
         if(!snapshot.canEdit) {
             Iterator<QuestCore.Quest> it=snapshot.book.quests.iterator();
-            while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !QuestCore.unlocked(q,done)) it.remove(); }
+            while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !service.unlocked(id,q)) it.remove(); }
             // Command and custom implementation details are server-only for non-editors.
-            snapshot.book.lootTables.clear();
+            snapshot.book.lootTables.clear(); snapshot.book.lootSettings.clear();
             for(QuestCore.Quest q:snapshot.book.quests) redact(q.rewards);
         }
         for(QuestCore.Quest q:snapshot.book.quests) {
-            snapshot.states.put(q.id,done.contains(q.id) ? data.claimed(id,q.id) ? "claimed" : "complete" : QuestCore.unlocked(q,done) ? "available" : "locked");
-            for(QuestCore.Task task:q.tasks) snapshot.counters.put(q.id+":"+task.id,service.counter(player,q,task));
+            snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");
+            for(int i=0;i<q.rewards.size();i++) { QuestCore.Reward r=q.rewards.get(i); snapshot.rewardStates.put(q.id+":"+r.id,data.rewardClaimed(id,q.id,r.id,service.individual(q,r))); }
+            for(QuestCore.Task task:q.tasks) {
+                snapshot.counters.put(q.id+":"+task.id,service.counter(player,q,task));
+                snapshot.taskStates.put(q.id+":"+task.id,service.dependencies(id).satisfied("task:"+q.id+"/"+task.id,false));
+            }
         }
         QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(snapshot)),player);
     }
@@ -145,7 +152,7 @@ public final class QuestsMod {
     }
     private static final class QuestCommand extends CommandBase {
         @Override public String getCommandName() { return "quests"; }
-        @Override public String getCommandUsage(ICommandSender sender) { return "/quests list|show/check/claim/repeat <id> [choices...]|reload|team|reset <id> <player>"; }
+        @Override public String getCommandUsage(ICommandSender sender) { return "/quests list|show/start/check/claim/repeat <id>|task <id> <task> [choices...]|reload|team|reset <id> <player>"; }
         @Override public int getRequiredPermissionLevel() { return 0; }
         @Override public void processCommand(ICommandSender sender,String[] args) {
             try {
@@ -161,9 +168,9 @@ public final class QuestsMod {
                 EntityPlayerMP p=getCommandSenderAsPlayer(sender); QuestProgress data=service.progress(); UUID id=p.getUniqueID();
                 if(args.length==0 || args[0].equals("list")) {
                     for(QuestCore.Quest q:service.quests.values()) {
-                        Set<String> done=data.completed(id); boolean unlocked=QuestCore.unlocked(q,done);
+                        Set<String> done=data.completed(id); boolean unlocked=service.unlocked(id,q);
                         if(q.hidden && !unlocked && !done.contains(q.id) && !editor(p)) continue;
-                        QuestService.say(sender,q.id+" - "+q.title+" ["+(done.contains(q.id)?data.claimed(id,q.id)?"claimed":"complete":unlocked?"available":"locked")+"]");
+                        QuestService.say(sender,q.id+" - "+q.title+" ["+(done.contains(q.id)?service.claimed(id,q)?"claimed":"complete":unlocked?"available":"locked")+"]");
                     }
                     QuestService.say(sender,"GUI: /questbook (client mod), "+getCommandUsage(sender)); return;
                 }
@@ -188,10 +195,12 @@ public final class QuestsMod {
                 QuestCore.Quest q=service.quests.get(args[1]); if(q==null) throw new IllegalArgumentException("Unknown quest");
                 switch(args[0]) {
                     case "show":
-                        if(q.hidden && !QuestCore.unlocked(q,data.completed(id)) && !data.completed(id).contains(q.id) && !editor(p)) throw new IllegalArgumentException("Unknown quest");
+                        if(q.hidden && !service.unlocked(id,q) && !data.completed(id).contains(q.id) && !editor(p)) throw new IllegalArgumentException("Unknown quest");
                         QuestService.say(sender,q.title+": "+q.description); QuestService.say(sender,"Dependencies: "+q.dependencies);
                         for(QuestCore.Task t:q.tasks) QuestService.say(sender,t.type+" "+t.target+" x"+t.count+" ["+service.counter(p,q,t)+"]");
                         for(QuestCore.Reward r:q.rewards) QuestService.say(sender,"Reward: "+r.type+" "+(r.item==null?"":r.item)+" x"+r.count); break;
+                    case "start": service.start(p,q); QuestService.say(sender,"Quest started"); break;
+                    case "task": if(args.length!=3) throw new IllegalArgumentException("/quests task <quest> <task>"); service.confirm(p,q,args[2]); QuestService.say(sender,"Task confirmed"); break;
                     case "submit": if(args.length!=3) throw new IllegalArgumentException("/quests submit <quest> <task>"); QuestService.say(sender,"Submitted: "+service.submit(p,q,args[2])); break;
                     case "check": if(!service.finish(p,q)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); QuestService.say(sender,"Quest complete"); break;
                     case "claim":

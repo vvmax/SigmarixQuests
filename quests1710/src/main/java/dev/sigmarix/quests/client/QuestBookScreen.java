@@ -27,6 +27,7 @@ public final class QuestBookScreen extends GuiScreen {
         buttonList.add(new GuiButton(4,split()+6,height-54,buttonWidth,20,"Check"));
         buttonList.add(new GuiButton(5,split()+10+buttonWidth,height-54,buttonWidth,20,"Claim"));
         buttonList.add(new GuiButton(6,split()+14+buttonWidth*2,height-54,buttonWidth,20,"Repeat"));
+        buttonList.add(new GuiButton(7,split()+6,height-30,Math.max(60,width-split()-12),18,"Tasks / start"));
         search=new GuiTextField(fontRendererObj,8,36,Math.min(240,split()-16),18); search.setMaxStringLength(128);
         refresh();
     }
@@ -34,7 +35,7 @@ public final class QuestBookScreen extends GuiScreen {
         if(ClientProxy.snapshot==null) return;
         for(Object object:buttonList) {
             GuiButton b=(GuiButton)object;
-            if(b.id==2) b.displayString=chapter.isEmpty()?"All chapters":chapter;
+            if(b.id==2) b.displayString=chapter.isEmpty()?"All chapters":chapter+" ["+ClientProxy.snapshot.chapterStates.get(chapter)+"]";
             String state=ClientProxy.snapshot.states.get(selected);
             if(b.id==4) b.enabled="available".equals(state);
             if(b.id==5) b.enabled="complete".equals(state);
@@ -63,7 +64,11 @@ public final class QuestBookScreen extends GuiScreen {
         GL11.glEnable(GL11.GL_SCISSOR_TEST); GL11.glScissor(0,8*factor,split()*factor,Math.max(0,height-68)*factor);
         GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glColor4f(.45f,.55f,.65f,1); GL11.glBegin(GL11.GL_LINES);
         Set<String> ids=new HashSet<String>(); for(QuestCore.Quest q:list) ids.add(q.id);
-        for(QuestCore.Quest q:list) for(String dep:q.dependencies) { QuestCore.Quest d=find(dep); if(d!=null && ids.contains(dep)) { GL11.glVertex2d(sx(d)+12,sy(d)+12); GL11.glVertex2d(sx(q)+12,sy(q)+12); } }
+        Map<String,QuestCore.Quest> byId=new LinkedHashMap<String,QuestCore.Quest>(); for(QuestCore.Quest q:ClientProxy.snapshot.book.quests) byId.put(q.id,q);
+        for(QuestCore.Quest q:list) for(String dep:q.dependencies) {
+            try { for(String owner:QuestDependencies.owners(ClientProxy.snapshot.book,byId,dep,q.dependencyState.equals("started"))) { QuestCore.Quest d=find(owner); if(d!=null && ids.contains(owner)) { GL11.glVertex2d(sx(d)+12,sy(d)+12); GL11.glVertex2d(sx(q)+12,sy(q)+12); } } }
+            catch(IllegalArgumentException ignored) { /* Hidden source quests are absent from a public snapshot. */ }
+        }
         GL11.glEnd(); GL11.glEnable(GL11.GL_TEXTURE_2D); GL11.glColor4f(1,1,1,1);
         QuestCore.Quest hover=null;
         for(QuestCore.Quest q:list) {
@@ -88,10 +93,10 @@ public final class QuestBookScreen extends GuiScreen {
         List<String> lines=new ArrayList<String>();
         lines.add(q.title); lines.add(q.id+" ["+ClientProxy.snapshot.states.get(q.id)+"]"); lines.add("Team: "+ClientProxy.snapshot.team);
         lines.addAll(fontRendererObj.listFormattedStringToWidth(q.description,max));
-        lines.add("Dependencies: "+q.dependencies); lines.add("Tasks:");
+        lines.add("Dependencies ("+q.dependencyState+"): "+q.dependencies); lines.add("Tasks:");
         for(QuestCore.Task t:q.tasks) {
             Long value=ClientProxy.snapshot.counters.get(q.id+":"+t.id);
-            String line=t.type+" "+(t.target==null?"":t.target)+" x"+t.count+(t.consume?" (consume)":"")+" ["+(value==null?0:value)+"]";
+            String line=(Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(q.id+":"+t.id))?"[done] ":"")+t.id+" "+t.type+" "+(t.target==null?"":t.target)+" x"+t.count+(t.consume?" (consume)":"")+" ["+(value==null?0:value)+"]";
             if(t.type.equals("dimension") || t.type.equals("location")) line+=" dim="+t.dimension;
             lines.addAll(fontRendererObj.listFormattedStringToWidth(line,max));
         }
@@ -115,6 +120,7 @@ public final class QuestBookScreen extends GuiScreen {
             case 4: action.action="check"; break;
             case 5: if(RewardChoiceScreen.needed(find(selected))) { mc.displayGuiScreen(new RewardChoiceScreen(this,find(selected))); return; } action.action="claim"; break;
             case 6: action.action="repeat"; break;
+            case 7: if(find(selected)!=null) mc.displayGuiScreen(new QuestTaskScreen(this,find(selected))); return;
             default: return;
         }
         ClientProxy.send(action);

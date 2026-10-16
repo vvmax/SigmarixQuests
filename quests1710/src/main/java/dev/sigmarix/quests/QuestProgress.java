@@ -7,11 +7,12 @@ import net.minecraft.world.WorldSavedData;
 /** Overworld storage separates players by UUID and persists with the world. */
 public final class QuestProgress extends WorldSavedData {
     private NBTTagCompound players = new NBTTagCompound();
+    private NBTTagCompound personalRewards = new NBTTagCompound();
     private NBTTagCompound teams = new NBTTagCompound(), membership = new NBTTagCompound();
     public QuestProgress() { super("sigmarixquests"); }
     public QuestProgress(String name) { super(name); }
-    @Override public void readFromNBT(NBTTagCompound tag) { players = tag.getCompoundTag("players"); teams = tag.getCompoundTag("teams"); membership = tag.getCompoundTag("membership"); }
-    @Override public void writeToNBT(NBTTagCompound tag) { tag.setTag("players", players); tag.setTag("teams", teams); tag.setTag("membership", membership); }
+    @Override public void readFromNBT(NBTTagCompound tag) { players = tag.getCompoundTag("players"); teams = tag.getCompoundTag("teams"); membership = tag.getCompoundTag("membership"); personalRewards=tag.getCompoundTag("personalRewards"); }
+    @Override public void writeToNBT(NBTTagCompound tag) { tag.setTag("players", players); tag.setTag("teams", teams); tag.setTag("membership", membership); tag.setTag("personalRewards",personalRewards); }
     private NBTTagCompound player(UUID id) {
         String key = group(id);
         if (!players.hasKey(key)) players.setTag(key, new NBTTagCompound());
@@ -29,12 +30,16 @@ public final class QuestProgress extends WorldSavedData {
         NBTTagList list = p.getTagList("completed", 8);
         list.appendTag(new NBTTagString(quest));
         p.setTag("completed", list);
-        markDirty();
+        start(id,quest); markDirty();
     }
-    public boolean claimed(UUID id, String quest) { return player(id).getCompoundTag("claimed").getBoolean(quest); }
+    public boolean claimed(UUID id, String quest) {
+        NBTTagCompound p=player(id),epochs=p.getCompoundTag("claimEpochs");
+        return epochs.hasKey(quest)?epochs.getLong(quest)>=cycle(id,quest)+1:cycle(id,quest)==0 && p.getCompoundTag("claimed").getBoolean(quest);
+    }
     public void claim(UUID id, String quest) {
         NBTTagCompound p = player(id), claims = p.getCompoundTag("claimed");
-        claims.setBoolean(quest, true); p.setTag("claimed", claims); markDirty();
+        claims.setBoolean(quest, true); p.setTag("claimed", claims);
+        NBTTagCompound epochs=p.getCompoundTag("claimEpochs"); epochs.setLong(quest,cycle(id,quest)+1); p.setTag("claimEpochs",epochs); markDirty();
     }
     public int kills(UUID id, String quest, int task) { return player(id).getCompoundTag("kills").getInteger(quest + ":" + task); }
     public void kill(UUID id, String quest, int task, int limit) {
@@ -89,7 +94,7 @@ public final class QuestProgress extends WorldSavedData {
         if (amount < 0 || limit < 0) throw new IllegalArgumentException("Negative progress");
         NBTTagCompound p = player(id), tasks = p.getCompoundTag("tasks");
         String key = quest + ":" + task; long old = Math.max(0, tasks.getLong(key));
-        tasks.setLong(key, old >= limit ? limit : old + Math.min(amount, limit - old)); p.setTag("tasks", tasks); markDirty();
+        tasks.setLong(key, old >= limit ? limit : old + Math.min(amount, limit - old)); p.setTag("tasks", tasks); if(amount>0 && limit>0) start(id,quest); markDirty();
     }
     public long completedAt(UUID id, String quest) { return player(id).getCompoundTag("times").getLong(quest); }
     public void timestamp(UUID id, String quest, long time) {
@@ -100,29 +105,85 @@ public final class QuestProgress extends WorldSavedData {
         NBTTagList previous = p.getTagList("completed", 8), next = new NBTTagList();
         for (int i=0; i<previous.tagCount(); i++) if (!quest.equals(previous.getStringTagAt(i))) next.appendTag(new NBTTagString(previous.getStringTagAt(i)));
         p.setTag("completed", next);
-        p.getCompoundTag("claimed").removeTag(quest); p.getCompoundTag("times").removeTag(quest);
-        for (String tag : new String[]{"tasks", "kills"}) {
+        p.getCompoundTag("claimed").removeTag(quest); p.getCompoundTag("times").removeTag(quest); p.getCompoundTag("started").removeTag(quest); p.getCompoundTag("claimEpochs").removeTag(quest);
+        NBTTagCompound cycles=p.getCompoundTag("cycles"); cycles.setLong(quest,Math.addExact(cycle(id,quest),1)); p.setTag("cycles",cycles);
+        for (String tag : new String[]{"tasks", "kills", "taskDone"}) {
             NBTTagCompound values = p.getCompoundTag(tag);
             for (Object key : new HashSet<Object>(values.func_150296_c())) if (key.toString().startsWith(quest + ":")) values.removeTag(key.toString());
         }
         markDirty();
     }
     private void mergePersonal(UUID id) {
-        NBTTagCompound shared=player(id), solo=players.getCompoundTag(id.toString());
-        NBTTagList old=solo.getTagList("completed",8), team=shared.getTagList("completed",8);
-        Set<String> seen=new HashSet<String>(); for(int i=0;i<old.tagCount();i++) seen.add(old.getStringTagAt(i));
-        for(int i=0;i<team.tagCount();i++) if(seen.add(team.getStringTagAt(i))) old.appendTag(new NBTTagString(team.getStringTagAt(i)));
-        solo.setTag("completed",old);
-        for(String field:new String[]{"claimed","tasks","kills","times"}) {
-            NBTTagCompound previous=solo.getCompoundTag(field), incoming=shared.getCompoundTag(field);
-            for(Object raw:incoming.func_150296_c()) {
-                String key=raw.toString();
-                if(field.equals("claimed")) previous.setBoolean(key,previous.getBoolean(key)||incoming.getBoolean(key));
-                else if(field.equals("kills")) previous.setInteger(key,Math.max(previous.getInteger(key),incoming.getInteger(key)));
-                else previous.setLong(key,Math.max(previous.getLong(key),incoming.getLong(key)));
-            }
-            solo.setTag(field,previous);
+        NBTTagCompound shared=player(id),solo=players.getCompoundTag(id.toString());
+        Set<String> oldDone=completedTags(solo),newDone=completedTags(shared),ids=new HashSet<String>(); ids.addAll(oldDone); ids.addAll(newDone);
+        String[] fields={"claimed","tasks","kills","times","cycles","claimEpochs","rewardClaims","started","taskDone"};
+        for(String field:fields) for(NBTTagCompound source:new NBTTagCompound[]{solo,shared}) for(Object raw:source.getCompoundTag(field).func_150296_c()) {
+            String key=raw.toString(); int colon=key.indexOf(':'); ids.add(colon<0?key:key.substring(0,colon));
         }
+        for(String quest:ids) {
+            long previous=solo.getCompoundTag("cycles").getLong(quest),incoming=shared.getCompoundTag("cycles").getLong(quest);
+            if(incoming<previous) continue;
+            if(incoming>previous) {
+                oldDone.remove(quest);
+                for(String field:fields) {
+                    NBTTagCompound values=solo.getCompoundTag(field);
+                    for(Object raw:new HashSet<Object>(values.func_150296_c())) if(raw.toString().equals(quest) || raw.toString().startsWith(quest+":")) values.removeTag(raw.toString());
+                }
+            }
+            if(newDone.contains(quest)) oldDone.add(quest);
+            for(String field:fields) {
+                NBTTagCompound target=solo.getCompoundTag(field),source=shared.getCompoundTag(field);
+                for(Object raw:source.func_150296_c()) {
+                    String key=raw.toString(); if(!key.equals(quest) && !key.startsWith(quest+":")) continue;
+                    if(field.equals("claimed") || field.equals("started")) target.setBoolean(key,target.getBoolean(key)||source.getBoolean(key));
+                    else if(field.equals("kills")) target.setInteger(key,Math.max(target.getInteger(key),source.getInteger(key)));
+                    else target.setLong(key,Math.max(target.getLong(key),source.getLong(key)));
+                }
+                solo.setTag(field,target);
+            }
+        }
+        NBTTagList completed=new NBTTagList(); for(String quest:oldDone) completed.appendTag(new NBTTagString(quest)); solo.setTag("completed",completed);
         players.setTag(id.toString(),solo); markDirty();
+    }
+    private static Set<String> completedTags(NBTTagCompound nbt) {
+        Set<String> result=new HashSet<String>(); NBTTagList values=nbt.getTagList("completed",8);
+        for(int i=0;i<values.tagCount();i++) result.add(values.getStringTagAt(i)); return result;
+    }
+    public long cycle(UUID id,String quest) { return Math.max(0,player(id).getCompoundTag("cycles").getLong(quest)); }
+    public void start(UUID id,String quest) {
+        NBTTagCompound p=player(id),started=p.getCompoundTag("started"); started.setBoolean(quest,true); p.setTag("started",started); markDirty();
+    }
+    public boolean started(UUID id,String quest) {
+        NBTTagCompound p=player(id);
+        if(completed(id).contains(quest) || p.getCompoundTag("started").getBoolean(quest)) return true;
+        for(String field:new String[]{"tasks","kills"}) {
+            NBTTagCompound values=p.getCompoundTag(field);
+            for(Object raw:values.func_150296_c()) if(raw.toString().startsWith(quest+":") && (field.equals("kills")?values.getInteger(raw.toString()):values.getLong(raw.toString()))>0) return true;
+        }
+        return false;
+    }
+    public boolean taskDone(UUID id,String quest,String task) { return player(id).getCompoundTag("taskDone").getLong(quest+":"+task)>=cycle(id,quest)+1; }
+    public void markTask(UUID id,String quest,String task) {
+        NBTTagCompound p=player(id),done=p.getCompoundTag("taskDone"); done.setLong(quest+":"+task,cycle(id,quest)+1); p.setTag("taskDone",done); start(id,quest);
+    }
+    private NBTTagCompound personal(UUID id) {
+        String key=id.toString(); if(!personalRewards.hasKey(key)) personalRewards.setTag(key,new NBTTagCompound());
+        return personalRewards.getCompoundTag(key);
+    }
+    public boolean rewardClaimed(UUID id,String quest,String reward,boolean individual) {
+        if(claimed(id,quest)) return true;
+        NBTTagCompound ledger=individual?personal(id):player(id).getCompoundTag("rewardClaims");
+        return ledger.getLong(quest+":"+reward)>=cycle(id,quest)+1;
+    }
+    public void claimReward(UUID id,String quest,String reward,boolean individual) {
+        NBTTagCompound ledger=individual?personal(id):player(id).getCompoundTag("rewardClaims");
+        ledger.setLong(quest+":"+reward,cycle(id,quest)+1);
+        if(!individual) player(id).setTag("rewardClaims",ledger); markDirty();
+    }
+    public Set<UUID> members(UUID id) {
+        Set<UUID> result=new HashSet<UUID>(); String team=team(id);
+        if(team.isEmpty()) { result.add(id); return result; }
+        for(Object raw:membership.func_150296_c()) if(team.equals(membership.getString(raw.toString()))) result.add(UUID.fromString(raw.toString()));
+        return result;
     }
 }

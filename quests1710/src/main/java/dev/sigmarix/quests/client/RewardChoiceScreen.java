@@ -18,7 +18,8 @@ public final class RewardChoiceScreen extends GuiScreen {
         Entry(String path,QuestCore.Reward reward) { this.path=path; this.reward=reward; }
     }
     RewardChoiceScreen(GuiScreen parent,QuestCore.Quest quest) { this.parent=parent; this.quest=quest; revision=ClientProxy.snapshot.revision; }
-    public static boolean needed(QuestCore.Quest q) { for(QuestCore.Reward r:q.rewards) if(r.type.equals("choice")) return true; return false; }
+    private static boolean pending(QuestCore.Quest q,QuestCore.Reward r) { return !Boolean.TRUE.equals(ClientProxy.snapshot.rewardStates.get(q.id+":"+r.id)); }
+    public static boolean needed(QuestCore.Quest q) { for(QuestCore.Reward r:q.rewards) if(pending(q,r) && r.type.equals("choice")) return true; return false; }
     private int selected(Entry e) { Integer value=selections.get(e.path); return value==null?0:Math.max(0,Math.min(value,e.reward.options.size()-1)); }
     private void collect(QuestCore.Reward reward,String path) {
         if(!reward.type.equals("choice")) return;
@@ -27,7 +28,7 @@ public final class RewardChoiceScreen extends GuiScreen {
     }
     @Override public void initGui() { rebuild(); }
     private void rebuild() {
-        entries.clear(); for(int i=0;i<quest.rewards.size();i++) collect(quest.rewards.get(i),Integer.toString(i));
+        entries.clear(); for(int i=0;i<quest.rewards.size();i++) if(pending(quest,quest.rewards.get(i))) collect(quest.rewards.get(i),Integer.toString(i));
         buttonList.clear(); int rows=Math.max(1,(height-94)/26); scroll=Math.max(0,Math.min(scroll,Math.max(0,entries.size()-rows)));
         for(int i=scroll;i<entries.size() && i<scroll+rows;i++) {
             Entry entry=entries.get(i); int pick=selected(entry); QuestCore.Reward option=entry.reward.options.get(pick);

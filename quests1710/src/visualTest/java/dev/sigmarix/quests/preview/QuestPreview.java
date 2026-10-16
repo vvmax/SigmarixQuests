@@ -73,7 +73,7 @@ public final class QuestPreview {
                 if(!snap.canEdit) throw new IllegalStateException("Integrated host lost edit permissions");
                 if(restarted) {
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence".getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync".getBytes(StandardCharsets.UTF_8));
                     mc.shutdown(); return;
                 }
                 original=QuestService.JSON.fromJson(QuestService.JSON.toJson(snap.book),QuestCore.Book.class);
@@ -86,6 +86,10 @@ public final class QuestPreview {
                 oldRevision=snap.revision;
                 QuestNetwork.Action edit=new QuestNetwork.Action(); edit.action="save"; edit.revision=snap.revision;
                 edit.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(original),QuestCore.Book.class); edit.book.title="Network edit smoke";
+                QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation";
+                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; manual.tasks.add(check); edit.book.quests.add(manual);
+                QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
+                QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
                 ClientProxy.send(edit); stage=5; break;
             case 5:
                 if(snap==null || snap.revision==oldRevision) return;
@@ -94,6 +98,20 @@ public final class QuestPreview {
                 ClientProxy.send(stale); stage=6; break;
             case 6:
                 if(snap==null || !snap.message.startsWith("Error: Book changed")) return;
+                QuestNetwork.Action begin=new QuestNetwork.Action(); begin.action="start"; begin.id="smoke-manual"; ClientProxy.send(begin); stage=9; break;
+            case 9:
+                if(snap==null || !snap.message.equals("Quest started")) return;
+                QuestNetwork.Action premature=new QuestNetwork.Action(); premature.action="check"; premature.id="smoke-manual"; ClientProxy.send(premature); stage=10; break;
+            case 10:
+                if(snap==null || !snap.message.startsWith("Error: Tasks incomplete")) return;
+                QuestNetwork.Action confirm=new QuestNetwork.Action(); confirm.action="task"; confirm.id="smoke-manual"; confirm.text="confirm"; ClientProxy.send(confirm); stage=11; break;
+            case 11:
+                if(snap==null || !snap.message.equals("Task confirmed")) return;
+                if(!Boolean.TRUE.equals(snap.taskStates.get("smoke-manual:confirm")) || !"available".equals(snap.states.get("smoke-dependent"))) throw new IllegalStateException("Task dependency did not unlock");
+                mc.displayGuiScreen(new QuestTaskScreen(null,snap.book.quests.get(snap.book.quests.size()-2))); stage=12; waiting=0; break;
+            case 12:
+                if(waiting<15) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-tasks.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 QuestNetwork.Action restore=new QuestNetwork.Action(); restore.action="save"; restore.revision=snap.revision; restore.book=original;
                 ClientProxy.send(restore); stage=7; break;
             case 7:

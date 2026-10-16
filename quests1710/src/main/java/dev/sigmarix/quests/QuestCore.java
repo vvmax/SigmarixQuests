@@ -13,9 +13,10 @@ public final class QuestCore {
         public String title = "Quest Book";
         public List<Chapter> chapters = new ArrayList<Chapter>();
         public List<Quest> quests = new ArrayList<Quest>();
+        public Map<String, LootSettings> lootSettings = new LinkedHashMap<String, LootSettings>();
         public Map<String, List<Reward>> lootTables = new LinkedHashMap<String, List<Reward>>();
         public Map<String, Quest> validate() {
-            if (format < 1 || format > 2 || title == null || title.length() > 256 || quests == null || chapters == null || lootTables == null || quests.size() > 4096)
+            if (format < 1 || format > 2 || title == null || title.length() > 256 || quests == null || chapters == null || lootTables == null || lootSettings == null || quests.size() > 4096)
                 throw new IllegalArgumentException("Invalid book header or size");
             Set<String> chapterIds = new HashSet<String>();
             for (Chapter c : chapters) {
@@ -26,7 +27,7 @@ public final class QuestCore {
             for (Quest q : quests) {
                 if (q == null || !validId(q.id) || byId.put(q.id, q) != null) throw new IllegalArgumentException("Invalid or duplicate quest id");
                 if (q.title == null || q.title.length() > 256 || q.description == null || q.description.length() > 16384 ||
-                    q.dependencies == null || q.tasks == null || q.rewards == null || q.tasks.isEmpty() || q.tasks.size() > 128 || q.rewards.size() > 128 ||
+                    q.dependencies == null || q.dependencyState==null || !Arrays.asList("completed","started").contains(q.dependencyState) || q.rewardMode==null || !Arrays.asList("team","individual").contains(q.rewardMode) || q.tasks == null || q.rewards == null || q.tasks.isEmpty() || q.tasks.size() > 128 || q.rewards.size() > 128 ||
                     q.chapter == null || (!q.chapter.isEmpty() && !chapterIds.contains(q.chapter)) ||
                     !Double.isFinite(q.x) || !Double.isFinite(q.y) || Math.abs(q.x) > 100000 || Math.abs(q.y) > 100000 || q.cooldownSeconds < 0 || q.minDependencies<0 || q.minDependencies>q.dependencies.size())
                     throw new IllegalArgumentException("Incomplete or invalid quest: " + q.id);
@@ -43,11 +44,21 @@ public final class QuestCore {
                         throw new IllegalArgumentException("Invalid task options");
                     if (t.nbt == null || t.target != null && t.target.length() > 1024) throw new IllegalArgumentException("Invalid target");
                 }
-                for (Reward r : q.rewards) validateReward(r, 0, false);
+                Set<String> rewardIds=new HashSet<String>();
+                for(int i=0;i<q.rewards.size();i++) {
+                    Reward r=q.rewards.get(i); if(r!=null && r.id==null) r.id="r"+i;
+                    if(r==null || !validId(r.id) || !rewardIds.add(r.id)) throw new IllegalArgumentException("Invalid reward ID: "+q.id);
+                    validateReward(r,0,false);
+                }
             }
             for (Map.Entry<String, List<Reward>> e : lootTables.entrySet()) {
-                if (!validId(e.getKey()) || e.getValue() == null || e.getValue().isEmpty() || e.getValue().size() > 128) throw new IllegalArgumentException("Invalid loot table");
+                if (!validId(e.getKey()) || e.getValue() == null || e.getValue().isEmpty() && (!lootSettings.containsKey(e.getKey()) || lootSettings.get(e.getKey())==null || lootSettings.get(e.getKey()).emptyWeight<=0) || e.getValue().size() > 128) throw new IllegalArgumentException("Invalid loot table");
                 for (Reward r : e.getValue()) validateReward(r, 0, true);
+            }
+            for(Map.Entry<String,LootSettings> e:lootSettings.entrySet()) {
+                LootSettings settings=e.getValue();
+                if(!lootTables.containsKey(e.getKey()) || settings==null || settings.rolls<1 || settings.rolls>64 || settings.emptyWeight<0 || settings.emptyWeight>1000000)
+                    throw new IllegalArgumentException("Invalid loot settings: "+e.getKey());
             }
             for (Quest q : quests) for (Reward r : q.rewards) validateLootReferences(r, new HashSet<String>());
             for (List<Reward> table : lootTables.values()) for (Reward r : table) validateLootReferences(r, new HashSet<String>());
@@ -56,8 +67,9 @@ public final class QuestCore {
             return byId;
         }
         private void validateReward(Reward r, int depth, boolean randomContext) {
-            if (depth > 16 || r == null || r.type == null || !REWARD_TYPES.contains(r.type) || r.count < 1 || r.count > 4096 || r.meta < 0 || r.weight < 1 || r.weight > 1000000 || r.options == null || r.options.size() > 128 || r.nbt == null || r.text==null || r.text.length()>8192 || r.randomBonus<0 || r.randomBonus>4096 || r.count+r.randomBonus>4096)
+            if (depth > 16 || r == null || r.type == null || !REWARD_TYPES.contains(r.type) || r.count < 1 || r.count > 4096 || r.meta < 0 || r.weight < 1 || r.weight > 1000000 || r.options == null || r.options.size() > 128 || r.mode==null || !Arrays.asList("inherit","team","individual").contains(r.mode) || r.nbt == null || r.text==null || r.text.length()>8192 || r.randomBonus<0 || r.randomBonus>4096 || r.count+r.randomBonus>4096)
                 throw new IllegalArgumentException("Invalid reward");
+            if((depth>0 || randomContext) && !r.mode.equals("inherit")) throw new IllegalArgumentException("Reward scope belongs on quest reward roots");
             if ("item".equals(r.type) && (r.item == null || r.item.isEmpty())) throw new IllegalArgumentException("Missing reward item");
             if (Arrays.asList("command", "achievement", "loot", "custom", "toast").contains(r.type) && (r.target == null || r.target.isEmpty() || r.target.length() > 8192))
                 throw new IllegalArgumentException("Missing reward target");
@@ -79,14 +91,16 @@ public final class QuestCore {
             Quest q = map.get(id);
             if (q == null) throw new IllegalArgumentException("Unknown dependency: " + id);
             if (depth > 256 || !visiting.add(id)) throw new IllegalArgumentException("Dependency cycle/depth: " + id);
-            for (String dep : q.dependencies) visit(dep, map, visiting, done, depth + 1);
+            for (String dep : q.dependencies) for(String owner:QuestDependencies.owners(this,map,dep,q.dependencyState.equals("started"))) visit(owner, map, visiting, done, depth + 1);
             visiting.remove(id); done.add(id);
         }
     }
     public static boolean validId(String id) { return id != null && id.matches("[a-zA-Z0-9_.-]{1,64}"); }
+    public static final class LootSettings { public int rolls=1, emptyWeight; }
     public static final class Chapter { public String id, title, description = ""; }
     public static final class Quest {
         public String id, title, description = "", chapter = "", icon = "minecraft:book";
+        public String dependencyState="completed", rewardMode="team";
         public double x, y;
         public boolean hidden, optional, repeatable, autoComplete, autoClaim, anyDependency, anyTask;
         public int minDependencies;
@@ -100,6 +114,7 @@ public final class QuestCore {
         public List<String> targets = new ArrayList<String>();
         public long count = 1;
         public int meta, dimension;
+        public boolean manual;
         public boolean consume, levels, ignoreDamage, craftingOnly, ignoreDimension, box, entity;
         public double width=1, height=1, depth=1;
         public int lookTicks;
@@ -107,6 +122,7 @@ public final class QuestCore {
         public double x, y, z, radius = 8;
     }
     public static final class Reward {
+        public String id, mode="inherit";
         public String type = "item", item, target, nbt = "", text = "";
         public boolean asPlayer, onlyOne;
         public int randomBonus;

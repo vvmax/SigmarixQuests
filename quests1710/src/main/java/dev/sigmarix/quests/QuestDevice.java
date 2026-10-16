@@ -52,7 +52,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
             if(player!=null && q!=null) {
                 if(mode==0 && input!=null) { s.acceptItems(player,quest,task,input,false); if(input.stackSize<=0) input=null; markDirty(); }
                 if(mode==0 && s.active(player,q)) s.finish(player,q);
-                if(mode==3 && s.progress().completed(owner).contains(quest) && !s.progress().claimed(owner,quest)) s.claim(player,q,java.util.Collections.<Integer>emptyList(),this::output);
+                if(mode==3 && s.progress().completed(owner).contains(quest) && !s.claimed(owner,q)) s.claim(player,q,java.util.Collections.<Integer>emptyList(),this::output);
                 if((mode==4 || mode==5) && next && definition("custom")!=null) s.creditTask(player,quest,task,1);
             }
         } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest device at %s,%s,%s: %s",xCoord,yCoord,zCoord,ex.toString()); }
@@ -71,7 +71,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet) { readFromNBT(packet.func_148857_g()); }
     @Override public int fill(ForgeDirection from,FluidStack resource,boolean commit) {
         if(worldObj==null || worldObj.isRemote || resource==null || resource.amount<=0) return 0;
-        QuestCore.Task t=definition("fluid"); if(t==null || !resource.getFluid().getName().equals(t.target)) return 0;
+        QuestCore.Task t=definition("fluid"); if(t==null || !QuestFluids.matches(t,resource)) return 0;
         int accepted=(int)Math.min(resource.amount,remaining("fluid"));
         if(commit && accepted>0) QuestsMod.service.creditTask(player(),quest,task,accepted);
         return accepted;

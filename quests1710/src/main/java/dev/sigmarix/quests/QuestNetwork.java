@@ -85,6 +85,9 @@ public final class QuestNetwork {
         public boolean canEdit;
         public String message="", team="";
         public java.util.Map<String,String> states=new java.util.LinkedHashMap<String,String>();
+        public java.util.Map<String,String> chapterStates=new java.util.LinkedHashMap<String,String>();
+        public java.util.Map<String,Boolean> rewardStates=new java.util.LinkedHashMap<String,Boolean>();
+        public java.util.Map<String,Boolean> taskStates=new java.util.LinkedHashMap<String,Boolean>();
         public java.util.Map<String,Long> counters=new java.util.LinkedHashMap<String,Long>();
     }
 }
