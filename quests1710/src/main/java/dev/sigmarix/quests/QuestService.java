@@ -63,6 +63,7 @@ public class QuestService {
                         if(t.target!=null && !t.target.isEmpty()) validateItemTarget(t.target);
                         for(String target:t.targets) validateItemTarget(target);
                         tag(t.nbt); if(t.filter!=null) t.filter.validate(true); break;
+                    case "botania_mana": if(!cpw.mods.fml.common.Loader.isModLoaded("Botania")) throw new IllegalArgumentException("Mana tasks require Botania"); break;
                     case "ic2_energy": if(!cpw.mods.fml.common.Loader.isModLoaded("IC2")) throw new IllegalArgumentException("IC2 EU tasks require IndustrialCraft 2"); break;
                     case "kill": if (!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: " + t.target); break;
                     case "fluid": tag(t.nbt); if (!FluidRegistry.isFluidRegistered(t.target)) throw new IllegalArgumentException("Unknown fluid: " + t.target); break;
@@ -170,7 +171,7 @@ public class QuestService {
     public void creditTask(EntityPlayerMP p, String quest, String task, long amount) {
         QuestCore.Quest q = quests.get(quest);
         if (q == null || !active(p, q)) return;
-        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("ic2_energy") || t.type.equals("fluid") || t.type.equals("custom")))
+        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("ic2_energy") || t.type.equals("botania_mana") || t.type.equals("fluid") || t.type.equals("custom")))
             progress().add(p.getUniqueID(), quest, task, amount, t.count);
     }
     public long counter(EntityPlayerMP p, QuestCore.Quest q, QuestCore.Task t) {
@@ -222,7 +223,7 @@ public class QuestService {
         if(t.sticky && counter(p,q,t)>=t.count) return true;
         switch (t.type) {
             case "check": return !t.manual || counter(p,q,t)>=t.count;
-            case "kill": case "interaction": case "energy": case "ic2_energy": return counter(p,q,t) >= t.count;
+            case "kill": case "interaction": case "energy": case "ic2_energy": case "botania_mana": return counter(p,q,t) >= t.count;
             case "custom": return counter(p,q,t) >= t.count || QuestHooks.TASKS.get(t.target).complete(p,t);
             case "dimension": return p.dimension == t.dimension;
             case "biome": return t.target.equalsIgnoreCase(p.worldObj.getBiomeGenForCoords(MathHelper.floor_double(p.posX), MathHelper.floor_double(p.posZ)).biomeName) ||

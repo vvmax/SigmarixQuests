@@ -225,7 +225,7 @@ def convert_task(raw, index, defaults=None, repeat=False):
         result.update(type='dimension', dimension=int(raw.get('dim', 0)))
     elif kind == 'xp':
         result.update(type='xp', count=int(raw.get('value', 1)), levels=not bool(raw.get('points', False)), consume=True)
-    elif kind in ('forge_energy', 'ic2_energy', 'fluid'):
+    elif kind in ('forge_energy', 'ic2_energy', 'botania_mana', 'fluid'):
         result.update(type='energy' if kind == 'forge_energy' else kind, count=int(raw.get('value', raw.get('amount', 1000))))
         if kind == 'fluid':
             result.update(target=raw.get('fluid', 'water'), consume=True)

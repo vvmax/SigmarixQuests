@@ -13,13 +13,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
 
 /** Owned task terminal; fluid/RF acceptance credits only the bound active task. */
-@Optional.InterfaceList({@Optional.Interface(iface="cofh.api.energy.IEnergyReceiver",modid="CoFHAPI|energy"), @Optional.Interface(iface="ic2.api.energy.tile.IEnergySink",modid="IC2")})
-public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.energy.IEnergyReceiver,ic2.api.energy.tile.IEnergySink,net.minecraft.inventory.ISidedInventory {
+@Optional.InterfaceList({@Optional.Interface(iface="cofh.api.energy.IEnergyReceiver",modid="CoFHAPI|energy"), @Optional.Interface(iface="ic2.api.energy.tile.IEnergySink",modid="IC2"), @Optional.Interface(iface="vazkii.botania.api.mana.IManaReceiver",modid="Botania")})
+public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.energy.IEnergyReceiver,ic2.api.energy.tile.IEnergySink,vazkii.botania.api.mana.IManaReceiver,net.minecraft.inventory.ISidedInventory {
     public UUID owner;
     public String quest="",task="";
     public boolean signal;
     private int ticks;
     private boolean euRegistered;
+    private int euTier=-1;
     private double euFraction;
     private String euBinding="";
     private net.minecraft.item.ItemStack input;
@@ -42,7 +43,10 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     }
     @Override public void updateEntity() {
         if(worldObj.isRemote) return;
-        if(!euRegistered && euTerminal() && cpw.mods.fml.common.Loader.isModLoaded("IC2")) registerEU();
+        if(cpw.mods.fml.common.Loader.isModLoaded("IC2")) {
+            if(euRegistered && euTier!=getSinkTier()) unregisterEU();
+            if(!euRegistered && taskTerminal()) registerEU();
+        }
         if(QuestsMod.service==null || ++ticks%20!=0) return;
         QuestService s=QuestsMod.service; EntityPlayerMP player=player();
         QuestCore.Quest q=s.quests.get(quest); boolean next=false;
@@ -76,28 +80,42 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public Packet getDescriptionPacket() { NBTTagCompound nbt=new NBTTagCompound(); writeToNBT(nbt); return new S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,nbt); }
     @Override public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet) { readFromNBT(packet.func_148857_g()); }
     @Optional.Method(modid="IC2") private void registerEU() {
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ic2.api.energy.event.EnergyTileLoadEvent(this)); euRegistered=true;
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ic2.api.energy.event.EnergyTileLoadEvent(this)); euRegistered=true; euTier=getSinkTier();
     }
     @Optional.Method(modid="IC2") private void unregisterEU() {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ic2.api.energy.event.EnergyTileUnloadEvent(this)); euRegistered=false;
     }
     @Override public void invalidate() { if(euRegistered && cpw.mods.fml.common.Loader.isModLoaded("IC2")) unregisterEU(); super.invalidate(); }
     @Override public void onChunkUnload() { if(euRegistered && cpw.mods.fml.common.Loader.isModLoaded("IC2")) unregisterEU(); super.onChunkUnload(); }
-    private boolean euTerminal() { return worldObj!=null && !worldObj.isRemote && getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==0; }
+    public void bindingChanged() {
+        if(euRegistered && cpw.mods.fml.common.Loader.isModLoaded("IC2")) unregisterEU();
+        markDirty();
+        if(worldObj!=null && !worldObj.isRemote) { worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); worldObj.notifyBlocksOfNeighborChange(xCoord,yCoord,zCoord,getBlockType()); }
+    }
+    private boolean taskTerminal() { return worldObj!=null && !worldObj.isRemote && getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==0; }
     private String euKey() { return owner+":"+quest+":"+task; }
-    @Override public boolean acceptsEnergyFrom(TileEntity emitter,ForgeDirection side) { return getDemandedEnergy()>0; }
+    @Override public boolean acceptsEnergyFrom(TileEntity emitter,ForgeDirection side) { return taskTerminal(); }
     @Override public double getDemandedEnergy() {
-        if(!euTerminal()) return 0;
+        if(!taskTerminal()) return 0;
         return Math.max(0,remaining("ic2_energy")-(euBinding.equals(euKey())?euFraction:0));
     }
     @Override public int getSinkTier() { QuestCore.Task t=definition("ic2_energy"); return t==null?4:t.energyTier; }
     @Override public double injectEnergy(ForgeDirection side,double amount,double voltage) {
-        if(!Double.isFinite(amount) || amount<=0 || amount>9007199254740992D || !Double.isFinite(voltage) || voltage<0 || !euTerminal()) return amount;
+        if(!Double.isFinite(amount) || amount<=0 || amount>9007199254740992D || !Double.isFinite(voltage) || voltage<0 || !taskTerminal()) return amount;
         double accepted=Math.min(amount,getDemandedEnergy()); if(accepted<=0) return amount;
         if(!euBinding.equals(euKey())) { euFraction=0; euBinding=euKey(); }
         double total=euFraction+accepted; long whole=(long)Math.floor(total);
         if(whole>0) QuestsMod.service.creditTask(player(),quest,task,whole);
         euFraction=total-whole; markDirty(); return amount-accepted;
+    }
+    // Mana is consumed by the task, rather than kept as extractable storage.
+    @Override public int getCurrentMana() { return 0; }
+    @Override public boolean isFull() { return !taskTerminal() || remaining("botania_mana")==0; }
+    @Override public boolean canRecieveManaFromBursts() { return !isFull(); }
+    @Override public void recieveMana(int mana) {
+        if(mana<=0 || isFull()) return;
+        long accepted=Math.min(mana,remaining("botania_mana"));
+        if(accepted>0) QuestsMod.service.creditTask(player(),quest,task,accepted);
     }
     @Override public int fill(ForgeDirection from,FluidStack resource,boolean commit) {
         if(worldObj==null || worldObj.isRemote || resource==null || resource.amount<=0) return 0;

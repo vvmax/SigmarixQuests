@@ -5,7 +5,7 @@ import java.util.*;
 /** Independent, versioned quest schema. No upstream source or assets. */
 public final class QuestCore {
     public static final Set<String> TASK_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-        "check", "item", "kill", "dimension", "biome", "location", "xp", "stat", "achievement", "observation", "interaction", "fluid", "energy", "ic2_energy", "custom")));
+        "check", "item", "kill", "dimension", "biome", "location", "xp", "stat", "achievement", "observation", "interaction", "fluid", "energy", "ic2_energy", "botania_mana", "custom")));
     public static final Set<String> REWARD_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "item", "xp", "xp_levels", "command", "choice", "random", "loot", "achievement", "toast", "custom")));
     public static final class Book {

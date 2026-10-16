@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.4.0", acceptableRemoteVersions="[0.4.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.5.0", acceptableRemoteVersions="[0.5.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -124,7 +124,7 @@ public final class QuestsMod {
                         if(action.text==null || !action.text.isEmpty() && !quest.tasks.stream().anyMatch(t->t.id.equals(action.text))) throw new IllegalArgumentException("Unknown task");
                         device.quest=quest.id; device.task=action.text;
                     }
-                    device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Device binding updated"; break;
+                    device.bindingChanged(); message="Device binding updated"; break;
                 case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
                 case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message="Task confirmed"; break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
@@ -205,7 +205,7 @@ public final class QuestsMod {
                         if(!task.isEmpty()) { boolean found=false; for(QuestCore.Task t:service.quests.get(args[1]).tasks) if(t.id.equals(task)) found=true; if(!found) throw new IllegalArgumentException("Unknown task ID"); }
                         device.quest=args[1]; device.task=task;
                     }
-                    device.markDirty(); p.worldObj.markBlockForUpdate(hit.blockX,hit.blockY,hit.blockZ); QuestService.say(sender,"Device binding updated"); return;
+                    device.bindingChanged(); QuestService.say(sender,"Device binding updated"); return;
                 }
                 if(args.length<2) throw new IllegalArgumentException(getCommandUsage(sender));
                 QuestCore.Quest q=service.quests.get(args[1]); if(q==null) throw new IllegalArgumentException("Unknown quest");

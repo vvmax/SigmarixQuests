@@ -21,7 +21,8 @@ public final class QuestPreview {
     private QuestCore.Book original;
     private long oldRevision;
     private boolean restarted;
-    private volatile boolean placeDevice,euRequested,euPassed;
+    private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed;
+    private boolean manaRunning;
     private boolean euRunning;
     private int deviceDelay,deviceX,deviceY,deviceZ;
     @Mod.EventHandler public void init(FMLInitializationEvent event) throws Exception {
@@ -46,6 +47,17 @@ public final class QuestPreview {
                 }
                 if((Boolean)bridge.getMethod("tick").invoke(null)) { euPassed=true; euRunning=false; }
             } catch(Exception ex) { throw new IllegalStateException("IC2 smoke failed",ex); }
+        }
+        if(manaRequested || manaRunning) {
+            try {
+                Class<?> bridge=Class.forName("dev.sigmarix.quests.preview.BotaniaQuestSmoke");
+                if(manaRequested) {
+                    manaRequested=false; manaRunning=true;
+                    net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+                    bridge.getMethod("start",net.minecraft.entity.player.EntityPlayerMP.class).invoke(null,owner);
+                }
+                if((Boolean)bridge.getMethod("tick").invoke(null)) { manaPassed=true; manaRunning=false; }
+            } catch(Exception ex) { throw new IllegalStateException("Botania smoke failed",ex); }
         }
         if(!placeDevice && deviceDelay==0) return;
         net.minecraft.server.MinecraftServer server=net.minecraft.server.MinecraftServer.getServer();
@@ -98,7 +110,7 @@ public final class QuestPreview {
                 if(!snap.canEdit) throw new IllegalStateException("Integrated host lost edit permissions");
                 if(restarted) {
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding".concat(euPassed?", real IC2 EnergyNet transfer":"").getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding".concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").getBytes(StandardCharsets.UTF_8));
                     mc.shutdown(); return;
                 }
                 original=QuestService.JSON.fromJson(QuestService.JSON.toJson(snap.book),QuestCore.Book.class);
@@ -115,6 +127,10 @@ public final class QuestPreview {
                     QuestCore.Quest eu=new QuestCore.Quest(); eu.id="smoke-eu"; eu.title="IC2 energy";
                     QuestCore.Task charge=new QuestCore.Task(); charge.id="charge"; charge.type="ic2_energy"; charge.count=16; eu.tasks.add(charge); edit.book.quests.add(eu);
                 }
+                if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) {
+                    QuestCore.Quest mana=new QuestCore.Quest(); mana.id="smoke-mana"; mana.title="Botania mana";
+                    QuestCore.Task charge=new QuestCore.Task(); charge.id="charge"; charge.type="botania_mana"; charge.count=16; mana.tasks.add(charge); edit.book.quests.add(mana);
+                }
                 QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.Style style=new QuestPresentation.Style(); style.selector=".important state:available"; style.color="FF9B59B6"; edit.book.styles.add(style);
                 QuestCore.Reward toast=new QuestCore.Reward(); toast.type="toast"; toast.target="Graphical reward"; toast.text="Native quest notification"; manual.rewards.add(toast);
@@ -130,10 +146,15 @@ public final class QuestPreview {
             case 6:
                 if(snap==null || !snap.message.startsWith("Error: Book changed")) return;
                 if(cpw.mods.fml.common.Loader.isModLoaded("IC2")) { euRequested=true; stage=20; break; }
+                if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { manaRequested=true; stage=21; break; }
                 QuestNetwork.Action begin=new QuestNetwork.Action(); begin.action="start"; begin.id="smoke-manual"; ClientProxy.send(begin); stage=9; break;
             case 20:
                 if(!euPassed) return;
+                if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { manaRequested=true; stage=21; break; }
                 QuestNetwork.Action afterEU=new QuestNetwork.Action(); afterEU.action="start"; afterEU.id="smoke-manual"; ClientProxy.send(afterEU); stage=9; break;
+            case 21:
+                if(!manaPassed) return;
+                QuestNetwork.Action afterMana=new QuestNetwork.Action(); afterMana.action="start"; afterMana.id="smoke-manual"; ClientProxy.send(afterMana); stage=9; break;
             case 9:
                 if(snap==null || !snap.message.equals("Quest started")) return;
                 QuestNetwork.Action premature=new QuestNetwork.Action(); premature.action="check"; premature.id="smoke-manual"; ClientProxy.send(premature); stage=10; break;

@@ -419,21 +419,21 @@ public class QuestSystemsTest {
         try { invalid.validate(false); fail(); } catch(IllegalArgumentException expected) {}
         invalid.children.add(invalid); try { invalid.validate(false); fail(); } catch(IllegalArgumentException expected) {}
     }
-    private QuestDevice euTile() {
+    private QuestDevice terminalTile() {
         QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=quest.tasks.get(0).id; tile.setWorldObj(player.worldObj); doReturn(player).when(tile).player();
         when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"eu_test")); QuestsMod.service=service; return tile;
     }
     @Test public void euPacketsCreditOnlyAcceptedWholeUnitsAndRetainFractions() {
-        task("ic2_energy",null,2,false); QuestDevice tile=euTile();
+        task("ic2_energy",null,2,false); QuestDevice tile=terminalTile();
         try {
             assertEquals(0,tile.injectEnergy(ForgeDirection.UP,.4,32),0); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
             assertEquals(1.6,tile.getDemandedEnergy(),1e-9); assertEquals(0,tile.injectEnergy(ForgeDirection.UP,.6,32),0);
             assertEquals(1,data.value(player.getUniqueID(),quest.id,"t0")); assertEquals(9,tile.injectEnergy(ForgeDirection.UP,10,32),0);
-            assertEquals(2,data.value(player.getUniqueID(),quest.id,"t0")); assertEquals(0,tile.getDemandedEnergy(),0); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
+            assertEquals(2,data.value(player.getUniqueID(),quest.id,"t0")); assertEquals(0,tile.getDemandedEnergy(),0); assertTrue(tile.acceptsEnergyFrom(null,ForgeDirection.UP)); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
         } finally { QuestsMod.service=null; }
     }
     @Test public void euFractionsSurviveNbtAndAreNotAppliedToAnotherTask() {
-        task("ic2_energy",null,4,false); QuestDevice tile=euTile();
+        task("ic2_energy",null,4,false); QuestDevice tile=terminalTile();
         try {
             tile.injectEnergy(ForgeDirection.UP,.5,32); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(tile.getClass(),"sigmarixquests:test-eu"); NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved);
             QuestDevice restored=spy(new QuestDevice()); restored.readFromNBT(saved); restored.setWorldObj(player.worldObj); doReturn(player).when(restored).player();
@@ -442,11 +442,27 @@ public class QuestSystemsTest {
         } finally { QuestsMod.service=null; }
     }
     @Test public void euIsRejectedForOfflineOwnersWrongTasksAndImpossibleAmounts() {
-        task("energy",null,4,false); QuestDevice tile=euTile();
+        task("energy",null,4,false); QuestDevice tile=terminalTile();
         try {
-            assertEquals(0,tile.getDemandedEnergy(),0); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
+            assertEquals(0,tile.getDemandedEnergy(),0); assertTrue(tile.acceptsEnergyFrom(null,ForgeDirection.UP)); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
             quest.tasks.get(0).type="ic2_energy"; doReturn(null).when(tile).player(); assertEquals(0,tile.getDemandedEnergy(),0);
             doReturn(player).when(tile).player(); tile.injectEnergy(ForgeDirection.UP,Double.MAX_VALUE,32); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void manaReceiverCapsCreditAndNeverExposesSpentManaAsStorage() {
+        task("botania_mana",null,10,false); QuestDevice tile=terminalTile();
+        try {
+            assertTrue(tile.canRecieveManaFromBursts()); tile.recieveMana(4); assertEquals(4,data.value(player.getUniqueID(),quest.id,"t0"));
+            assertEquals(0,tile.getCurrentMana()); tile.recieveMana(-4); assertEquals(4,data.value(player.getUniqueID(),quest.id,"t0"));
+            tile.recieveMana(100); assertEquals(10,data.value(player.getUniqueID(),quest.id,"t0")); assertTrue(tile.isFull()); assertFalse(tile.canRecieveManaFromBursts());
+            tile.recieveMana(100); assertEquals(10,data.value(player.getUniqueID(),quest.id,"t0")); assertTrue(service.check(player,quest,true));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void manaReceiverRejectsWrongTasksAndOfflineOwners() {
+        task("energy",null,10,false); QuestDevice tile=terminalTile();
+        try {
+            assertTrue(tile.isFull()); tile.recieveMana(10); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
+            quest.tasks.get(0).type="botania_mana"; doReturn(null).when(tile).player(); assertTrue(tile.isFull()); tile.recieveMana(10); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
         } finally { QuestsMod.service=null; }
     }
 }

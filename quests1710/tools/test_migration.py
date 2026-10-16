@@ -96,5 +96,10 @@ class MigrationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 SNBT(value).parse()
 
+    def test_energy_integration_types_preserve_units_and_value(self):
+        for kind in ('ic2_energy', 'botania_mana'):
+            task = convert_task({'type': kind, 'value': 12345}, 0)
+            self.assertEqual(task['type'], kind); self.assertEqual(task['count'], 12345)
+
 if __name__ == '__main__':
     unittest.main()
