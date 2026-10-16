@@ -16,8 +16,8 @@ public final class QuestTaskScreen extends GuiScreen {
             GuiButton button=new GuiButton(100+i,12,42+(i-scroll)*26,width-24,22,fontRendererObj.trimStringToWidth(task.id+" - "+task.type+(done?" [done]":task.type.equals("check")?" - confirm":""),width-40));
             button.enabled=!done && task.type.equals("check") && "available".equals(ClientProxy.snapshot.states.get(quest.id)); buttonList.add(button);
         }
-        buttonList.add(new GuiButton(0,12,height-32,90,20,"Back"));
-        buttonList.add(new GuiButton(1,width-122,height-32,110,20,"Start quest"));
+        buttonList.add(new GuiButton(0,12,height-32,90,20,QuestText.tr("Back")));
+        buttonList.add(new GuiButton(1,width-122,height-32,110,20,QuestText.tr("Start quest")));
     }
     @Override protected void actionPerformed(GuiButton button) {
         if(button.id==0) { mc.displayGuiScreen(parent); return; }

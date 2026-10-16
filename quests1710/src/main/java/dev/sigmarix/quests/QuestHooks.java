@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 public final class QuestHooks {
     public interface Task { boolean complete(EntityPlayerMP player, QuestCore.Task definition); }
     public interface Reward { void grant(EntityPlayerMP player, QuestCore.Reward definition); }
+    public static final Map<String, java.util.function.Predicate<net.minecraft.item.ItemStack>> ITEM_FILTERS=new HashMap<String, java.util.function.Predicate<net.minecraft.item.ItemStack>>();
     public static final Map<String, Task> TASKS = new HashMap<String, Task>();
     public static final Map<String, Reward> REWARDS = new HashMap<String, Reward>();
     private QuestHooks() {}

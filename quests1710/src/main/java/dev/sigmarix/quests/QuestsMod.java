@@ -20,8 +20,9 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.3.0", acceptableRemoteVersions="[0.3.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.4.0", acceptableRemoteVersions="[0.4.0]")
 public final class QuestsMod {
+    @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
     public static CommonProxy proxy;
     public static QuestService service;
@@ -39,6 +40,7 @@ public final class QuestsMod {
         Files.createDirectories(config.toPath().getParent());
         if(!config.exists()) try(InputStream in=getClass().getResourceAsStream("/example-quests.json")) { Files.copy(in,config.toPath()); }
         QuestNetwork.init();
+        cpw.mods.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(instance,new QuestGuiHandler());
         GameRegistry.registerItem(new QuestBookItem(),"quest_book");
         MinecraftForge.EVENT_BUS.register(this);
         FMLCommonHandler.instance().bus().register(this);
@@ -92,9 +94,12 @@ public final class QuestsMod {
         if(ticks%20==0) for(Object entry:MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
             EntityPlayerMP p=(EntityPlayerMP)entry;
             try { service.detect(p); } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest detection failed: %s",ex.toString()); }
-            for(QuestCore.Quest q:service.quests.values()) if(q.autoComplete && service.active(p,q)) {
+            for(QuestCore.Quest q:service.quests.values()) {
+                if(service.progress().completed(p.getUniqueID()).contains(q.id)) { try { service.autoClaim(p,q); } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest auto-reward failed: %s",ex.toString()); } }
+                if(q.autoComplete && service.active(p,q)) {
                 try { if(service.finish(p,q)) { QuestService.say(p,"Quest complete: "+q.title); } }
                 catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest auto-completion failed for %s: %s",q.id,ex.toString()); }
+            }
             }
         }
     }
@@ -109,6 +114,17 @@ public final class QuestsMod {
             List<Integer> choices=new ArrayList<Integer>(); for(int c:action.choices) choices.add(c);
             switch(action.action) {
                 case "view": break;
+                case "bind_device": case "unbind_device":
+                    if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
+                    QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
+                    if(device.xCoord!=action.x || device.yCoord!=action.y || device.zCoord!=action.z || !device.isUseableByPlayer(player)) throw new IllegalArgumentException("Device unavailable");
+                    if(action.action.equals("unbind_device")) { device.quest=""; device.task=""; }
+                    else {
+                        if(quest==null) throw new IllegalArgumentException("Unknown quest");
+                        if(action.text==null || !action.text.isEmpty() && !quest.tasks.stream().anyMatch(t->t.id.equals(action.text))) throw new IllegalArgumentException("Unknown task");
+                        device.quest=quest.id; device.task=action.text;
+                    }
+                    device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Device binding updated"; break;
                 case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
                 case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message="Task confirmed"; break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
@@ -131,7 +147,7 @@ public final class QuestsMod {
             while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !service.unlocked(id,q)) it.remove(); }
             // Command and custom implementation details are server-only for non-editors.
             snapshot.book.lootTables.clear(); snapshot.book.lootSettings.clear();
-            for(QuestCore.Quest q:snapshot.book.quests) redact(q.rewards);
+            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.description="Complete the quest to reveal its text"; q.pages.clear(); q.uri=""; } }
         }
         for(QuestCore.Quest q:snapshot.book.quests) {
             snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");

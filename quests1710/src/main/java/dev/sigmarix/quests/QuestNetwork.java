@@ -16,6 +16,7 @@ public final class QuestNetwork {
         channel=NetworkRegistry.INSTANCE.newSimpleChannel("sigmarixquests");
         channel.registerMessage(RequestHandler.class, Request.class, 0, Side.SERVER);
         channel.registerMessage(ResponseHandler.class, Response.class, 1, Side.CLIENT);
+        channel.registerMessage(NoticeHandler.class, Notice.class, 2, Side.CLIENT);
     }
     public static byte[] encode(String text) throws IOException {
         byte[] raw=text.getBytes(StandardCharsets.UTF_8);
@@ -73,10 +74,23 @@ public final class QuestNetwork {
     public static final class ResponseHandler implements IMessageHandler<Response,IMessage> {
         @Override public IMessage onMessage(Response message,MessageContext context) { QuestsMod.proxy.receive(message.json); return null; }
     }
+    public static final class Notice extends Payload { public Notice() {} public Notice(String json) { super(json); } }
+    public static final class NoticeHandler implements IMessageHandler<Notice,IMessage> {
+        @Override public IMessage onMessage(Notice message,MessageContext context) { QuestsMod.proxy.notice(message.json); return null; }
+    }
+    public static final class Toast {
+        public String title="",text="",icon="minecraft:book";
+    }
+    public static void toast(EntityPlayerMP player,String title,String text,String icon) {
+        if(channel==null) return;
+        Toast toast=new Toast(); toast.title=title; toast.text=text; toast.icon=icon;
+        channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
+    }
     public static final class Action {
         public String action="view", id="", text="";
         public long revision;
         public int[] choices=new int[0];
+        public int x,y,z;
         public QuestCore.Book book;
     }
     public static final class Snapshot {

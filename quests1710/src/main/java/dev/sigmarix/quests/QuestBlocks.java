@@ -44,9 +44,8 @@ public final class QuestBlocks {
         }
         @Override public boolean onBlockActivated(World world,int x,int y,int z,EntityPlayer p,int side,float hitX,float hitY,float hitZ) {
             if(p.isSneaking()) return false;
-            if(mode==6 && !world.isRemote) return LootCrateItem.open(p,p.getHeldItem());
-            if(world.isRemote) QuestsMod.proxy.open();
-            else QuestService.say(p,"Device: /quests bind <quest> [task], /quests unbind. Look at this block; owner/operator only.");
+            if(mode==6 && p.getHeldItem()!=null && p.getHeldItem().getItem() instanceof LootCrateItem) { if(!world.isRemote) LootCrateItem.open(p,p.getHeldItem()); return true; }
+            if(!world.isRemote) { QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); if(tile!=null && tile.isUseableByPlayer(p)) { world.markBlockForUpdate(x,y,z); p.openGui(QuestsMod.instance,0,world,x,y,z); } else QuestService.say(p,"Only device owner or operator can open this device"); }
             return true;
         }
         @Override public AxisAlignedBB getCollisionBoundingBoxFromPool(World world,int x,int y,int z) {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Strict offline importer for a subset of FTB Quests 1.12 SNBT books.
+"""Strict offline importer for FTB Quests 1.12 SNBT/binary NBT books.
 
 Never edits the source book. Unsupported semantic fields fail the conversion
 instead of silently weakening a quest. This is not an importer for modern FTB.
@@ -10,18 +10,7 @@ import re
 from pathlib import Path
 
 
-class Number(int):
-    def __new__(cls, value, suffix=""):
-        result = super().__new__(cls, value)
-        result.suffix = suffix
-        return result
-
-
-class Decimal(float):
-    def __new__(cls, value, suffix=""):
-        result = super().__new__(cls, value)
-        result.suffix = suffix
-        return result
+from nbt_codec import IntTag as Number, FloatTag as Decimal, TypedArray, read_nbt
 
 
 class SNBT:
@@ -107,9 +96,11 @@ class SNBT:
         if char == '[':
             self.at += 1
             self.skip()
+            kind = None
             if re.match('[BILbil];', self.text[self.at:self.at + 2]):
+                kind = self.text[self.at].upper()
                 self.at += 2
-            result = []
+            result = TypedArray(kind=kind) if kind else []
             while True:
                 self.skip()
                 if self.at >= len(self.text):
@@ -147,6 +138,13 @@ def snbt(value):
         return str(int(value) if isinstance(value, Number) else float(value)) + value.suffix
     if isinstance(value, dict):
         return '{' + ','.join(json.dumps(k) + ':' + snbt(v) for k, v in value.items()) + '}'
+    if isinstance(value, TypedArray):
+        if value.kind == 'L':
+            raise ValueError('Long-array NBT does not exist in Minecraft 1.7.10')
+        limit = 128 if value.kind == 'B' else 2**31
+        if any(not isinstance(v, int) or not -limit <= v < limit for v in value):
+            raise ValueError('Typed NBT array value outside range')
+        return '[' + value.kind + ';' + ','.join(str(int(v)) for v in value) + ']'
     if isinstance(value, list):
         return '[' + ','.join(snbt(v) for v in value) + ']'
     return json.dumps(value, ensure_ascii=False)
@@ -179,116 +177,270 @@ def refuse_fields(raw, names):
             raise ValueError('Unsupported semantic field: ' + name)
 
 
-def convert_task(raw, index):
+def tristate(value, default=False):
+    if value is None or value == 'default':
+        return default
+    if value in (True, 1, 'true'):
+        return True
+    if value in (False, 0, 'false'):
+        return False
+    raise ValueError('Unsupported tristate: ' + str(value))
+
+VANILLA_ENTITIES = {'minecraft:zombie': 'Zombie', 'minecraft:skeleton': 'Skeleton', 'minecraft:creeper': 'Creeper', 'minecraft:spider': 'Spider', 'minecraft:cave_spider': 'CaveSpider', 'minecraft:blaze': 'Blaze', 'minecraft:enderman': 'Enderman', 'minecraft:wither': 'WitherBoss', 'minecraft:ender_dragon': 'EnderDragon', 'minecraft:pig': 'Pig', 'minecraft:cow': 'Cow', 'minecraft:sheep': 'Sheep', 'minecraft:chicken': 'Chicken', 'minecraft:ghast': 'Ghast', 'minecraft:slime': 'Slime', 'minecraft:magma_cube': 'LavaSlime', 'minecraft:villager': 'Villager', 'minecraft:zombie_pigman': 'PigZombie', 'minecraft:wolf': 'Wolf', 'minecraft:ocelot': 'Ozelot', 'minecraft:horse': 'EntityHorse', 'minecraft:squid': 'Squid', 'minecraft:witch': 'Witch', 'minecraft:bat': 'Bat', 'minecraft:silverfish': 'Silverfish', 'minecraft:iron_golem': 'VillagerGolem', 'minecraft:snowman': 'SnowMan'}
+VANILLA_BIOMES = {'minecraft:ocean': 0, 'minecraft:plains': 1, 'minecraft:desert': 2, 'minecraft:extreme_hills': 3, 'minecraft:forest': 4, 'minecraft:taiga': 5, 'minecraft:swampland': 6, 'minecraft:river': 7, 'minecraft:hell': 8, 'minecraft:sky': 9, 'minecraft:frozen_ocean': 10, 'minecraft:frozen_river': 11, 'minecraft:ice_flats': 12, 'minecraft:ice_mountains': 13, 'minecraft:mushroom_island': 14, 'minecraft:mushroom_island_shore': 15, 'minecraft:beaches': 16, 'minecraft:jungle': 21, 'minecraft:jungle_hills': 22, 'minecraft:deep_ocean': 24, 'minecraft:birch_forest': 27, 'minecraft:roofed_forest': 29, 'minecraft:cold_taiga': 30, 'minecraft:mega_taiga': 32, 'minecraft:savanna': 35, 'minecraft:mesa': 37}
+
+def entity_id(value):
+    if value not in VANILLA_ENTITIES:
+        raise ValueError('Entity registry mapping needed: ' + str(value))
+    return VANILLA_ENTITIES[value]
+
+def convert_task(raw, index, defaults=None, repeat=False):
+    defaults = defaults or {}
     kind = raw.get('type', '').removeprefix('ftbquests:')
     result = {'id': code(raw['uid']) if raw.get('uid') else 't' + str(index)}
+    refuse_fields(raw, ('disable_toast',))
     if kind == 'checkmark':
-        result['type'] = 'check'
+        result.update(type='check', manual=True)
     elif kind == 'item':
-        refuse_fields(raw, ('ignore_damage', 'only_from_crafting'))
-        alternatives = raw.get('items', [])
-        if len(alternatives) > 1:
-            raise ValueError('Alternative item filters need manual conversion')
-        value = item(alternatives[0] if alternatives else raw.get('item'))
-        result.update(type='item', target=value.pop('item'), count=int(raw.get('count', 1)), consume=bool(raw.get('consume_items', 0)))
+        alternatives = raw.get('items') or [raw.get('item')]
+        values = [item(v) for v in alternatives]
+        value = values[0]
+        # Metadata/NBT filters are shared by our alternatives. Refuse alternatives with distinct filters.
+        distinct_filters = any((v.get('meta', 0), v.get('nbt', '')) != (value.get('meta', 0), value.get('nbt', '')) for v in values)
+        result.update(type='item', target=value['item'], targets=[v['item'] for v in values[1:]], count=max(1, int(raw.get('count', 1))),
+                      consume=repeat or tristate(raw.get('consume_items'), bool(defaults.get('default_consume_items', False))),
+                      craftingOnly=tristate(raw.get('only_from_crafting'), False), ignoreDamage=bool(raw.get('ignore_damage', False)))
         for key in ('meta', 'nbt'):
             if key in value:
                 result[key] = value[key]
-        if raw.get('ignore_nbt'):
-            raise ValueError('NBT matching mode needs manual conversion')
+        mode = raw.get('nbt_mode', raw.get('ignore_nbt', 0))
+        modes = {0: 'exact', 1: 'ignore', 2: 'subset', 'match': 'exact', 'ignore': 'ignore', 'contain': 'subset', 'exact': 'exact', 'subset': 'subset'}
+        if mode not in modes:
+            raise ValueError('Unknown NBT mode: ' + str(mode))
+        result['nbtMode'] = modes[mode]
+        if distinct_filters:
+            result.pop('target', None); result['targets'] = []; result.pop('meta', None); result.pop('nbt', None)
+            result['filter'] = {'type': 'any', 'children': [{'type': 'item', 'value': v['item'], 'meta': -1 if result['ignoreDamage'] else v.get('meta', 0), 'nbt': v.get('nbt', ''), 'nbtMode': modes[mode]} for v in values]}
     elif kind == 'dimension':
         result.update(type='dimension', dimension=int(raw.get('dim', 0)))
     elif kind == 'xp':
         result.update(type='xp', count=int(raw.get('value', 1)), levels=not bool(raw.get('points', False)), consume=True)
-    elif kind in ('forge_energy', 'fluid'):
-        result.update(type='energy' if kind == 'forge_energy' else 'fluid', count=int(raw.get('value', raw.get('amount', 1000))))
+    elif kind in ('forge_energy', 'ic2_energy', 'fluid'):
+        result.update(type='energy' if kind == 'forge_energy' else kind, count=int(raw.get('value', raw.get('amount', 1000))))
         if kind == 'fluid':
+            result.update(target=raw.get('fluid', 'water'), consume=True)
             if raw.get('nbt'):
-                raise ValueError('Fluid NBT needs manual conversion')
-            result['target'] = raw.get('fluid', 'water')
-            result['consume'] = True
+                result['nbt'] = snbt(raw['nbt']) if isinstance(raw['nbt'], dict) else raw['nbt']
     elif kind == 'stat':
         result.update(type='stat', target=raw.get('stat', ''), count=int(raw.get('value', 1)))
     elif kind == 'kill':
-        entity = raw.get('entity', '')
-        vanilla = {'minecraft:zombie': 'Zombie', 'minecraft:skeleton': 'Skeleton', 'minecraft:creeper': 'Creeper', 'minecraft:spider': 'Spider', 'minecraft:blaze': 'Blaze', 'minecraft:enderman': 'Enderman', 'minecraft:wither': 'WitherBoss', 'minecraft:ender_dragon': 'EnderDragon', 'minecraft:pig': 'Pig', 'minecraft:cow': 'Cow', 'minecraft:sheep': 'Sheep', 'minecraft:chicken': 'Chicken'}
-        if entity not in vanilla:
-            raise ValueError('Entity registry mapping needed: ' + entity)
-        result.update(type='kill', target=vanilla[entity], count=int(raw.get('value', 1)))
+        result.update(type='kill', target=entity_id(raw.get('entity', '')), count=int(raw.get('value', 1)))
+    elif kind == 'biome':
+        biome = raw.get('biome')
+        if biome not in VANILLA_BIOMES:
+            raise ValueError('Biome registry mapping needed: ' + str(biome))
+        result.update(type='biome', target=str(VANILLA_BIOMES[biome]))
+    elif kind == 'location':
+        area = raw.get('location', [])
+        if len(area) != 7 or any(int(v) < 0 for v in area[4:]):
+            raise ValueError('Invalid location box')
+        # Both versions use lower-corner coordinates and exclusive upper bounds.
+        dim, x, y, z, w, h, d = map(int, area)
+        result.update(type='location', box=True, dimension=dim, x=x, y=y, z=z,
+                      width=w, height=h, depth=d, ignoreDimension=bool(raw.get('ignore_dim', False)))
+    elif kind in ('observation', 'interaction'):
+        refuse_fields(raw, ('properties', 'nbt'))
+        match_type = raw.get('match_type', 'block_id')
+        if match_type not in ('block_id', 'entity_id'):
+            raise ValueError('Ray matcher requires manual conversion: ' + str(match_type))
+        target = raw.get('match', '')
+        result.update(type=kind, target=entity_id(target) if match_type == 'entity_id' else target,
+                      entity=match_type == 'entity_id', ignoreDamage=True)
+        if kind == 'observation':
+            result['lookTicks'] = int(raw.get('timer', 0))
+    elif kind == 'advancement':
+        raise ValueError('Advancement IDs require manual conversion to 1.7 achievements')
+    elif kind == 'custom':
+        raise ValueError('Custom tasks require a registered 1.7 handler and manual conversion')
     else:
         raise ValueError('Task requires manual conversion: ' + kind)
     return result
 
-
-def convert_reward(raw):
+def convert_reward(raw, defaults=None, repeat=False, nested=False):
+    defaults = defaults or {}
     kind = raw.get('type', '').removeprefix('ftbquests:')
-    refuse_fields(raw, ('only_one', 'random_bonus', 'player_command', 'team_reward', 'auto'))
+    result = {}
+    if not nested:
+        if raw.get('uid'):
+            result['id'] = code(raw['uid'])
+        result['mode'] = 'team' if repeat or tristate(raw.get('team_reward'), bool(defaults.get('default_reward_team', False))) else 'individual'
+        auto = raw.get('auto', 'invisible' if raw.get('invisible') else 'enabled' if raw.get('autoclaim') else 'disabled')
+        if auto not in ('enabled', 'disabled', 'invisible', 'default'):
+            raise ValueError('Unknown auto reward mode: ' + str(auto))
+        result['auto'] = 'inherit' if auto == 'default' else auto
+    elif raw.get('team_reward') not in (None, 'default') or raw.get('auto') not in (None, 'default', 'disabled'):
+        raise ValueError('Nested reward scope requires manual conversion')
     if kind == 'item':
-        result = item(raw.get('item'))
-        result.update(type='item', count=int(raw.get('count', result['count'])))
-        return result
-    if kind in ('xp', 'xp_levels'):
-        return {'type': kind, 'count': int(raw.get('xp', 1))}
-    if kind == 'command':
+        value = item(raw.get('item')); result.update(value)
+        result.update(type='item', count=int(raw.get('count', value['count'])), onlyOne=bool(raw.get('only_one', False)), randomBonus=int(raw.get('random_bonus', 0)))
+    elif kind in ('xp', 'xp_levels'):
+        result.update(type=kind, count=int(raw.get('xp_levels' if kind == 'xp_levels' else 'xp', raw.get('levels', 1))))
+    elif kind == 'command':
         command = raw.get('command', '')
         if '@' in command:
             raise ValueError('1.12 command selectors need manual review')
-        return {'type': 'command', 'target': command}
-    raise ValueError('Reward requires manual conversion: ' + kind)
+        result.update(type='command', target=command, asPlayer=bool(raw.get('player_command', False)))
+    elif kind in ('random', 'choice', 'loot'):
+        table = raw.get('table')
+        if table is not None and code(table) != 'ftb_ffffffff':
+            result.update(type='loot' if kind == 'loot' else kind, target=code(table))
+            if kind in ('choice', 'random'):
+                result['_optionsTable'] = code(table)
+        else:
+            result.update(type='choice' if kind == 'choice' else 'random', options=[])
+            for option in raw.get('rewards', []):
+                value = convert_reward(option, defaults, repeat, True); value['weight'] = int(option.get('weight', 1)); result['options'].append(value)
+            if not result['options']:
+                raise ValueError('Missing reward table/options')
+    elif kind == 'toast':
+        result.update(type='toast', target=raw.get('title') or 'Quest reward', text=raw.get('description', ''))
+        if raw.get('icon'):
+            result['item'] = item(raw['icon'])['item']
+    else:
+        raise ValueError('Reward requires manual conversion: ' + kind)
+    return result
+
+def read_document(path):
+    value = read_nbt(path) if path.suffix in ('.nbt', '.dat') else SNBT(path.read_text(encoding='utf-8')).parse()
+    if not isinstance(value, dict):
+        raise ValueError('Expected compound document: ' + str(path))
+    return value
+
+def document(folder, name, optional=False):
+    files = [p for p in (folder / (name + '.snbt'), folder / (name + '.nbt')) if p.exists()]
+    if not files and optional:
+        return {}
+    if len(files) != 1:
+        raise ValueError('Expected exactly one SNBT/NBT document: ' + str(folder / name))
+    return read_document(files[0])
+
+def documents(folder, exclude=()):
+    files = sorted(p for p in folder.iterdir() if p.is_file() and p.suffix in ('.snbt', '.nbt') and p.stem not in set(exclude) | {'index'}) if folder.exists() else []
+    if len({p.stem for p in files}) != len(files):
+        raise ValueError('Ambiguous SNBT/NBT duplicates in ' + str(folder))
+    index = document(folder, 'index', True).get('index', [])
+    if index:
+        order = {code(v): i for i, v in enumerate(index)}
+        if len(order) != len(index):
+            raise ValueError('Duplicate index IDs')
+        files.sort(key=lambda p: order.get(code(p.stem), len(order)))
+    return files
+
+def resolve_choices(reward, tables, path=(), depth=0):
+    if depth > 16:
+        raise ValueError('Reward nesting limit')
+    if '_optionsTable' in reward:
+        table = reward.pop('_optionsTable')
+        if table not in tables or table in path:
+            raise ValueError('Unknown or cyclic choice/random table: ' + table)
+        reward.pop('target', None)
+        reward['options'] = json.loads(json.dumps(tables[table]))
+        path = path + (table,)
+    for option in reward.get('options', []):
+        resolve_choices(option, tables, path, depth + 1)
 
 
 def convert(folder):
-    if list(folder.rglob('*.nbt')):
-        raise ValueError('Binary .nbt books must be exported to SNBT by FTB Quests first')
-    book = {'format': 2, 'title': 'Imported FTB 1.12 book', 'chapters': [], 'quests': []}
-    if (folder / 'reward_tables').exists() and list((folder / 'reward_tables').glob('*.snbt')):
-        raise ValueError('Reward tables need manual conversion; refusing to discard them')
-    errors = []
-    for chapter_dir in sorted((folder / 'chapters').iterdir()):
-        if not chapter_dir.is_dir():
-            continue
-        chapter_path = chapter_dir / 'chapter.snbt'
+    defaults = document(folder, 'file', True)
+    refuse_fields(defaults, ('emergency_items', 'loot_crate_no_drop', 'drop_loot_crates'))
+    book = {'format': 2, 'title': defaults.get('title') or 'Imported FTB 1.12 book', 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
+    errors, references, raw_dependencies = [], {}, {}
+    for path in documents(folder / 'reward_tables'):
         try:
-            chapter = SNBT(chapter_path.read_text(encoding='utf-8')).parse()
-            chapter_id = code(chapter_dir.name)
-            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title', chapter_id), 'description': ''})
-        except (ValueError, OSError) as error:
-            errors.append(str(chapter_path) + ': ' + str(error))
-            continue
-        for path in sorted(chapter_dir.glob('*.snbt')):
-            if path == chapter_path:
-                continue
+            raw = read_document(path); name = code(path.stem)
+            refuse_fields(raw, ('loot_crate',))
+            entries = []
+            for reward in raw.get('rewards', []):
+                entry = convert_reward(reward, defaults, nested=True); entry['weight'] = int(reward.get('weight', 1)); entries.append(entry)
+            book['lootTables'][name] = entries
+            book['lootSettings'][name] = {'rolls': max(1, int(raw.get('loot_size', 1))), 'emptyWeight': int(raw.get('empty_weight', 0))}
+        except (ValueError, OSError, TypeError, KeyError) as error:
+            errors.append(str(path) + ': ' + str(error))
+    chapter_dirs = sorted(p for p in (folder / 'chapters').iterdir() if p.is_dir())
+    chapter_index = document(folder / 'chapters', 'index', True).get('index', [])
+    if chapter_index:
+        order = {code(v): i for i, v in enumerate(chapter_index)}
+        chapter_dirs.sort(key=lambda p: order.get(code(p.name), len(order)))
+    def register(source, target):
+        if source in references:
+            raise ValueError('Duplicate global object ID: ' + source)
+        references[source] = target
+    for chapter_dir in chapter_dirs:
+        try:
+            chapter = document(chapter_dir, 'chapter'); chapter_id = code(chapter_dir.name)
+            refuse_fields(chapter, ('images',))
+            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': '\n'.join(chapter.get('description', []))})
+            register(chapter_id, 'chapter:' + chapter_id)
+        except (ValueError, OSError, TypeError) as error:
+            errors.append(str(chapter_dir) + ': ' + str(error)); continue
+        for path in documents(chapter_dir, ('chapter',)):
             try:
-                raw = SNBT(path.read_text(encoding='utf-8')).parse()
-                refuse_fields(raw, ('custom_click', 'guide_page'))
+                raw = read_document(path)
+                refuse_fields(raw, ('custom_click', 'guide_page', 'min_width'))
                 requirement = raw.get('dependency_requirement', 'all_completed')
-                if requirement not in ('all_completed', 'one_completed'):
-                    raise ValueError('Started-dependency semantics need manual conversion')
-                quest = {'id': code(path.stem), 'chapter': chapter_id, 'title': raw.get('title', path.stem),
+                if requirement not in ('all_completed', 'one_completed', 'all_started', 'one_started'):
+                    raise ValueError('Unknown dependency requirement: ' + str(requirement))
+                repeat = bool(raw.get('can_repeat', False))
+                title = raw.get('title') or path.stem
+                quest = {'id': code(path.stem), 'chapter': chapter_id, 'title': title,
                          'description': '\n'.join([raw.get('description', '')] + raw.get('text', [])),
-                         'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)),
+                         'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)), 'tags': raw.get('tags', []),
+                         'shape': raw.get('shape') or 'square', 'size': float(raw.get('size', 1)),
+                         'hideDependencyLines': bool(raw.get('hide_dependency_lines', False)), 'hideTextUntilComplete': bool(raw.get('hide_text_until_complete', False)), 'disableToast': bool(raw.get('disable_toast', False)),
+                         'rewardMode': 'team' if repeat or defaults.get('default_reward_team') else 'individual',
                          'hidden': bool(raw.get('hide', False)), 'optional': bool(raw.get('optional', False)),
-                         'repeatable': bool(raw.get('can_repeat', False)), 'anyTask': bool(raw.get('or_tasks', False)),
-                         'anyDependency': requirement == 'one_completed', 'minDependencies': int(raw.get('min_required_dependencies', 0)),
-                         'dependencies': [code(v) for v in raw.get('dependencies', [])],
-                         'tasks': [convert_task(t, i) for i, t in enumerate(raw.get('tasks', []))],
-                         'rewards': [convert_reward(r) for r in raw.get('rewards', [])]}
+                         'repeatable': repeat, 'anyTask': bool(raw.get('or_tasks', False)),
+                         'anyDependency': requirement.startswith('one_'), 'dependencyState': 'started' if requirement.endswith('started') else 'completed',
+                         'minDependencies': int(raw.get('min_required_dependencies', 0)), 'dependencies': [],
+                         'tasks': [convert_task(t, i, defaults, repeat) for i, t in enumerate(raw.get('tasks', []))],
+                         'rewards': [convert_reward(r, defaults, repeat) for r in raw.get('rewards', [])]}
+                if raw.get('icon'):
+                    icon = item(raw['icon']); quest['icon'] = icon['item']; quest['iconMeta'] = icon.get('meta', 0); quest['iconNbt'] = icon.get('nbt', '')
                 if not quest['tasks']:
                     raise ValueError('Empty quest needs manual conversion')
+                register(quest['id'], quest['id'])
+                for task in quest['tasks']:
+                    if task['id'].startswith('ftb_'):
+                        register(task['id'], 'task:' + quest['id'] + '/' + task['id'])
+                raw_dependencies[quest['id']] = raw.get('dependencies', [raw['dependency']] if raw.get('dependency') else [])
                 book['quests'].append(quest)
-            except (ValueError, TypeError, KeyError) as error:
+            except (ValueError, TypeError, KeyError, OSError) as error:
                 errors.append(str(path) + ': ' + str(error))
-    ids = {q['id'] for q in book['quests']}
     for quest in book['quests']:
-        for dependency in quest['dependencies']:
-            if dependency not in ids:
-                errors.append(quest['id'] + ': dependency is not an imported quest: ' + dependency)
+        for dependency in raw_dependencies[quest['id']]:
+            source = code(dependency.get('id') if isinstance(dependency, dict) else dependency)
+            if source not in references:
+                errors.append(quest['id'] + ': unknown dependency: ' + source)
+            else:
+                quest['dependencies'].append(references[source])
+        for reward in quest['rewards']:
+            try:
+                resolve_choices(reward, book['lootTables'])
+            except ValueError as error:
+                errors.append(quest['id'] + ': ' + str(error))
+    for name, entries in list(book['lootTables'].items()):
+        resolved = json.loads(json.dumps(entries))
+        try:
+            for entry in resolved:
+                resolve_choices(entry, book['lootTables'], (name,))
+            book['lootTables'][name] = resolved
+        except ValueError as error:
+            errors.append(name + ': ' + str(error))
     if not book['quests']:
         errors.append('No supported quests found')
     if errors:
         raise ValueError('\n'.join(errors))
     return book
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -297,8 +449,11 @@ def main():
     args = parser.parse_args()
     try:
         book = convert(args.folder)
-        with args.output.open('x', encoding='utf-8') as out:
-            json.dump(book, out, ensure_ascii=False, indent=2)
+        encoded = json.dumps(book, ensure_ascii=False, indent=2).encode('utf-8')
+        if len(encoded) > 900000:
+            raise ValueError('Converted book exceeds the 900 KB server limit')
+        with args.output.open('xb') as out:
+            out.write(encoded)
     except (OSError, ValueError) as error:
         parser.exit(1, str(error) + '\n')
     print(f"Converted {len(book['quests'])} quests. Review IDs and commands, then validate by /quests reload.")

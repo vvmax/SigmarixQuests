@@ -12,12 +12,13 @@ public final class QuestEditorScreen extends GuiScreen {
     private int cursor,scroll,horizontal;
     private boolean selectAll,pending;
     private final long revision;
-    public QuestEditorScreen(GuiScreen parent) { this.parent=parent; text=QuestService.JSON.toJson(ClientProxy.snapshot.book); revision=ClientProxy.snapshot.revision; }
+    public QuestEditorScreen(GuiScreen parent) { this(parent,ClientProxy.snapshot.book,ClientProxy.snapshot.revision); }
+    public QuestEditorScreen(GuiScreen parent,QuestCore.Book draft,long revision) { this.parent=parent; text=QuestService.JSON.toJson(draft); this.revision=revision; }
     @Override public void initGui() {
         Keyboard.enableRepeatEvents(true); buttonList.clear();
-        buttonList.add(new GuiButton(0,8,8,90,20,"Save book"));
-        buttonList.add(new GuiButton(1,104,8,70,20,"Back"));
-        buttonList.add(new GuiButton(2,180,8,100,20,"Add quest"));
+        buttonList.add(new GuiButton(0,8,8,90,20,QuestText.tr("Save book")));
+        buttonList.add(new GuiButton(1,104,8,70,20,QuestText.tr("Back")));
+        buttonList.add(new GuiButton(2,180,8,100,20,QuestText.tr("Add quest")));
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==1) { mc.displayGuiScreen(parent); return; }
@@ -34,7 +35,7 @@ public final class QuestEditorScreen extends GuiScreen {
             try {
                 QuestNetwork.Action action=new QuestNetwork.Action(); action.action="save"; action.revision=revision;
                 action.book=QuestService.JSON.fromJson(text,QuestCore.Book.class); action.book.validate();
-                ClientProxy.send(action); pending=true; message="Saving...";
+                ClientProxy.send(action); pending=true; message=QuestText.tr("Saving...");
             } catch(RuntimeException ex) { message="Validation: "+ex.getMessage(); }
         }
     }
@@ -62,7 +63,7 @@ public final class QuestEditorScreen extends GuiScreen {
         if(isCtrlKeyDown()) {
             if(key==Keyboard.KEY_A) { selectAll=true; return; }
             if(key==Keyboard.KEY_C) { if(selectAll) setClipboardString(text); return; }
-            if(key==Keyboard.KEY_V) { insert(getClipboardString().replace("\n", "")); return; }
+            if(key==Keyboard.KEY_V) { insert(getClipboardString()); return; }
             if(key==Keyboard.KEY_Z) { String previous=text; text=undo; undo=previous; cursor=Math.min(cursor,text.length()); selectAll=false; ensureVisible(); return; }
         }
         if(key==Keyboard.KEY_ESCAPE) { mc.displayGuiScreen(parent); return; }

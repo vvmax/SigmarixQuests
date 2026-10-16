@@ -19,15 +19,16 @@ public final class QuestBookScreen extends GuiScreen {
     private int split() { return Math.max(180,width*3/5); }
     @Override public void initGui() {
         buttonList.clear();
-        buttonList.add(new GuiButton(0,width-65,8,57,20,"Close"));
-        buttonList.add(new GuiButton(1,8,8,70,20,"Refresh"));
-        buttonList.add(new GuiButton(2,84,8,110,20,"Chapter"));
-        if(ClientProxy.snapshot.canEdit) buttonList.add(new GuiButton(3,200,8,70,20,"Edit book"));
+        buttonList.add(new GuiButton(0,width-65,8,57,20,QuestText.tr("Close")));
+        buttonList.add(new GuiButton(1,8,8,70,20,QuestText.tr("Refresh")));
+        buttonList.add(new GuiButton(2,84,8,110,20,QuestText.tr("Chapter")));
+        if(ClientProxy.snapshot.canEdit) buttonList.add(new GuiButton(3,200,8,70,20,QuestText.tr("Edit book")));
         int buttonWidth=Math.max(32,(width-split()-24)/3);
-        buttonList.add(new GuiButton(4,split()+6,height-54,buttonWidth,20,"Check"));
-        buttonList.add(new GuiButton(5,split()+10+buttonWidth,height-54,buttonWidth,20,"Claim"));
-        buttonList.add(new GuiButton(6,split()+14+buttonWidth*2,height-54,buttonWidth,20,"Repeat"));
-        buttonList.add(new GuiButton(7,split()+6,height-30,Math.max(60,width-split()-12),18,"Tasks / start"));
+        buttonList.add(new GuiButton(8,split()+6,height-78,Math.max(60,width-split()-12),18,QuestText.tr("Guide / link")));
+        buttonList.add(new GuiButton(4,split()+6,height-54,buttonWidth,20,QuestText.tr("Check")));
+        buttonList.add(new GuiButton(5,split()+10+buttonWidth,height-54,buttonWidth,20,QuestText.tr("Claim")));
+        buttonList.add(new GuiButton(6,split()+14+buttonWidth*2,height-54,buttonWidth,20,QuestText.tr("Repeat")));
+        buttonList.add(new GuiButton(7,split()+6,height-30,Math.max(60,width-split()-12),18,QuestText.tr("Tasks / start")));
         search=new GuiTextField(fontRendererObj,8,36,Math.min(240,split()-16),18); search.setMaxStringLength(128);
         refresh();
     }
@@ -35,8 +36,9 @@ public final class QuestBookScreen extends GuiScreen {
         if(ClientProxy.snapshot==null) return;
         for(Object object:buttonList) {
             GuiButton b=(GuiButton)object;
-            if(b.id==2) b.displayString=chapter.isEmpty()?"All chapters":chapter+" ["+ClientProxy.snapshot.chapterStates.get(chapter)+"]";
+            if(b.id==2) b.displayString=chapter.isEmpty()?QuestText.tr("All chapters"):chapter+" ["+ClientProxy.snapshot.chapterStates.get(chapter)+"]";
             String state=ClientProxy.snapshot.states.get(selected);
+            if(b.id==8) { QuestCore.Quest q=find(selected); b.enabled=q!=null && (!q.pages.isEmpty() || !q.uri.isEmpty()); }
             if(b.id==4) b.enabled="available".equals(state);
             if(b.id==5) b.enabled="complete".equals(state);
             if(b.id==6) { QuestCore.Quest q=find(selected); b.enabled="claimed".equals(state) && q!=null && q.repeatable; }
@@ -46,7 +48,7 @@ public final class QuestBookScreen extends GuiScreen {
     private List<QuestCore.Quest> visible() {
         List<QuestCore.Quest> result=new ArrayList<QuestCore.Quest>();
         String filter=search.getText().toLowerCase(Locale.ROOT);
-        for(QuestCore.Quest q:ClientProxy.snapshot.book.quests) if((chapter.isEmpty() || chapter.equals(q.chapter)) && (q.title.toLowerCase(Locale.ROOT).contains(filter) || q.id.toLowerCase(Locale.ROOT).contains(filter))) result.add(q);
+        for(QuestCore.Quest q:ClientProxy.snapshot.book.quests) if((chapter.isEmpty() || chapter.equals(q.chapter)) && (q.title.toLowerCase(Locale.ROOT).contains(filter) || q.id.toLowerCase(Locale.ROOT).contains(filter) || q.tags.toString().toLowerCase(Locale.ROOT).contains(filter))) result.add(q);
         return result;
     }
     private double qx(QuestCore.Quest q) { return q.x*48; }
@@ -54,7 +56,8 @@ public final class QuestBookScreen extends GuiScreen {
     private int sx(QuestCore.Quest q) { return (int)(panX+qx(q)*zoom); }
     private int sy(QuestCore.Quest q) { return 66+(int)(panY+qy(q)*zoom); }
     @Override public void drawScreen(int mouseX,int mouseY,float partial) {
-        drawDefaultBackground(); drawRect(0,60,split(),height-8,0xEE17202A); drawRect(split()+1,60,width,height,0xEE26313D);
+        QuestPresentation.Theme theme=ClientProxy.snapshot.book.theme;
+        drawDefaultBackground(); drawRect(0,60,split(),height-8,QuestPresentation.color(theme.background)); drawRect(split()+1,60,width,height,QuestPresentation.color(theme.panel));
         search.drawTextBox();
         fontRendererObj.drawString(fontRendererObj.trimStringToWidth(ClientProxy.snapshot.book.title,width-split()-16),split()+8,37,0xFFFFFF);
         List<QuestCore.Quest> list=visible();
@@ -62,10 +65,11 @@ public final class QuestBookScreen extends GuiScreen {
         net.minecraft.client.gui.ScaledResolution scaled=new net.minecraft.client.gui.ScaledResolution(mc,mc.displayWidth,mc.displayHeight);
         int factor=scaled.getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST); GL11.glScissor(0,8*factor,split()*factor,Math.max(0,height-68)*factor);
-        GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glColor4f(.45f,.55f,.65f,1); GL11.glBegin(GL11.GL_LINES);
+        for(QuestCore.Chapter c:ClientProxy.snapshot.book.chapters) if(c.id.equals(chapter) && !c.image.isEmpty()) { mc.getTextureManager().bindTexture(new net.minecraft.util.ResourceLocation(c.image)); GL11.glColor4f(1,1,1,.5f); func_152125_a(0,60,0,0,256,256,split(),height-68,256,256); GL11.glColor4f(1,1,1,1); }
+        GL11.glDisable(GL11.GL_TEXTURE_2D); int edge=QuestPresentation.color(theme.edge); GL11.glColor4f((edge>>16&255)/255f,(edge>>8&255)/255f,(edge&255)/255f,(edge>>>24)/255f); GL11.glBegin(GL11.GL_LINES);
         Set<String> ids=new HashSet<String>(); for(QuestCore.Quest q:list) ids.add(q.id);
         Map<String,QuestCore.Quest> byId=new LinkedHashMap<String,QuestCore.Quest>(); for(QuestCore.Quest q:ClientProxy.snapshot.book.quests) byId.put(q.id,q);
-        for(QuestCore.Quest q:list) for(String dep:q.dependencies) {
+        for(QuestCore.Quest q:list) if(!q.hideDependencyLines) for(String dep:q.dependencies) {
             try { for(String owner:QuestDependencies.owners(ClientProxy.snapshot.book,byId,dep,q.dependencyState.equals("started"))) { QuestCore.Quest d=find(owner); if(d!=null && ids.contains(owner)) { GL11.glVertex2d(sx(d)+12,sy(d)+12); GL11.glVertex2d(sx(q)+12,sy(q)+12); } } }
             catch(IllegalArgumentException ignored) { /* Hidden source quests are absent from a public snapshot. */ }
         }
@@ -73,12 +77,13 @@ public final class QuestBookScreen extends GuiScreen {
         QuestCore.Quest hover=null;
         for(QuestCore.Quest q:list) {
             int x=sx(q),y=sy(q); String state=ClientProxy.snapshot.states.get(q.id);
-            int color="claimed".equals(state)?0xFF3A784E:"complete".equals(state)?0xFFB28B29:"available".equals(state)?0xFF397CB2:0xFF50545A;
-            if(q.id.equals(selected)) drawRect(x-3,y-3,x+27,y+27,0xFFFFFFFF);
-            drawRect(x-1,y-1,x+25,y+25,color);
-            try { Item item=(Item)Item.itemRegistry.getObject(q.icon); if(item!=null) { RenderHelper.enableGUIStandardItemLighting(); itemRender.renderItemAndEffectIntoGUI(fontRendererObj,mc.getTextureManager(),new ItemStack(item),x+4,y+4); RenderHelper.disableStandardItemLighting(); } } catch(RuntimeException ignored) {}
-            fontRendererObj.drawString(fontRendererObj.trimStringToWidth(q.title,100),x-12,y+29,0xEEEEEE);
-            if(mouseX>=x-2 && mouseX<=x+26 && mouseY>=y-2 && mouseY<=y+26) hover=q;
+            String[] style=QuestPresentation.resolve(ClientProxy.snapshot.book,q,state);
+            int color=QuestPresentation.color(style[0]);
+            if(q.id.equals(selected)) node(x+12,y+12,(int)(13*q.size)+3,style[2],QuestPresentation.color(theme.selected));
+            node(x+12,y+12,Math.max(1,(int)(13*q.size)),style[2],color);
+            try { Item item=(Item)Item.itemRegistry.getObject(q.icon); if(item!=null) { RenderHelper.enableGUIStandardItemLighting(); ItemStack icon=new ItemStack(item,1,q.iconMeta); icon.setTagCompound(QuestService.tag(q.iconNbt)); GL11.glPushMatrix(); GL11.glTranslated(x+12,y+12,0); GL11.glScaled(q.size,q.size,1); itemRender.renderItemAndEffectIntoGUI(fontRendererObj,mc.getTextureManager(),icon,-8,-8); GL11.glPopMatrix(); RenderHelper.disableStandardItemLighting(); } } catch(RuntimeException ignored) {}
+            fontRendererObj.drawString(fontRendererObj.trimStringToWidth(q.title,100),x-12,y+16+(int)(13*q.size),QuestPresentation.color(style[1]));
+            if(Math.abs(mouseX-x-12)<=13*q.size+2 && Math.abs(mouseY-y-12)<=13*q.size+2) hover=q;
         }
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
         drawDetails();
@@ -87,9 +92,17 @@ public final class QuestBookScreen extends GuiScreen {
         super.drawScreen(mouseX,mouseY,partial);
         if(hover!=null && mouseX<split() && mouseY>60 && mouseY<height-8) func_146283_a(Arrays.asList(hover.title,hover.id+" - "+ClientProxy.snapshot.states.get(hover.id)),mouseX,mouseY);
     }
+    private void node(int x,int y,int radius,String shape,int color) {
+        if(shape.equals("square")) { drawRect(x-radius,y-radius,x+radius,y+radius,color); return; }
+        int count=shape.equals("circle")?32:shape.equals("diamond")?4:shape.equals("pentagon")?5:shape.equals("hexagon")?6:8;
+        GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glColor4f((color>>16&255)/255f,(color>>8&255)/255f,(color&255)/255f,(color>>>24)/255f); GL11.glBegin(GL11.GL_TRIANGLE_FAN); GL11.glVertex2d(x,y);
+        for(int i=0;i<=count;i++) { double angle=-Math.PI/2+Math.PI*2*i/count; GL11.glVertex2d(x+Math.cos(angle)*radius,y+Math.sin(angle)*radius); }
+        GL11.glEnd(); GL11.glColor4f(1,1,1,1); GL11.glDisable(GL11.GL_BLEND); GL11.glEnable(GL11.GL_TEXTURE_2D);
+    }
     private void drawDetails() {
         QuestCore.Quest q=find(selected); int x=split()+8,max=width-split()-16;
-        if(q==null) { fontRendererObj.drawSplitString("Select a quest. Drag the map; scroll to zoom. Operators: Shift+drag moves nodes. Use /quests team for teams.",x,76,max,0xDDDDDD); return; }
+        if(q==null) { fontRendererObj.drawSplitString(QuestText.tr("Select a quest. Drag the map; scroll to zoom. Operators: Shift+drag moves nodes. Use /quests team for teams."),x,76,max,0xDDDDDD); return; }
         List<String> lines=new ArrayList<String>();
         lines.add(q.title); lines.add(q.id+" ["+ClientProxy.snapshot.states.get(q.id)+"]"); lines.add("Team: "+ClientProxy.snapshot.team);
         lines.addAll(fontRendererObj.listFormattedStringToWidth(q.description,max));
@@ -100,9 +113,9 @@ public final class QuestBookScreen extends GuiScreen {
             if(t.type.equals("dimension") || t.type.equals("location")) line+=" dim="+t.dimension;
             lines.addAll(fontRendererObj.listFormattedStringToWidth(line,max));
         }
-        lines.add("Rewards:"); for(QuestCore.Reward r:q.rewards) rewardLines(lines,r,"",max);
-        int end=Math.max(1,(height-148)/11); detailsScroll=Math.max(0,Math.min(detailsScroll,Math.max(0,lines.size()-end)));
-        for(int i=detailsScroll;i<lines.size() && i<detailsScroll+end;i++) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(lines.get(i),max),x,74+(i-detailsScroll)*11,0xEEEEEE);
+        lines.add("Rewards:"); for(QuestCore.Reward r:q.rewards) if(!r.auto.equals("invisible")) rewardLines(lines,r,"",max);
+        int end=Math.max(1,(height-172)/11); detailsScroll=Math.max(0,Math.min(detailsScroll,Math.max(0,lines.size()-end)));
+        for(int i=detailsScroll;i<lines.size() && i<detailsScroll+end;i++) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(lines.get(i),max),x,74+(i-detailsScroll)*11,QuestPresentation.color(ClientProxy.snapshot.book.theme.text));
     }
     private void rewardLines(List<String> lines,QuestCore.Reward r,String prefix,int max) {
         lines.addAll(fontRendererObj.listFormattedStringToWidth(prefix+r.type+" "+(r.item!=null?r.item:r.target==null?"":r.target)+" x"+r.count,max));
@@ -116,7 +129,8 @@ public final class QuestBookScreen extends GuiScreen {
             case 2:
                 chapterIndex++; if(chapterIndex>=ClientProxy.snapshot.book.chapters.size()) chapterIndex=-1;
                 chapter=chapterIndex<0?"":ClientProxy.snapshot.book.chapters.get(chapterIndex).id; refresh(); return;
-            case 3: mc.displayGuiScreen(new QuestEditorScreen(this)); return;
+            case 3: mc.displayGuiScreen(new QuestObjectScreen(this)); return;
+            case 8: if(find(selected)!=null) mc.displayGuiScreen(new QuestGuideScreen(this,find(selected))); return;
             case 4: action.action="check"; break;
             case 5: if(RewardChoiceScreen.needed(find(selected))) { mc.displayGuiScreen(new RewardChoiceScreen(this,find(selected))); return; } action.action="claim"; break;
             case 6: action.action="repeat"; break;
@@ -128,7 +142,7 @@ public final class QuestBookScreen extends GuiScreen {
     @Override protected void mouseClicked(int x,int y,int button) {
         super.mouseClicked(x,y,button); search.mouseClicked(x,y,button);
         if(x>=split() || y<60 || y>height-8 || button!=0) return;
-        for(QuestCore.Quest q:visible()) if(x>=sx(q)-2 && x<=sx(q)+26 && y>=sy(q)-2 && y<=sy(q)+26) {
+        for(QuestCore.Quest q:visible()) if(Math.abs(x-sx(q)-12)<=13*q.size+2 && Math.abs(y-sy(q)-12)<=13*q.size+2) {
             selected=q.id; detailsScroll=0; refresh();
             if(ClientProxy.snapshot.canEdit && isShiftKeyDown()) { moving=true; movingId=q.id; }
             lastX=x; lastY=y; return;

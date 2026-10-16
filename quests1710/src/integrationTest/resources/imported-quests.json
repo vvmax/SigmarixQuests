@@ -1,0 +1,138 @@
+{
+  "format": 2,
+  "title": "Imported FTB 1.12 book",
+  "chapters": [
+    {
+      "id": "ftb_00000001",
+      "title": "Imported chapter",
+      "description": ""
+    }
+  ],
+  "quests": [
+    {
+      "id": "ftb_00000002",
+      "chapter": "ftb_00000001",
+      "title": "Manual",
+      "description": "",
+      "x": 0.0,
+      "y": 0.0,
+      "tags": [
+        "intro"
+      ],
+      "shape": "hexagon",
+      "size": 1.25,
+      "hideDependencyLines": false,
+      "hideTextUntilComplete": false,
+      "disableToast": false,
+      "rewardMode": "individual",
+      "hidden": false,
+      "optional": false,
+      "repeatable": false,
+      "anyTask": false,
+      "anyDependency": false,
+      "dependencyState": "completed",
+      "minDependencies": 0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "ftb_00000003",
+          "type": "check",
+          "manual": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "ftb_00000004",
+          "mode": "individual",
+          "auto": "enabled",
+          "type": "xp",
+          "count": 3
+        }
+      ],
+      "icon": "minecraft:book",
+      "iconMeta": 0,
+      "iconNbt": "{\"display\":{\"Name\":\"Guide\"}}"
+    },
+    {
+      "id": "ftb_00000005",
+      "chapter": "ftb_00000001",
+      "title": "Fluid",
+      "description": "",
+      "x": 0.0,
+      "y": 0.0,
+      "tags": [],
+      "shape": "square",
+      "size": 1.0,
+      "hideDependencyLines": false,
+      "hideTextUntilComplete": false,
+      "disableToast": false,
+      "rewardMode": "individual",
+      "hidden": false,
+      "optional": false,
+      "repeatable": false,
+      "anyTask": false,
+      "anyDependency": false,
+      "dependencyState": "started",
+      "minDependencies": 0,
+      "dependencies": [
+        "task:ftb_00000002/ftb_00000003"
+      ],
+      "tasks": [
+        {
+          "id": "ftb_00000006",
+          "type": "fluid",
+          "count": 1000,
+          "target": "water",
+          "consume": true,
+          "nbt": "{\"quality\":2}"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "ftb_00000007",
+          "mode": "individual",
+          "auto": "disabled",
+          "type": "random",
+          "options": [
+            {
+              "type": "xp",
+              "count": 3,
+              "weight": 1
+            },
+            {
+              "item": "minecraft:bread",
+              "count": 2,
+              "type": "item",
+              "onlyOne": false,
+              "randomBonus": 0,
+              "weight": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lootTables": {
+    "ftb_00000008": [
+      {
+        "type": "xp",
+        "count": 3,
+        "weight": 1
+      },
+      {
+        "item": "minecraft:bread",
+        "count": 2,
+        "type": "item",
+        "onlyOne": false,
+        "randomBonus": 0,
+        "weight": 2
+      }
+    ]
+  },
+  "lootSettings": {
+    "ftb_00000008": {
+      "rolls": 3,
+      "emptyWeight": 1
+    }
+  }
+}

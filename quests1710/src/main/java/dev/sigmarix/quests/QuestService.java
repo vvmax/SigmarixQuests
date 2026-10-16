@@ -56,13 +56,14 @@ public class QuestService {
         if (next == null) throw new IllegalArgumentException("Empty book");
         Map<String, QuestCore.Quest> result = next.validate();
         for (QuestCore.Quest q : next.quests) {
-            item(q.icon);
+            item(q.icon); tag(q.iconNbt);
             for (QuestCore.Task t : q.tasks) {
                 switch (t.type) {
                     case "item":
                         if(t.target!=null && !t.target.isEmpty()) validateItemTarget(t.target);
                         for(String target:t.targets) validateItemTarget(target);
-                        tag(t.nbt); break;
+                        tag(t.nbt); if(t.filter!=null) t.filter.validate(true); break;
+                    case "ic2_energy": if(!cpw.mods.fml.common.Loader.isModLoaded("IC2")) throw new IllegalArgumentException("IC2 EU tasks require IndustrialCraft 2"); break;
                     case "kill": if (!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: " + t.target); break;
                     case "fluid": tag(t.nbt); if (!FluidRegistry.isFluidRegistered(t.target)) throw new IllegalArgumentException("Unknown fluid: " + t.target); break;
                     case "observation": case "interaction":
@@ -108,13 +109,9 @@ public class QuestService {
     }
     public static NBTTagCompound tag(String value) {
         if (value.isEmpty()) return null;
-        try {
-            QuestNetwork.guardJson(value);
-            NBTBase tag = JsonToNBT.func_150315_a(value);
-            if (tag instanceof NBTTagCompound) return (NBTTagCompound) tag;
-        } catch (NBTException | IOException e) { throw new IllegalArgumentException("Invalid item NBT: " + e.getMessage()); }
-        throw new IllegalArgumentException("Item NBT must be a compound");
+        return QuestSnbt.parse(value);
     }
+
     public QuestProgress progress() {
         WorldServer world = MinecraftServer.getServer().worldServerForDimension(0);
         QuestProgress data = (QuestProgress) world.mapStorage.loadData(QuestProgress.class, "sigmarixquests");
@@ -173,7 +170,7 @@ public class QuestService {
     public void creditTask(EntityPlayerMP p, String quest, String task, long amount) {
         QuestCore.Quest q = quests.get(quest);
         if (q == null || !active(p, q)) return;
-        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("fluid") || t.type.equals("custom")))
+        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("ic2_energy") || t.type.equals("fluid") || t.type.equals("custom")))
             progress().add(p.getUniqueID(), quest, task, amount, t.count);
     }
     public long counter(EntityPlayerMP p, QuestCore.Quest q, QuestCore.Task t) {
@@ -194,14 +191,14 @@ public class QuestService {
     public static boolean matches(ItemStack stack, QuestCore.Task t) {
         if(stack==null) return false;
         List<String> targets=new ArrayList<String>(t.targets); if(t.target!=null && !t.target.isEmpty()) targets.add(t.target);
-        boolean matched=false;
+        boolean matched=targets.isEmpty() && t.filter!=null;
         for(String target:targets) {
             if(target.startsWith("ore:")) {
                 for(ItemStack ore:net.minecraftforge.oredict.OreDictionary.getOres(target.substring(4)))
                     if(stack.getItem()==ore.getItem() && (t.ignoreDamage || ore.getItemDamage()==net.minecraftforge.oredict.OreDictionary.WILDCARD_VALUE || stack.getItemDamage()==ore.getItemDamage())) matched=true;
             } else if(stack.getItem()==item(target) && (t.ignoreDamage || stack.getItemDamage()==t.meta)) matched=true;
         }
-        if(!matched) return false;
+        if(!matched || t.filter!=null && !t.filter.matches(stack)) return false;
         return nbtMatches(t.nbt,t.nbtMode,stack.getTagCompound());
     }
     public static boolean nbtMatches(String nbt,String mode,NBTTagCompound actual) {
@@ -225,7 +222,7 @@ public class QuestService {
         if(t.sticky && counter(p,q,t)>=t.count) return true;
         switch (t.type) {
             case "check": return !t.manual || counter(p,q,t)>=t.count;
-            case "kill": case "interaction": case "energy": return counter(p,q,t) >= t.count;
+            case "kill": case "interaction": case "energy": case "ic2_energy": return counter(p,q,t) >= t.count;
             case "custom": return counter(p,q,t) >= t.count || QuestHooks.TASKS.get(t.target).complete(p,t);
             case "dimension": return p.dimension == t.dimension;
             case "biome": return t.target.equalsIgnoreCase(p.worldObj.getBiomeGenForCoords(MathHelper.floor_double(p.posX), MathHelper.floor_double(p.posZ)).biomeName) ||
@@ -315,7 +312,7 @@ public class QuestService {
             for (ItemStack empty : containers) give(p,empty);
             p.inventory.markDirty(); p.inventoryContainer.detectAndSendChanges();
             for(QuestCore.Task t:q.tasks) progress().markTask(p.getUniqueID(),q.id,t.id);
-            progress().complete(p.getUniqueID(),q.id); progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime());
+            progress().complete(p.getUniqueID(),q.id); if(!q.disableToast) QuestNetwork.toast(p,q.title,"Quest complete",q.icon); progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime());
         }
         return true;
     }
@@ -344,10 +341,7 @@ public class QuestService {
     }
     public boolean finish(EntityPlayerMP p,QuestCore.Quest q) {
         if(!check(p,q,true)) return false;
-        if(q.autoClaim) {
-            try { claim(p,q,Collections.<Integer>emptyList()); }
-            catch(IllegalArgumentException e) { say(p,"Quest complete; collect reward manually: "+e.getMessage()); }
-        }
+        autoClaim(p,q);
         return true;
     }
     public static void give(EntityPlayerMP player, ItemStack stack) {
@@ -372,7 +366,17 @@ public class QuestService {
         }
     }
     public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices) { claim(p,q,choices,null); }
-    public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink) {
+    public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink) { claim(p,q,choices,itemSink,false); }
+    private boolean hasChoice(QuestCore.Reward reward) {
+        if(reward.type.equals("choice")) return true;
+        for(QuestCore.Reward option:reward.options) if(hasChoice(option)) return true;
+        return false;
+    }
+    public void autoClaim(EntityPlayerMP p,QuestCore.Quest q) {
+        if(!progress().completed(p.getUniqueID()).contains(q.id) || claimed(p.getUniqueID(),q)) return;
+        claim(p,q,Collections.<Integer>emptyList(),null,true);
+    }
+    private void claim(EntityPlayerMP p,QuestCore.Quest q,List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink,boolean automatic) {
         QuestProgress data=progress(); UUID id=p.getUniqueID();
         if (!data.completed(id).contains(q.id) || claimed(id,q)) throw new IllegalArgumentException("Reward unavailable");
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>(); Iterator<Integer> selected=choices.iterator();
@@ -380,13 +384,15 @@ public class QuestService {
         for(int i=0;i<q.rewards.size();i++) {
             QuestCore.Reward r=q.rewards.get(i); boolean personal=individual(q,r); allShared&=!personal;
             if(data.rewardClaimed(id,q.id,rewardId(r,i),personal)) continue;
+            if(automatic && (!(r.auto.equals("enabled") || r.auto.equals("invisible") || r.auto.equals("inherit") && q.autoClaim) || hasChoice(r))) continue;
             List<QuestCore.Reward> expanded=new ArrayList<QuestCore.Reward>(); flatten(r,selected,p.getRNG(),expanded,budget,0);
             pending.add(i); leaves.addAll(expanded);
         }
+        if(automatic && pending.isEmpty() && !(q.rewards.isEmpty() && q.autoClaim)) return;
         if(selected.hasNext()) throw new IllegalArgumentException("Too many reward choices");
         for(QuestCore.Reward r:leaves) validateReward(r);
         for(int index:pending) { QuestCore.Reward r=q.rewards.get(index); data.claimReward(id,q.id,rewardId(r,index),individual(q,r)); }
-        if(allShared) data.claim(id,q.id);
+        if(allShared && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
         applyRewards(p,leaves,itemSink);
     }
     public void openLoot(EntityPlayerMP p,String table,ItemStack crate) {
@@ -413,7 +419,7 @@ public class QuestService {
                 String command=r.target.replace("{player}",p.getCommandSenderName()).replace("{uuid}",id.toString()).replace("{x}",Integer.toString(MathHelper.floor_double(p.posX))).replace("{y}",Integer.toString(MathHelper.floor_double(p.posY))).replace("{z}",Integer.toString(MathHelper.floor_double(p.posZ)));
                 MinecraftServer.getServer().getCommandManager().executeCommand(r.asPlayer?p:MinecraftServer.getServer(),command); break;
             case "achievement": grantAchievement(p,(Achievement)stat(r.target,true),new HashSet<Achievement>()); break;
-            case "toast": say(p,r.target); break;
+            case "toast": QuestNetwork.toast(p,r.target,r.text,r.item==null?"minecraft:book":r.item); break;
             case "custom": QuestHooks.REWARDS.get(r.target).grant(p,r); break;
             default: throw new IllegalStateException("Unexpected flattened reward");
         }

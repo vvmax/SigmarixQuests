@@ -354,4 +354,99 @@ public class QuestSystemsTest {
         QuestCore.Task t=task("fluid","water",750,false); t.nbt="{quality:1}"; assertFalse(service.check(player,quest,true));
         t.nbt="{quality:2}"; assertTrue(service.check(player,quest,true)); assertEquals(2000,tank.getFluid(player.inventory.mainInventory[0]).amount);
     }
+    @Test public void automaticRootDoesNotMarkManualRootClaimed() {
+        task("check",null,1,false); QuestCore.Reward auto=xpReward(3,"team"); auto.auto="enabled"; xpReward(7,"team");
+        assertTrue(service.finish(player,quest)); verify(player).addExperience(3); verify(player,never()).addExperience(7);
+        assertFalse(service.claimed(player.getUniqueID(),quest)); service.autoClaim(player,quest); verify(player,times(1)).addExperience(3);
+        service.claim(player,quest,Collections.<Integer>emptyList()); verify(player).addExperience(7); assertTrue(service.claimed(player.getUniqueID(),quest));
+    }
+    @Test public void automaticIndividualRootsPayEachTeamMemberOnce() {
+        EntityPlayerMP other=teammate(); task("check",null,1,false); QuestCore.Reward auto=xpReward(5,"individual"); auto.auto="enabled";
+        assertTrue(service.finish(player,quest)); service.autoClaim(other,quest); service.autoClaim(other,quest);
+        verify(player,times(1)).addExperience(5); verify(other,times(1)).addExperience(5);
+    }
+    @Test public void automaticRewardsCanCoexistWithUnchosenChoices() {
+        task("check",null,1,false); quest.autoClaim=true; xpReward(3,"team");
+        QuestCore.Reward choice=new QuestCore.Reward(); choice.id="choice"; choice.type="choice"; QuestCore.Reward option=new QuestCore.Reward(); option.type="xp"; option.count=7; choice.options.add(option); quest.rewards.add(choice);
+        service.finish(player,quest); verify(player).addExperience(3); assertFalse(service.claimed(player.getUniqueID(),quest));
+        service.claim(player,quest,Collections.singletonList(0)); verify(player).addExperience(7); verify(player,times(1)).addExperience(3);
+    }
+    @Test public void pythonMigratedWorldDataLoadsWithNativeForgeNbt() throws Exception {
+        NBTTagCompound root;
+        try(InputStream in=getClass().getResourceAsStream("/migrated-progress.dat")) { assertNotNull(in); root=net.minecraft.nbt.CompressedStreamTools.readCompressed(in); }
+        QuestProgress migrated=new QuestProgress(); migrated.readFromNBT(root.getCompoundTag("data")); UUID member=UUID.fromString("11111111-1111-1111-1111-111111111111");
+        assertTrue(migrated.leader(member)); assertTrue(migrated.completed(member).contains("ftb_00000002"));
+        assertEquals(4,migrated.value(member,"ftb_00000002","ftb_00000003")); assertTrue(migrated.rewardClaimed(member,"ftb_00000002","ftb_00000004",true));
+    }
+    @Test public void deviceContainerRejectsForeignPlayersAndRemovedTiles() {
+        QuestDevice tile=new QuestDevice(); tile.owner=player.getUniqueID(); tile.setWorldObj(player.worldObj); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(tile);
+        QuestDeviceContainer container=new QuestDeviceContainer(player,tile); assertTrue(container.canInteractWith(player));
+        EntityPlayerMP other=mock(EntityPlayerMP.class); when(other.getUniqueID()).thenReturn(UUID.randomUUID()); assertFalse(container.canInteractWith(other));
+        when(other.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true); assertTrue(container.canInteractWith(other));
+        when(player.worldObj.getTileEntity(0,0,0)).thenReturn(null); assertFalse(container.canInteractWith(player));
+    }
+    @Test public void deviceContainerChecksDistanceBeforeMovingInventory() {
+        QuestDevice tile=new QuestDevice(); tile.owner=player.getUniqueID(); tile.setWorldObj(player.worldObj); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(tile);
+        tile.setInventorySlotContents(0,new ItemStack(Items.iron_ingot,4)); QuestDeviceContainer container=new QuestDeviceContainer(player,tile);
+        when(player.getDistanceSq(.5,.5,.5)).thenReturn(100.0); assertNull(container.transferStackInSlot(player,0)); assertEquals(4,tile.getStackInSlot(0).stackSize);
+        when(player.getDistanceSq(.5,.5,.5)).thenReturn(0.0); assertNotNull(container.transferStackInSlot(player,0)); assertNull(tile.getStackInSlot(0));
+    }
+    @Test public void convertedDefinitionAndAdvancedExamplePassProductionRegistryValidation() throws Exception {
+        for(String resource:new String[]{"/imported-quests.json","/example-advanced-quests.json"}) {
+            java.nio.file.Path file=java.nio.file.Files.createTempFile("quest-import-fixture",".json");
+            try(InputStream in=getClass().getResourceAsStream(resource)) { assertNotNull(in); java.nio.file.Files.copy(in,file,java.nio.file.StandardCopyOption.REPLACE_EXISTING); }
+            try { QuestService imported=new QuestService(file.toFile()); imported.load(); assertFalse(imported.quests.isEmpty()); }
+            finally { java.nio.file.Files.deleteIfExists(file); }
+        }
+    }
+    @Test public void composedItemFiltersKeepDistinctMetadataAndNbtAlternatives() {
+        QuestCore.Task t=task("item",null,2,true); t.filter=new QuestItemFilter(); t.filter.type="any"; t.filter.children.clear();
+        QuestItemFilter one=new QuestItemFilter(); one.value="minecraft:iron_ingot"; one.nbt="{quality:1}";
+        QuestItemFilter two=new QuestItemFilter(); two.value="minecraft:gold_ingot"; two.nbt="{quality:2}"; t.filter.children.add(one); t.filter.children.add(two); t.filter.validate(true);
+        ItemStack wrong=new ItemStack(Items.gold_ingot,2); wrong.setTagCompound(QuestSnbt.parse("{quality:1}")); assertFalse(QuestService.matches(wrong,t));
+        ItemStack valid=new ItemStack(Items.gold_ingot,2); valid.setTagCompound(QuestSnbt.parse("{quality:2}")); player.inventory.mainInventory[0]=valid;
+        assertTrue(service.check(player,quest,true)); assertNull(player.inventory.mainInventory[0]);
+    }
+    @Test public void andNotModAndOreFiltersUseRealRegistries() {
+        QuestItemFilter all=new QuestItemFilter(); all.type="all";
+        QuestItemFilter mod=new QuestItemFilter(); mod.type="mod"; mod.value="minecraft"; all.children.add(mod);
+        QuestItemFilter not=new QuestItemFilter(); not.type="not"; QuestItemFilter food=new QuestItemFilter(); food.type="food"; not.children.add(food); all.children.add(not); all.validate(true);
+        assertTrue(all.matches(new ItemStack(Items.iron_ingot))); assertFalse(all.matches(new ItemStack(Items.bread)));
+        QuestItemFilter ore=new QuestItemFilter(); ore.type="ore"; ore.value="ingotIron"; ore.validate(true); assertTrue(ore.matches(new ItemStack(Items.iron_ingot)));
+    }
+    @Test public void malformedFilterTreesFailValidation() {
+        QuestItemFilter invalid=new QuestItemFilter(); invalid.type="not";
+        try { invalid.validate(false); fail(); } catch(IllegalArgumentException expected) {}
+        invalid.children.add(invalid); try { invalid.validate(false); fail(); } catch(IllegalArgumentException expected) {}
+    }
+    private QuestDevice euTile() {
+        QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=quest.tasks.get(0).id; tile.setWorldObj(player.worldObj); doReturn(player).when(tile).player();
+        when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"eu_test")); QuestsMod.service=service; return tile;
+    }
+    @Test public void euPacketsCreditOnlyAcceptedWholeUnitsAndRetainFractions() {
+        task("ic2_energy",null,2,false); QuestDevice tile=euTile();
+        try {
+            assertEquals(0,tile.injectEnergy(ForgeDirection.UP,.4,32),0); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
+            assertEquals(1.6,tile.getDemandedEnergy(),1e-9); assertEquals(0,tile.injectEnergy(ForgeDirection.UP,.6,32),0);
+            assertEquals(1,data.value(player.getUniqueID(),quest.id,"t0")); assertEquals(9,tile.injectEnergy(ForgeDirection.UP,10,32),0);
+            assertEquals(2,data.value(player.getUniqueID(),quest.id,"t0")); assertEquals(0,tile.getDemandedEnergy(),0); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void euFractionsSurviveNbtAndAreNotAppliedToAnotherTask() {
+        task("ic2_energy",null,4,false); QuestDevice tile=euTile();
+        try {
+            tile.injectEnergy(ForgeDirection.UP,.5,32); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(tile.getClass(),"sigmarixquests:test-eu"); NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved);
+            QuestDevice restored=spy(new QuestDevice()); restored.readFromNBT(saved); restored.setWorldObj(player.worldObj); doReturn(player).when(restored).player();
+            assertEquals(3.5,restored.getDemandedEnergy(),0); restored.injectEnergy(ForgeDirection.UP,.5,32); assertEquals(1,data.value(player.getUniqueID(),quest.id,"t0"));
+            QuestCore.Task another=task("ic2_energy",null,4,false); restored.task=another.id; assertEquals(4,restored.getDemandedEnergy(),0);
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void euIsRejectedForOfflineOwnersWrongTasksAndImpossibleAmounts() {
+        task("energy",null,4,false); QuestDevice tile=euTile();
+        try {
+            assertEquals(0,tile.getDemandedEnergy(),0); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
+            quest.tasks.get(0).type="ic2_energy"; doReturn(null).when(tile).player(); assertEquals(0,tile.getDemandedEnergy(),0);
+            doReturn(player).when(tile).player(); tile.injectEnergy(ForgeDirection.UP,Double.MAX_VALUE,32); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
+        } finally { QuestsMod.service=null; }
+    }
 }

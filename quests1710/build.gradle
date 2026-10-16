@@ -3,7 +3,7 @@ plugins {
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.6'
 }
 group = 'dev.sigmarix'
-version = '0.3.0'
+version = '0.4.0'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }
@@ -13,9 +13,21 @@ minecraft {
 }
 repositories {
     mavenCentral()
+    maven { url = uri('https://maven.ic2.player.to/'); metadataSources { artifact() }; content { includeGroup 'net.industrial-craft' } }
 }
 
-dependencies { testImplementation 'junit:junit:4.13.2' }
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    compileOnly 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:api@jar'
+    testImplementation 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:api@jar'
+}
+configurations { ic2Preview }
+dependencies { ic2Preview 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:dev@jar' }
+if (providers.gradleProperty('questIC2').isPresent()) {
+    tasks.register('prepareIC2Preview', Copy) { from configurations.ic2Preview; into 'run/mods' }
+    tasks.register('cleanIC2Preview', Delete) { delete 'run/mods/industrialcraft-2-2.2.828-experimental-dev.jar' }
+    tasks.named('runClient') { dependsOn 'prepareIC2Preview'; finalizedBy 'cleanIC2Preview' }
+}
 sourceSets {
     rfApi { compileClasspath += sourceSets.main.compileClasspath }
 }
@@ -38,7 +50,7 @@ tasks.register('forgeTest', JavaExec) {
 tasks.named('check') { dependsOn 'forgeTest' }
 sourceSets {
     visualTest {
-        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath + sourceSets.rfApi.output
         runtimeClasspath += sourceSets.main.runtimeClasspath
     }
 }

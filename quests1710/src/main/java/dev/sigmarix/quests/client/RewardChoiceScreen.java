@@ -35,8 +35,8 @@ public final class RewardChoiceScreen extends GuiScreen {
             String label="Choice "+(i+1)+": "+pick+" / "+(entry.reward.options.size()-1)+" - "+option.type+" "+(option.item==null?"":option.item)+" x"+option.count;
             buttonList.add(new GuiButton(100+i,16,42+(i-scroll)*26,width-32,22,fontRendererObj.trimStringToWidth(label,width-48)));
         }
-        buttonList.add(new GuiButton(0,16,height-36,130,22,"Claim selected"));
-        buttonList.add(new GuiButton(1,width-96,height-36,80,22,"Back"));
+        buttonList.add(new GuiButton(0,16,height-36,130,22,QuestText.tr("Claim selected")));
+        buttonList.add(new GuiButton(1,width-96,height-36,80,22,QuestText.tr("Back")));
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==1) { mc.displayGuiScreen(parent); return; }
@@ -50,7 +50,7 @@ public final class RewardChoiceScreen extends GuiScreen {
     }
     @Override public void drawScreen(int x,int y,float partial) {
         drawDefaultBackground(); drawCenteredString(fontRendererObj,"Select rewards: "+quest.title,width/2,14,0xFFFFFF);
-        drawCenteredString(fontRendererObj,"Click each row to cycle its options",width/2,28,0xBBBBBB); super.drawScreen(x,y,partial);
+        drawCenteredString(fontRendererObj,QuestText.tr("Click each row to cycle its options"),width/2,28,0xBBBBBB); super.drawScreen(x,y,partial);
     }
     @Override public void handleMouseInput() { super.handleMouseInput(); int wheel=Mouse.getEventDWheel(); if(wheel!=0) { scroll+=wheel>0?-1:1; rebuild(); } }
     @Override public boolean doesGuiPauseGame() { return false; }

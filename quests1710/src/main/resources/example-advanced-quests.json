@@ -1,0 +1,159 @@
+{
+  "format": 2,
+  "title": "Advanced quest examples",
+  "chapters": [
+    {
+      "id": "intro",
+      "title": "Getting started",
+      "image": "minecraft:textures/gui/options_background.png"
+    },
+    {
+      "id": "automation",
+      "title": "Automation"
+    }
+  ],
+  "styles": [
+    {
+      "selector": ".important state:available",
+      "color": "FF9B59B6",
+      "shape": "hexagon"
+    },
+    {
+      "selector": "state:complete",
+      "textColor": "FFFFDD77"
+    }
+  ],
+  "quests": [
+    {
+      "id": "welcome",
+      "title": "Welcome",
+      "chapter": "intro",
+      "tags": [
+        "important"
+      ],
+      "shape": "circle",
+      "size": 1.25,
+      "icon": "minecraft:book",
+      "x": 0,
+      "y": 0,
+      "autoComplete": true,
+      "rewardMode": "individual",
+      "pages": [
+        "Confirm the read task in Tasks / start.\nThis quest completes automatically.",
+        "Each team member receives their own bread reward."
+      ],
+      "uri": "https://minecraft.wiki/",
+      "tasks": [
+        {
+          "id": "read",
+          "type": "check",
+          "manual": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "bread",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 4,
+          "auto": "enabled"
+        }
+      ]
+    },
+    {
+      "id": "fluid",
+      "title": "Fluid terminal",
+      "chapter": "automation",
+      "x": 0,
+      "y": 0,
+      "dependencies": [
+        "task:welcome/read"
+      ],
+      "hideTextUntilComplete": true,
+      "description": "750 mB of water has been submitted.",
+      "tasks": [
+        {
+          "id": "water",
+          "type": "fluid",
+          "target": "water",
+          "count": 750,
+          "consume": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "roll",
+          "type": "loot",
+          "target": "supply",
+          "mode": "individual"
+        },
+        {
+          "id": "notice",
+          "type": "toast",
+          "target": "Fluid supplied",
+          "text": "The terminal accepted your fluid.",
+          "auto": "enabled"
+        }
+      ]
+    },
+    {
+      "id": "supplies",
+      "title": "Supplies",
+      "chapter": "automation",
+      "x": 3,
+      "y": 0,
+      "dependencies": [
+        "chapter:intro"
+      ],
+      "dependencyState": "completed",
+      "optional": true,
+      "tasks": [
+        {
+          "id": "stone",
+          "type": "item",
+          "target": "minecraft:cobblestone",
+          "count": 16,
+          "consume": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "pick",
+          "type": "choice",
+          "options": [
+            {
+              "type": "xp",
+              "count": 10
+            },
+            {
+              "type": "item",
+              "item": "minecraft:iron_ingot",
+              "count": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lootTables": {
+    "supply": [
+      {
+        "type": "item",
+        "item": "minecraft:bread",
+        "count": 2,
+        "weight": 2
+      },
+      {
+        "type": "xp",
+        "count": 5,
+        "weight": 1
+      }
+    ]
+  },
+  "lootSettings": {
+    "supply": {
+      "rolls": 2,
+      "emptyWeight": 1
+    }
+  }
+}
