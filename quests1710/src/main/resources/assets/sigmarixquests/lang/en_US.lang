@@ -123,3 +123,8 @@ quests.ui.command=Command
 quests.ui.notification=Notification
 
 quests.ui.shop=Shop
+
+quests.ui.crate_opener=Crate opener
+quests.ui.queued_loot=Queued loot
+quests.ui.input=Input
+quests.ui.outputs=Outputs

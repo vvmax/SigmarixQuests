@@ -116,7 +116,7 @@ public class QuestService {
     private void validateReward(QuestCore.Reward r) {
         if(!r.icon.isEmpty()) item(r.icon); tag(r.iconNbt);
         if (r.type.startsWith("npc_")) QuestNPCs.validate(r);
-        if (r.type.equals("item")) { item(r.item); tag(r.nbt); }
+        if (r.type.equals("item")) { ItemStack prototype=new ItemStack(item(r.item),1,r.meta); prototype.setTagCompound(tag(r.nbt)); if(prototype.getMaxStackSize()<1) throw new IllegalArgumentException("Invalid reward stack limit"); }
         if (r.type.equals("achievement")) stat(r.target, true);
         if (r.type.equals("custom") && !QuestHooks.REWARDS.containsKey(r.target)) throw new IllegalArgumentException("Unregistered reward hook: " + r.target);
         for (QuestCore.Reward child : r.options) validateReward(child);
@@ -543,6 +543,60 @@ public class QuestService {
         }
         return false;
     }
+    public boolean collectStored(UUID owner,QuestCore.Quest quest,String reward,Random random,java.util.function.Predicate<List<ItemStack>> capacity,java.util.function.Consumer<ItemStack> sink) {
+        validateCollectorReward(quest,reward);
+        if(!progress().completed(owner).contains(quest.id)) return false;
+        for(int i=0;i<quest.rewards.size();i++) {
+            QuestCore.Reward root=quest.rewards.get(i); String id=rewardId(root,i);
+            if(!root.type.equals("item") || root.onlyOne || !reward.isEmpty() && !id.equals(reward) || progress().rewardClaimed(owner,quest.id,id,individual(quest,root))) continue;
+            validateReward(root); ItemStack maximum=new ItemStack(item(root.item),root.count+root.randomBonus,root.meta); maximum.setTagCompound(tag(root.nbt));
+            if(maximum.getMaxStackSize()<1 || !capacity.test(Collections.singletonList(maximum))) return false;
+            progress().claimReward(owner,quest.id,id,individual(quest,root));
+            boolean shared=true; for(QuestCore.Reward other:quest.rewards) shared&=!individual(quest,other);
+            if(shared && claimed(owner,quest)) progress().claim(owner,quest.id);
+            emitStoredItem(root,random,sink); QuestEvents.fire("reward_claimed",owner,quest.id,id); return true;
+        }
+        return false;
+    }
+    public static final int MAX_AUTOMATED_STACKS=512;
+    private void emitStoredItem(QuestCore.Reward reward,Random random,java.util.function.Consumer<ItemStack> sink) {
+        ItemStack prototype=new ItemStack(item(reward.item),1,reward.meta); prototype.setTagCompound(tag(reward.nbt));
+        int remaining=reward.count+(reward.randomBonus>0?random.nextInt(reward.randomBonus+1):0),limit=Math.min(64,prototype.getMaxStackSize());
+        if(limit<1) throw new IllegalArgumentException("Invalid reward stack limit");
+        while(remaining>0) { ItemStack stack=prototype.copy(); stack.stackSize=Math.min(limit,remaining); sink.accept(stack); remaining-=stack.stackSize; }
+    }
+    private boolean lootNeedsPlayer(QuestCore.Reward reward,int depth,int[] budget) {
+        if(depth>32 || ++budget[0]>4096) throw new IllegalArgumentException("Automated loot expansion exceeds limit");
+        if(reward.type.equals("item")) return reward.onlyOne;
+        if(!reward.type.equals("random") && !reward.type.equals("loot")) return true;
+        List<QuestCore.Reward> options=reward.type.equals("loot")?book.lootTables.get(reward.target):reward.options;
+        if(options==null) throw new IllegalArgumentException("Unknown loot table");
+        for(QuestCore.Reward option:options) if(lootNeedsPlayer(option,depth+1,budget)) return true;
+        return false;
+    }
+    /** Rolls once into the block's persistent queue; live effects wait for an actual player. */
+    public boolean openLootAutomated(UUID owner,EntityPlayerMP player,String table,ItemStack crate,Random random,java.util.function.Consumer<ItemStack> sink) {
+        if(owner==null || crate==null || crate.stackSize<=0) return false;
+        if(player!=null && !owner.equals(player.getUniqueID())) throw new IllegalArgumentException("Loot owner mismatch");
+        table=QuestLoot.resolve(book,table); if(!book.lootTables.containsKey(table)) throw new IllegalArgumentException("Unknown loot table");
+        QuestCore.Reward roll=new QuestCore.Reward(); roll.type="loot"; roll.target=table;
+        if(player==null && lootNeedsPlayer(roll,0,new int[]{0})) return false;
+        List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>(); flatten(roll,Collections.<Integer>emptyList().iterator(),random,leaves,new int[]{0},0);
+        long stacks=0;
+        for(QuestCore.Reward reward:leaves) {
+            validateReward(reward);
+            if(reward.type.equals("item")) {
+                ItemStack prototype=new ItemStack(item(reward.item),1,reward.meta); prototype.setTagCompound(tag(reward.nbt)); int limit=Math.min(64,prototype.getMaxStackSize());
+                if(limit<1) throw new IllegalArgumentException("Invalid reward stack limit");
+                stacks+=(reward.count+reward.randomBonus+limit-1)/limit;
+                if(stacks>MAX_AUTOMATED_STACKS) throw new IllegalArgumentException("Automated loot exceeds 512 pending stacks");
+            }
+        }
+        if(player!=null) preflightRewardEffects(player,leaves);
+        crate.stackSize--;
+        if(player!=null) applyRewards(player,leaves,sink); else for(QuestCore.Reward reward:leaves) emitStoredItem(reward,random,sink);
+        return true;
+    }
     private void claim(EntityPlayerMP p,QuestCore.Quest q,List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink,boolean automatic) {
         claim(p,q,choices,itemSink,automatic,null,null);
     }
@@ -628,7 +682,7 @@ public class QuestService {
                 boolean exists=false; for(ItemStack stack:p.inventory.mainInventory) if(stack!=null && stack.isItemEqual(prototype) && ItemStack.areItemStackTagsEqual(stack,prototype)) exists=true;
                 if(r.onlyOne && exists) break;
                 int remaining=r.count+(r.randomBonus>0?p.getRNG().nextInt(r.randomBonus+1):0);
-                while(remaining>0) { int count=Math.min(remaining,reward.getItemStackLimit()); ItemStack stack=new ItemStack(reward,count,r.meta); stack.setTagCompound(tag(r.nbt)); if(itemSink==null) give(p,stack); else itemSink.accept(stack); remaining-=count; } break;
+                while(remaining>0) { int count=Math.min(remaining,Math.min(64,prototype.getMaxStackSize())); ItemStack stack=new ItemStack(reward,count,r.meta); stack.setTagCompound(tag(r.nbt)); if(itemSink==null) give(p,stack); else itemSink.accept(stack); remaining-=count; } break;
             case "gamestage": progress().stage(id,r.target,!r.remove); break;
             case "skill": progress().skill(id,r.target,r.add?Math.addExact(progress().skill(id,r.target),r.points):r.points); break;
             case "npc_quest": case "npc_faction": case "npc_mail": QuestNPCs.grant(p,r); break;

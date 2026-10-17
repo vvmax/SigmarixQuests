@@ -8,7 +8,8 @@ public final class NativeQuestSmoke {
     private static String profile,original;
     private static int storageX,storageY,storageZ,offlineX,offlineY,offlineZ;
     private static UUID offlineOwner;
-    private static int collectorX,collectorY,collectorZ,collectorStored;
+    private static int collectorX,collectorY,collectorZ,collectorStored,offlineCollectorX,offlineCollectorStored,openerX,openerY,openerZ;
+    public static int[] openerPosition() { return new int[]{openerX,openerY,openerZ}; }
     public static int[] collectorPosition() { return new int[]{collectorX,collectorY,collectorZ}; }
     public static int[] storagePosition() { return new int[]{storageX,storageY,storageZ}; }
     public static void run(EntityPlayerMP player) throws Exception {
@@ -92,6 +93,18 @@ public final class NativeQuestSmoke {
             collectorStored=0; for(int slot=0;slot<9;slot++) if(collector.getStackInSlot(slot)!=null) collectorStored+=collector.getStackInSlot(slot).stackSize;
             if(extracted<=0 || collectorStored+extracted!=collected) throw new IllegalStateException("Real hopper lost collector outputs");
             for(int slot=0;slot<5;slot++) collectorHopper.setInventorySlotContents(slot,null); world.setBlockToAir(collectorX,collectorY-1,collectorZ);
+            offlineCollectorX=collectorX-2; world.setBlock(offlineCollectorX,collectorY,collectorZ,QuestBlocks.devices[3]); QuestDevice offlineCollector=(QuestDevice)world.getTileEntity(offlineCollectorX,collectorY,collectorZ); offlineCollector.owner=offlineOwner; offlineCollector.quest=collectorQuest.id; offlineCollector.task=collectorReward.id; offlineCollector.bindingChanged(); main.finishStored(offlineOwner,collectorQuest,world.getTotalWorldTime());
+            for(int i=0;i<20;i++) offlineCollector.updateEntity(); offlineCollectorStored=0; for(int slot=0;slot<9;slot++) if(offlineCollector.getStackInSlot(slot)!=null) offlineCollectorStored+=offlineCollector.getStackInSlot(slot).stackSize;
+            if(offlineCollectorStored<70 || offlineCollectorStored>73 || !main.progress().rewardClaimed(offlineOwner,collectorQuest.id,collectorReward.id,false) || main.claimed(offlineOwner,collectorQuest)) throw new IllegalStateException("Offline collector did not preserve selected item and remaining live rewards");
+            openerX=(int)Math.floor(player.posX)-3; openerY=(int)Math.floor(player.posY); openerZ=(int)Math.floor(player.posZ)-2;
+            world.setBlock(openerX,openerY,openerZ,QuestBlocks.devices[6]); QuestDevice opener=(QuestDevice)world.getTileEntity(openerX,openerY,openerZ); opener.owner=offlineOwner; opener.bindingChanged(); for(int slot=1;slot<=9;slot++) opener.setInventorySlotContents(slot,new net.minecraft.item.ItemStack(net.minecraft.init.Blocks.cobblestone,64));
+            world.setBlock(openerX,openerY+1,openerZ,net.minecraft.init.Blocks.hopper); net.minecraft.tileentity.TileEntityHopper crateFeeder=(net.minecraft.tileentity.TileEntityHopper)world.getTileEntity(openerX,openerY+1,openerZ); crateFeeder.setInventorySlotContents(0,QuestLoot.crate(utilities,"preview-drop"));
+            for(int i=0;i<40;i++) { crateFeeder.updateEntity(); opener.updateEntity(); }
+            if(opener.queuedLoot!=2 || opener.getStackInSlot(0)!=null || crateFeeder.getStackInSlot(0)!=null) throw new IllegalStateException("Offline crate opener did not persist exactly one roll behind full outputs"); world.setBlockToAir(openerX,openerY+1,openerZ);
+            int brokenOpenerX=openerX+12; world.setBlock(brokenOpenerX,openerY,openerZ,QuestBlocks.devices[6]); QuestDevice brokenOpener=(QuestDevice)world.getTileEntity(brokenOpenerX,openerY,openerZ); brokenOpener.owner=offlineOwner; brokenOpener.bindingChanged(); for(int slot=1;slot<=9;slot++) brokenOpener.setInventorySlotContents(slot,new net.minecraft.item.ItemStack(net.minecraft.init.Blocks.cobblestone,64)); brokenOpener.setInventorySlotContents(0,QuestLoot.crate(utilities,"preview-drop")); for(int i=0;i<20;i++) brokenOpener.updateEntity(); if(brokenOpener.queuedLoot!=2) throw new IllegalStateException("Pending break fixture did not roll"); world.setBlockToAir(brokenOpenerX,openerY,openerZ);
+            int pendingDrops=0,bufferDrops=0; for(Object raw:world.getEntitiesWithinAABB(net.minecraft.entity.item.EntityItem.class,net.minecraft.util.AxisAlignedBB.getBoundingBox(brokenOpenerX-1,openerY-1,openerZ-1,brokenOpenerX+2,openerY+2,openerZ+2))) { net.minecraft.entity.item.EntityItem entity=(net.minecraft.entity.item.EntityItem)raw; if(entity.getEntityItem().getItem()==net.minecraft.init.Items.stick) pendingDrops+=entity.getEntityItem().stackSize; if(entity.getEntityItem().getItem()==net.minecraft.item.Item.getItemFromBlock(net.minecraft.init.Blocks.cobblestone)) bufferDrops+=entity.getEntityItem().stackSize; entity.setDead(); }
+            if(pendingDrops!=2 || bufferDrops!=576) throw new IllegalStateException("Breaking a blocked opener lost or duplicated rolled loot");
+
             world.setBlock(storageX,storageY,storageZ,QuestBlocks.devices[7]); QuestStorage chest=(QuestStorage)world.getTileEntity(storageX,storageY,storageZ); chest.owner=id; chest.bindingChanged(); chest.setInventorySlotContents(26,new net.minecraft.item.ItemStack(net.minecraft.init.Items.iron_ingot,2));
             for(int i=0;i<20;i++) chest.updateEntity();
             if(chest.getStackInSlot(26)!=null || !main.progress().completed(id).contains(chestQuest.id)) throw new IllegalStateException("Quest chest did not submit items and finish its quest");
@@ -131,7 +144,7 @@ public final class NativeQuestSmoke {
         };
         net.minecraft.server.MinecraftServer.getServer().getCommandManager().executeCommand(unprivileged,"/quests stage "+player.getCommandSenderName()+" native-click add");
         if(denied.isEmpty() || main.progress().stage(id,"native-click")) throw new IllegalStateException("Player command permissions were bypassed");
-        System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, offline RF/fluid/hopper submission and restart, virtual crate storage beyond 32-bit counts, actual hopper extraction, sealed break drops and analog detector");
+        System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, offline RF/fluid/hopper submission and restart, offline collectors, persisted crate-opener roll and full/broken outputs, virtual crate storage beyond 32-bit counts, actual hopper extraction, sealed break drops and analog detector");
     }
     public static final class DropObserver {
         boolean seen;
@@ -144,6 +157,12 @@ public final class NativeQuestSmoke {
         QuestDevice collector=(QuestDevice)player.worldObj.getTileEntity(collectorX,collectorY,collectorZ); int savedCollected=0;
         for(int slot=0;slot<9;slot++) if(collector.getStackInSlot(slot)!=null) savedCollected+=collector.getStackInSlot(slot).stackSize;
         if(savedCollected!=collectorStored || !main.progress().rewardClaimed(player.getUniqueID(),"collector-machine","collected",false)) throw new IllegalStateException("Collector inventory or selected claim did not survive restart");
+        QuestDevice offlineCollector=(QuestDevice)player.worldObj.getTileEntity(offlineCollectorX,collectorY,collectorZ); int savedOfflineItems=0; for(int slot=0;slot<9;slot++) if(offlineCollector.getStackInSlot(slot)!=null) savedOfflineItems+=offlineCollector.getStackInSlot(slot).stackSize;
+        if(savedOfflineItems!=offlineCollectorStored || !offlineOwner.equals(offlineCollector.owner)) throw new IllegalStateException("Offline collector outputs did not survive restart");
+        QuestDevice opener=(QuestDevice)player.worldObj.getTileEntity(openerX,openerY,openerZ); if(opener.queuedLoot!=2 || opener.getStackInSlot(0)!=null || !offlineOwner.equals(opener.owner)) throw new IllegalStateException("Opener pending roll did not survive restart");
+        for(int slot=1;slot<=9;slot++) opener.setInventorySlotContents(slot,null); for(int i=0;i<20;i++) opener.updateEntity(); if(opener.queuedLoot!=0) throw new IllegalStateException("Persisted loot did not drain after freeing outputs");
+        player.worldObj.setBlock(openerX,openerY-1,openerZ,net.minecraft.init.Blocks.hopper); net.minecraft.tileentity.TileEntityHopper lootHopper=(net.minecraft.tileentity.TileEntityHopper)player.worldObj.getTileEntity(openerX,openerY-1,openerZ); for(int i=0;i<16;i++) lootHopper.updateEntity(); int lootTotal=0; for(int slot=1;slot<=9;slot++) if(opener.getStackInSlot(slot)!=null) lootTotal+=opener.getStackInSlot(slot).stackSize; int extractedLoot=0; for(int slot=0;slot<5;slot++) if(lootHopper.getStackInSlot(slot)!=null) { extractedLoot+=lootHopper.getStackInSlot(slot).stackSize; lootHopper.setInventorySlotContents(slot,null); }
+        if(extractedLoot<1 || lootTotal+extractedLoot!=2) throw new IllegalStateException("Actual hopper lost persisted opener loot"); player.worldObj.setBlockToAir(openerX,openerY-1,openerZ);
         net.minecraft.tileentity.TileEntity offlineRaw=player.worldObj.getTileEntity(offlineX,offlineY,offlineZ);
         if(!(offlineRaw instanceof QuestDevice) || !offlineOwner.equals(((QuestDevice)offlineRaw).owner) || !main.progress().completed(offlineOwner).contains("offline-machine") || main.progress().value(offlineOwner,"offline-machine","rf")!=100 || main.progress().value(offlineOwner,"offline-machine","water")!=250 || main.progress().value(offlineOwner,"offline-machine","items")!=2) throw new IllegalStateException("Offline machine progress or binding did not survive world restart");
         net.minecraft.tileentity.TileEntity raw=player.worldObj.getTileEntity(storageX,storageY,storageZ);

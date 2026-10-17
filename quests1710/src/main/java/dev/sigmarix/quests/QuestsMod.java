@@ -165,6 +165,7 @@ public final class QuestsMod {
                     QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
                     if(device.xCoord!=action.x || device.yCoord!=action.y || device.zCoord!=action.z || !device.isUseableByPlayer(player)) throw new IllegalArgumentException("Device unavailable");
                     int deviceMode=((QuestBlocks.DeviceBlock)device.getBlockType()).mode;
+                    if(deviceMode==6) throw new IllegalArgumentException("Crate openers use the crate loot table");
                     if((deviceMode==4 || deviceMode==5) && !editor(player)) throw new IllegalArgumentException("Operator permission required to configure task detectors");
                     if(action.action.equals("screen_options")) {
                         if(deviceMode!=0 && deviceMode!=1 || device.screenLinked || action.choices.length!=1 || action.choices[0]<0 || action.choices[0]>3) throw new IllegalArgumentException("Invalid screen option");

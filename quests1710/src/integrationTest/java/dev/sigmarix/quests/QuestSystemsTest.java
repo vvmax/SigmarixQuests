@@ -22,13 +22,13 @@ public class QuestSystemsTest {
     private QuestCore.Quest quest;
     private static QuestBlocks.LootCrateItem bankCrate;
     @BeforeClass public static void boot() { Bootstrap.func_151354_b(); bankCrate=new QuestBlocks.LootCrateItem(); cpw.mods.fml.common.registry.GameRegistry.registerItem(bankCrate,"test-bank-crate"); cpw.mods.fml.common.registry.GameRegistry.registerItem(QuestBlocks.crateParcel,"crate_parcel"); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestDevice.class,"sigmarixquests:test-device-base"); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestStorage.class,"sigmarixquests:test-storage"); }
-    @Before public void setup() {
+    @Before public void setup() throws Exception {
         player=mock(EntityPlayerMP.class);
         when(player.getUniqueID()).thenReturn(UUID.randomUUID());
         when(player.getRNG()).thenReturn(new Random(1));
         player.inventory=new InventoryPlayer(player);
         player.inventoryContainer=mock(Container.class);
-        player.worldObj=mock(World.class);
+        player.worldObj=mock(World.class); java.lang.reflect.Field randomField=World.class.getDeclaredField("rand"); randomField.setAccessible(true); randomField.set(player.worldObj,new Random(1));
         when(player.worldObj.getTotalWorldTime()).thenReturn(100L);
         data=new QuestProgress(); service=spy(new QuestService(new File("unused.json")));
         doReturn(data).when(service).progress();
@@ -37,6 +37,48 @@ public class QuestSystemsTest {
     }
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
+    }
+    @Test public void onlyTaskTerminalsAcceptResourceInputs() {
+        QuestCore.Task resource=task("energy",null,100,false); QuestDevice tile=terminalTile(); doReturn(new QuestBlocks.DeviceBlock(3,"collector_resources")).when(tile).getBlockType();
+        try {
+            assertFalse(tile.canConnectEnergy(ForgeDirection.UP)); assertEquals(0,tile.receiveEnergy(ForgeDirection.UP,100,false));
+            resource.type="fluid"; resource.target="water"; assertEquals(0,tile.fill(ForgeDirection.UP,new FluidStack(FluidRegistry.WATER,100),true)); assertEquals(0,data.value(tile.owner,quest.id,resource.id));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void offlineCollectorPreservesRootClaimsAndWaitsForLiveOnlyOneChecks() {
+        UUID owner=UUID.randomUUID(); task("check",null,1,false); QuestCore.Reward reward=new QuestCore.Reward(); reward.id="items"; reward.item="minecraft:iron_ingot"; reward.count=3; reward.mode="individual"; quest.rewards.add(reward); QuestCore.Reward live=new QuestCore.Reward(); live.id="live"; live.item="minecraft:diamond"; live.onlyOne=true; quest.rewards.add(live); data.complete(owner,quest.id);
+        List<ItemStack> output=new ArrayList<ItemStack>(); assertFalse(service.collectStored(owner,quest,"items",new Random(1),items->false,output::add)); assertFalse(data.rewardClaimed(owner,quest.id,"items",true));
+        assertTrue(service.collectStored(owner,quest,"items",new Random(1),items->true,output::add)); assertEquals(3,output.get(0).stackSize); assertTrue(data.rewardClaimed(owner,quest.id,"items",true)); assertFalse(data.rewardClaimed(player.getUniqueID(),quest.id,"items",true)); assertFalse(service.claimed(owner,quest));
+        assertFalse(service.collectStored(owner,quest,"live",new Random(1),items->true,output::add)); assertFalse(service.collectStored(owner,quest,"items",new Random(1),items->true,output::add)); assertEquals(1,output.size());
+    }
+    @Test public void automatedLootWaitsForPlayerBeforeRollingLiveEffects() {
+        QuestCore.Reward item=new QuestCore.Reward(); item.item="minecraft:iron_ingot"; item.count=3; QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=5; service.book.lootTables.put("mixed",Arrays.asList(item,xp));
+        ItemStack crate=new ItemStack(bankCrate,2); Random random=mock(Random.class); List<ItemStack> output=new ArrayList<ItemStack>();
+        assertFalse(service.openLootAutomated(player.getUniqueID(),null,"mixed",crate,random,output::add)); verifyNoInteractions(random); assertEquals(2,crate.stackSize);
+        when(random.nextInt(anyInt())).thenReturn(0); assertTrue(service.openLootAutomated(player.getUniqueID(),player,"mixed",crate,random,output::add)); assertEquals(1,crate.stackSize); assertEquals(3,output.get(0).stackSize); assertNull(player.inventory.mainInventory[0]);
+        service.book.lootTables.put("xp",Collections.singletonList(xp)); assertTrue(service.openLootAutomated(player.getUniqueID(),player,"xp",crate,random,output::add)); verify(player).addExperience(5); assertEquals(0,crate.stackSize);
+    }
+    @Test public void oversizedAutomatedLootFailsBeforeConsumingItsCrate() {
+        QuestCore.Reward item=new QuestCore.Reward(); item.item="minecraft:iron_ingot"; item.count=4096; service.book.lootTables.put("large",Collections.singletonList(item)); QuestCore.LootSettings settings=new QuestCore.LootSettings(); settings.rolls=9; service.book.lootSettings.put("large",settings); ItemStack crate=new ItemStack(bankCrate,1);
+        try { service.openLootAutomated(player.getUniqueID(),null,"large",crate,new Random(1),stack->{fail();}); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(1,crate.stackSize);
+    }
+    @Test public void openerQueuesOneRollAcrossFullOutputsAndNbtReload() {
+        QuestCore.Reward item=new QuestCore.Reward(); item.item="minecraft:iron_ingot"; item.count=4; item.nbt="{quality:7}"; service.book.lootTables.put("iron",Collections.singletonList(item));
+        when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(6,"offline_opener")); QuestDevice tile=new QuestDevice(); tile.setWorldObj(player.worldObj); tile.owner=UUID.randomUUID(); QuestsMod.service=service;
+        try {
+            for(int slot=1;slot<=9;slot++) tile.setInventorySlotContents(slot,new ItemStack(Items.gold_ingot,64)); ItemStack crate=new ItemStack(bankCrate,2); crate.setTagCompound(QuestService.tag("{table:iron}")); tile.setInventorySlotContents(0,crate);
+            assertEquals(10,tile.getSizeInventory()); assertTrue(tile.canInsertItem(0,crate,0)); assertFalse(tile.canExtractItem(0,crate,0)); assertTrue(tile.canExtractItem(1,tile.getStackInSlot(1),0));
+            for(int i=0;i<40;i++) tile.updateEntity(); assertEquals(1,tile.getStackInSlot(0).stackSize); assertEquals(4,tile.queuedLoot);
+            NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved); QuestDevice restored=new QuestDevice(); restored.setWorldObj(player.worldObj); restored.readFromNBT(saved);
+            net.minecraft.network.play.server.S35PacketUpdateTileEntity description=(net.minecraft.network.play.server.S35PacketUpdateTileEntity)tile.getDescriptionPacket(); assertFalse(description.func_148857_g().hasKey("pendingLoot")); restored.onDataPacket(null,description); assertEquals(4,restored.queuedLoot);
+            for(int slot=1;slot<=9;slot++) restored.setInventorySlotContents(slot,null); service.book.lootTables.clear(); for(int i=0;i<20;i++) restored.updateEntity();
+            assertEquals(1,restored.getStackInSlot(0).stackSize); assertEquals(0,restored.queuedLoot); assertEquals(4,restored.getStackInSlot(1).stackSize); assertEquals(7,restored.getStackInSlot(1).getTagCompound().getInteger("quality")); assertTrue(restored.drainPendingLoot().isEmpty());
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void partialRewardBufferInsertionConservesPendingItems() {
+        ItemStack[] outputs={new ItemStack(Items.iron_ingot,62)}; ItemStack pending=new ItemStack(Items.iron_ingot,7);
+        assertEquals(2,QuestRewardBuffer.offer(outputs,pending)); assertEquals(64,outputs[0].stackSize); assertEquals(7,pending.stackSize); assertEquals(0,QuestRewardBuffer.offer(outputs,pending));
     }
     @Test public void customTaskButtonsRequireServerCallbacksAndCannotReplayCompletedActions() {
         QuestCore.Task custom=task("custom","",3,false); custom.manual=true; service.confirm(player,quest,custom.id);
@@ -208,7 +250,7 @@ public class QuestSystemsTest {
     @Test public void rfSimulationDoesNotCreditAndRealAcceptanceIsBounded() {
         QuestCore.Task energy=task("energy",null,100,false);
         QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=energy.id; tile.setWorldObj(player.worldObj);
-        doReturn(player).when(tile).player(); QuestsMod.service=service;
+        doReturn(player).when(tile).player(); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"resource_test")); QuestsMod.service=service;
         try {
             assertEquals(100,tile.receiveEnergy(ForgeDirection.NORTH,200,true)); assertEquals(0,data.value(tile.owner,quest.id,energy.id));
             assertEquals(100,tile.receiveEnergy(ForgeDirection.NORTH,200,false)); assertEquals(100,data.value(tile.owner,quest.id,energy.id));
@@ -218,7 +260,7 @@ public class QuestSystemsTest {
     @Test public void fluidTerminalRejectsWrongFluidAndSimulationIsReadOnly() {
         QuestCore.Task fluid=task("fluid","water",1000,false);
         QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=fluid.id; tile.setWorldObj(player.worldObj);
-        doReturn(player).when(tile).player(); QuestsMod.service=service;
+        doReturn(player).when(tile).player(); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"resource_test")); QuestsMod.service=service;
         try {
             assertEquals(0,tile.fill(ForgeDirection.UP,new FluidStack(FluidRegistry.LAVA,1000),true));
             assertEquals(1000,tile.fill(ForgeDirection.UP,new FluidStack(FluidRegistry.WATER,2000),false));
@@ -687,7 +729,7 @@ public class QuestSystemsTest {
     @Test public void buildCraftBridgeSimulatesAndBoundsMicroMjProgress() {
         QuestCore.Task energy=task("buildcraft_mj",null,1600001,false);
         QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=energy.id; tile.setWorldObj(player.worldObj);
-        doReturn(player).when(tile).player(); QuestsMod.service=service;
+        doReturn(player).when(tile).player(); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"resource_test")); QuestsMod.service=service;
         try {
             assertEquals(17,tile.receiveEnergy(ForgeDirection.NORTH,100,true)); assertEquals(0,data.value(tile.owner,quest.id,energy.id));
             assertEquals(16,tile.receiveEnergy(ForgeDirection.NORTH,16,false)); assertEquals(1600000,data.value(tile.owner,quest.id,energy.id));

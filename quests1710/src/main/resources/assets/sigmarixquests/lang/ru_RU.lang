@@ -123,3 +123,8 @@ quests.ui.command=Команда
 quests.ui.notification=Уведомление
 
 quests.ui.shop=Магазин
+
+quests.ui.crate_opener=Открыватель кейсов
+quests.ui.queued_loot=Лут в очереди
+quests.ui.input=Вход
+quests.ui.outputs=Выходы

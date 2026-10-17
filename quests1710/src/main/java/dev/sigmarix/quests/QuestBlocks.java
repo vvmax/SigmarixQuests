@@ -70,10 +70,8 @@ public final class QuestBlocks {
             TileEntity tile=world.getTileEntity(x,y,z);
             if(!world.isRemote && tile instanceof QuestStorage) for(ItemStack parcel:((QuestStorage)tile).parcels()) world.spawnEntityInWorld(new net.minecraft.entity.item.EntityItem(world,x+.5,y+.5,z+.5,parcel));
             if(!world.isRemote && tile instanceof QuestDevice) {
-                for(int slot=0;slot<((QuestDevice)tile).getSizeInventory();slot++) {
-                    ItemStack input=((QuestDevice)tile).getStackInSlotOnClosing(slot);
-                    if(input!=null) world.spawnEntityInWorld(new net.minecraft.entity.item.EntityItem(world,x+.5,y+.5,z+.5,input));
-                }
+                if(tile instanceof QuestStorage) for(int slot=0;slot<((QuestStorage)tile).getSizeInventory();slot++) { ItemStack stack=((QuestStorage)tile).getStackInSlotOnClosing(slot); if(stack!=null) world.spawnEntityInWorld(new net.minecraft.entity.item.EntityItem(world,x+.5,y+.5,z+.5,stack)); }
+                for(ItemStack stack:((QuestDevice)tile).drainDeviceItems()) world.spawnEntityInWorld(new net.minecraft.entity.item.EntityItem(world,x+.5,y+.5,z+.5,stack));
             }
             super.breakBlock(world,x,y,z,block,meta);
         }

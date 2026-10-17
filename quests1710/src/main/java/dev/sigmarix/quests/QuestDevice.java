@@ -33,6 +33,10 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     private String euBinding="";
     private net.minecraft.item.ItemStack input;
     private final net.minecraft.item.ItemStack[] collectorItems=new net.minecraft.item.ItemStack[9];
+    private final java.util.List<net.minecraft.item.ItemStack> pendingLoot=new java.util.ArrayList<net.minecraft.item.ItemStack>();
+    public int queuedLoot;
+    public boolean opener() { return worldObj!=null && getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==6; }
+    private int outputIndex(int slot) { return collector()?(slot>=0 && slot<9?slot:-1):opener() && slot>=1 && slot<=9?slot-1:-1; }
     public boolean collector() { return worldObj!=null && getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==3; }
     public EntityPlayerMP player() {
         if(!QuestScreens.synchronize(this)) return null;
@@ -55,6 +59,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         return null;
     }
     private long remaining(String type) {
+        if(!taskTerminal()) return 0;
         QuestCore.Task t=definition(type); QuestService s=QuestsMod.service;
         if(worldObj==null || worldObj.isRemote || owner==null || t==null || !s.active(owner,s.quests.get(quest))) return 0;
         if(t.sticky && s.progress().taskDone(owner,quest,task)) return 0;
@@ -91,20 +96,47 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         if(mode==5) next=detectPlayers(worldObj.getEntitiesWithinAABB(EntityPlayerMP.class,detectorBounds()));
         if(mode==4) next=worldObj.getStrongestIndirectPower(xCoord,yCoord,zCoord)>=detectorPower;
         try {
-            if(player!=null && mode==6 && input!=null) {
-                if(QuestBlocks.LootCrateItem.open(player,input)) { if(input.stackSize<=0) input=null; markDirty(); }
+            if(mode==6 && owner!=null && bindingProfile.equals(s.progress().profile())) {
+                flushLoot();
+                if(pendingLoot.isEmpty() && input!=null && input.getItem() instanceof QuestBlocks.LootCrateItem) {
+                    try { if(!input.hasTagCompound()) throw new IllegalArgumentException("Loot crate needs a table"); s.openLootAutomated(owner,player,QuestLoot.table(input.getTagCompound()),input,worldObj.rand,this::queueLoot); }
+                    finally { if(input!=null && input.stackSize<=0) input=null; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); }
+                }
+                flushLoot();
             }
             if(mode==0 && q!=null && owner!=null) {
                 if(input!=null) { s.acceptItems(owner,quest,task,input,false); if(input.stackSize<=0) input=null; markDirty(); }
                 if(player!=null) { if(s.active(player,q)) s.finish(player,q); } else s.finishStored(owner,q,worldObj.getTotalWorldTime());
             }
             if(mode==4 && next && definition("custom")!=null && owner!=null) { creditDetected(owner,player); }
-            if(player!=null && q!=null) {
-                if(mode==3 && s.progress().completed(owner).contains(quest) && !s.claimed(owner,q)) s.collect(player,q,task,stacks->QuestRewardBuffer.fits(collectorItems,stacks),stack->{ if(!QuestRewardBuffer.add(collectorItems,stack)) throw new IllegalStateException("Collector capacity changed during reward transaction"); markDirty(); });
-
+            if(mode==3 && q!=null && owner!=null && s.progress().completed(owner).contains(quest) && !s.claimed(owner,q)) {
+                java.util.function.Predicate<java.util.List<net.minecraft.item.ItemStack>> capacity=stacks->QuestRewardBuffer.fits(collectorItems,stacks);
+                java.util.function.Consumer<net.minecraft.item.ItemStack> sink=stack->{ if(!QuestRewardBuffer.add(collectorItems,stack)) throw new IllegalStateException("Collector capacity changed during reward transaction"); markDirty(); };
+                if(player!=null) s.collect(player,q,task,capacity,sink); else s.collectStored(owner,q,task,worldObj.rand,capacity,sink);
             }
         } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest device at %s,%s,%s: %s",xCoord,yCoord,zCoord,ex.toString()); }
         if(signal!=next) { signal=next; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); worldObj.notifyBlocksOfNeighborChange(xCoord,yCoord,zCoord,getBlockType()); }
+    }
+    private void queueLoot(net.minecraft.item.ItemStack stack) {
+        if(pendingLoot.size()>=QuestService.MAX_AUTOMATED_STACKS) throw new IllegalArgumentException("Pending loot exceeds limit");
+        pendingLoot.add(stack.copy()); queuedLoot+=stack.stackSize; markDirty();
+    }
+    private void flushLoot() {
+        int previous=queuedLoot;
+        while(!pendingLoot.isEmpty()) {
+            net.minecraft.item.ItemStack first=pendingLoot.get(0); int accepted=QuestRewardBuffer.offer(collectorItems,first); first.stackSize-=accepted; queuedLoot-=accepted;
+            if(first.stackSize>0) break; pendingLoot.remove(0);
+        }
+        if(previous!=queuedLoot) { markDirty(); if(worldObj!=null) worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); }
+    }
+    public java.util.List<net.minecraft.item.ItemStack> drainDeviceItems() {
+        java.util.List<net.minecraft.item.ItemStack> result=new java.util.ArrayList<net.minecraft.item.ItemStack>();
+        if(input!=null && input.stackSize>0) result.add(input); input=null;
+        for(int i=0;i<collectorItems.length;i++) { if(collectorItems[i]!=null && collectorItems[i].stackSize>0) result.add(collectorItems[i]); collectorItems[i]=null; }
+        result.addAll(drainPendingLoot()); markDirty(); return result;
+    }
+    public java.util.List<net.minecraft.item.ItemStack> drainPendingLoot() {
+        java.util.List<net.minecraft.item.ItemStack> result=new java.util.ArrayList<net.minecraft.item.ItemStack>(pendingLoot); pendingLoot.clear(); queuedLoot=0; markDirty(); return result;
     }
     public AxisAlignedBB detectorBounds() {
         return AxisAlignedBB.getBoundingBox(xCoord+.5-detectorRadius,yCoord+detectorOffsetY,zCoord+.5-detectorRadius,xCoord+.5+detectorRadius,yCoord+detectorOffsetY+detectorHeight,zCoord+.5+detectorRadius);
@@ -138,6 +170,8 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         super.readFromNBT(nbt);
         try { owner=UUID.fromString(nbt.getString("owner")); } catch(IllegalArgumentException e) { owner=null; }
         euFraction=nbt.getDouble("euFraction"); if(!Double.isFinite(euFraction) || euFraction<0 || euFraction>=1) euFraction=0; euBinding=nbt.getString("euBinding");
+        pendingLoot.clear(); queuedLoot=Math.max(0,Math.min(QuestService.MAX_AUTOMATED_STACKS*64,nbt.getInteger("queuedLoot")));
+        if(nbt.hasKey("pendingLoot")) { queuedLoot=0; net.minecraft.nbt.NBTTagList queued=nbt.getTagList("pendingLoot",10); for(int i=0;i<Math.min(queued.tagCount(),QuestService.MAX_AUTOMATED_STACKS);i++) { net.minecraft.item.ItemStack stack=net.minecraft.item.ItemStack.loadItemStackFromNBT(queued.getCompoundTagAt(i)); if(stack!=null && stack.stackSize>0) { stack.stackSize=Math.min(64,stack.stackSize); pendingLoot.add(stack); queuedLoot+=stack.stackSize; } } }
         java.util.Arrays.fill(collectorItems,null); net.minecraft.nbt.NBTTagList storedRewards=nbt.getTagList("collectorItems",10);
         for(int i=0;i<storedRewards.tagCount();i++) { NBTTagCompound entry=storedRewards.getCompoundTagAt(i); int slot=entry.getByte("Slot"); if(slot>=0 && slot<9) collectorItems[slot]=net.minecraft.item.ItemStack.loadItemStackFromNBT(entry); }
         input=nbt.hasKey("input")?net.minecraft.item.ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("input")):null;
@@ -153,6 +187,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         quest=nbt.getString("quest"); task=nbt.getString("task"); signal=nbt.getBoolean("signal");
     }
     @Override public void writeToNBT(NBTTagCompound nbt) {
+        net.minecraft.nbt.NBTTagList queued=new net.minecraft.nbt.NBTTagList(); for(net.minecraft.item.ItemStack stack:pendingLoot) { NBTTagCompound entry=new NBTTagCompound(); stack.writeToNBT(entry); queued.appendTag(entry); } nbt.setTag("pendingLoot",queued); nbt.setInteger("queuedLoot",queuedLoot);
         net.minecraft.nbt.NBTTagList storedRewards=new net.minecraft.nbt.NBTTagList();
         for(int i=0;i<9;i++) if(collectorItems[i]!=null) { NBTTagCompound entry=new NBTTagCompound(); collectorItems[i].writeToNBT(entry); entry.setByte("Slot",(byte)i); storedRewards.appendTag(entry); } nbt.setTag("collectorItems",storedRewards);
         nbt.setBoolean("detectorNotifications",detectorNotifications); nbt.setDouble("detectorRadius",detectorRadius); nbt.setDouble("detectorOffsetY",detectorOffsetY); nbt.setDouble("detectorHeight",detectorHeight); nbt.setInteger("detectorPower",detectorPower);
@@ -160,8 +195,8 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         super.writeToNBT(nbt); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
     }
     @Override public AxisAlignedBB getRenderBoundingBox() { return AxisAlignedBB.getBoundingBox(xCoord-8,yCoord,zCoord-8,xCoord+9,yCoord+9,zCoord+9); }
-    @Override public Packet getDescriptionPacket() { NBTTagCompound nbt=new NBTTagCompound(); writeToNBT(nbt); nbt.removeTag("collectorItems"); nbt.removeTag("input"); return new S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,nbt); }
-    @Override public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet) { net.minecraft.item.ItemStack held=input; net.minecraft.item.ItemStack[] rewards=collectorItems.clone(); readFromNBT(packet.func_148857_g()); input=held; System.arraycopy(rewards,0,collectorItems,0,9); }
+    @Override public Packet getDescriptionPacket() { NBTTagCompound nbt=new NBTTagCompound(); writeToNBT(nbt); nbt.removeTag("collectorItems"); nbt.removeTag("input"); nbt.removeTag("pendingLoot"); return new S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,nbt); }
+    @Override public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet) { net.minecraft.item.ItemStack held=input; net.minecraft.item.ItemStack[] rewards=collectorItems.clone(); java.util.List<net.minecraft.item.ItemStack> queued=new java.util.ArrayList<net.minecraft.item.ItemStack>(pendingLoot); readFromNBT(packet.func_148857_g()); input=held; System.arraycopy(rewards,0,collectorItems,0,9); pendingLoot.clear(); pendingLoot.addAll(queued); }
     @Optional.Method(modid="IC2") private void registerEU() {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ic2.api.energy.event.EnergyTileLoadEvent(this)); euRegistered=true; euTier=getSinkTier();
     }
@@ -215,7 +250,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public boolean canFill(ForgeDirection from,Fluid fluid) { QuestCore.Task t=definition("fluid"); return t!=null && fluid!=null && fluid.getName().equals(t.target) && remaining("fluid")>0; }
     @Override public boolean canDrain(ForgeDirection from,Fluid fluid) { return false; }
     @Override public FluidTankInfo[] getTankInfo(ForgeDirection from) { return new FluidTankInfo[]{new FluidTankInfo(null,(int)Math.min(Integer.MAX_VALUE,remaining("fluid")))}; }
-    @Override public boolean canConnectEnergy(ForgeDirection from) { return definition("energy")!=null || definition("buildcraft_mj")!=null; }
+    @Override public boolean canConnectEnergy(ForgeDirection from) { return taskTerminal() && (definition("energy")!=null || definition("buildcraft_mj")!=null); }
     @Override public int receiveEnergy(ForgeDirection from,int amount,boolean simulate) {
         if(worldObj==null || worldObj.isRemote || amount<=0) return 0;
         boolean mj=definition("buildcraft_mj")!=null; long remaining=remaining(mj?"buildcraft_mj":"energy");
@@ -226,15 +261,17 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     }
     @Override public int getEnergyStored(ForgeDirection from) { return 0; }
     @Override public int getMaxEnergyStored(ForgeDirection from) { long remaining=remaining(definition("buildcraft_mj")!=null?"buildcraft_mj":"energy"); if(definition("buildcraft_mj")!=null) remaining=remaining/100000+(remaining%100000==0?0:1); return (int)Math.min(Integer.MAX_VALUE,remaining); }
-    @Override public int getSizeInventory() { return collector()?9:1; }
-    @Override public net.minecraft.item.ItemStack getStackInSlot(int slot) { return collector()?(slot>=0 && slot<9?collectorItems[slot]:null):slot==0?input:null; }
+    @Override public int getSizeInventory() { return opener()?10:collector()?9:1; }
+    @Override public net.minecraft.item.ItemStack getStackInSlot(int slot) { int index=outputIndex(slot); return index>=0?collectorItems[index]:slot==0 && !collector()?input:null; }
     @Override public net.minecraft.item.ItemStack decrStackSize(int slot,int amount) {
-        if(collector()) { if(slot<0 || slot>=9 || collectorItems[slot]==null || amount<=0) return null; net.minecraft.item.ItemStack taken=collectorItems[slot].splitStack(Math.min(amount,collectorItems[slot].stackSize)); if(collectorItems[slot].stackSize<=0) collectorItems[slot]=null; markDirty(); return taken; }
-        if(slot!=0 || input==null || amount<=0) return null;
-        net.minecraft.item.ItemStack taken=input.splitStack(Math.min(amount,input.stackSize)); if(input.stackSize<=0) input=null; markDirty(); return taken;
+        net.minecraft.item.ItemStack existing=getStackInSlot(slot); if(existing==null || amount<=0) return null;
+        net.minecraft.item.ItemStack taken=existing.splitStack(Math.min(amount,existing.stackSize)); if(existing.stackSize<=0) setInventorySlotContents(slot,null); markDirty(); return taken;
     }
-    @Override public net.minecraft.item.ItemStack getStackInSlotOnClosing(int slot) { if(collector()) { net.minecraft.item.ItemStack result=getStackInSlot(slot); if(slot>=0 && slot<9) collectorItems[slot]=null; markDirty(); return result; } if(slot!=0) return null; net.minecraft.item.ItemStack stack=input; input=null; markDirty(); return stack; }
-    @Override public void setInventorySlotContents(int slot,net.minecraft.item.ItemStack stack) { if(collector()) { if(slot<0 || slot>=9) return; collectorItems[slot]=stack; if(stack!=null) stack.stackSize=Math.min(stack.stackSize,Math.min(64,stack.getMaxStackSize())); markDirty(); return; } if(slot!=0) return; input=stack; if(input!=null) input.stackSize=Math.min(input.stackSize,getInventoryStackLimit()); markDirty(); }
+    @Override public net.minecraft.item.ItemStack getStackInSlotOnClosing(int slot) { net.minecraft.item.ItemStack result=getStackInSlot(slot); setInventorySlotContents(slot,null); return result; }
+    @Override public void setInventorySlotContents(int slot,net.minecraft.item.ItemStack stack) {
+        int index=outputIndex(slot); if(index>=0) collectorItems[index]=stack; else if(slot==0 && !collector()) input=stack; else return;
+        if(stack!=null) stack.stackSize=Math.min(stack.stackSize,Math.min(64,stack.getMaxStackSize())); markDirty();
+    }
     @Override public String getInventoryName() { return "Quest terminal"; }
     @Override public boolean hasCustomInventoryName() { return true; }
     @Override public int getInventoryStackLimit() { return 64; }
@@ -251,7 +288,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         if(!(getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)getBlockType()).mode!=0) return false;
         return worldObj!=null && !worldObj.isRemote && owner!=null && definition("item")!=null && QuestsMod.service.acceptItems(owner,quest,task,stack,true)>0;
     }
-    @Override public int[] getAccessibleSlotsFromSide(int side) { return collector()?new int[]{0,1,2,3,4,5,6,7,8}:new int[]{0}; }
+    @Override public int[] getAccessibleSlotsFromSide(int side) { return opener()?new int[]{0,1,2,3,4,5,6,7,8,9}:collector()?new int[]{0,1,2,3,4,5,6,7,8}:new int[]{0}; }
     @Override public boolean canInsertItem(int slot,net.minecraft.item.ItemStack stack,int side) { return isItemValidForSlot(slot,stack); }
-    @Override public boolean canExtractItem(int slot,net.minecraft.item.ItemStack stack,int side) { return collector() && slot>=0 && slot<9; }
+    @Override public boolean canExtractItem(int slot,net.minecraft.item.ItemStack stack,int side) { return outputIndex(slot)>=0; }
 }

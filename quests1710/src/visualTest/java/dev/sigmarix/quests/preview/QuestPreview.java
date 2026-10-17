@@ -23,7 +23,7 @@ public final class QuestPreview {
     private long oldRevision,lastSmokeStep,lastBookAttempt;
     private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
-    private volatile boolean detectorRequested,openCollectorRequested,inputRequested,openProgressRequested;
+    private volatile boolean detectorRequested,openCollectorRequested,inputRequested,openProgressRequested,openOpenerRequested;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
@@ -59,6 +59,7 @@ public final class QuestPreview {
             net.minecraft.entity.player.EntityPlayerMP actor=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
             if(QuestsMod.service.progress().stage(actor.getUniqueID(),"native-click")) commandVerified=true;
         }
+        if(openOpenerRequested) { openOpenerRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0); int[] position=NativeQuestSmoke.openerPosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]); }
         if(openCollectorRequested) {
             openCollectorRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
             int[] position=NativeQuestSmoke.collectorPosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]);
@@ -242,7 +243,7 @@ public final class QuestPreview {
                     if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
                     if(pinPassed && (!snap.pinned.contains("welcome") || snap.percentages.getOrDefault("welcome",0)!=100)) throw new IllegalStateException("Pinned quest did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, pinned HUD and restart persistence, notification history, custom click callback, confirmed file action, permission-checked network command, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, pinned HUD and restart persistence, notification history, custom click callback, confirmed file action, permission-checked network command, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress, world chapter map, fullscreen/hideIcons, input-only held icon, configured public detectors, scripted task button, conditional shop hook, offline collectors and persistent crate-opener roll".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
                     PreviewImageServer.stop(); mc.shutdown(); return;
                 }
                 if(!teamPassed) {
@@ -537,6 +538,12 @@ public final class QuestPreview {
                 QuestDeviceContainer collectorContainer=(QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots;
                 if(!collectorContainer.tile.collector() || collectorContainer.inventorySlots.size()!=45 || collectorContainer.tile.getStackInSlot(0)==null) throw new IllegalStateException("Nine-slot collector inventory did not synchronize");
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-reward-collector.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.thePlayer.closeScreen(); openOpenerRequested=true; stage=75; waiting=0; break;
+            case 75:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
+                QuestDeviceContainer openerContainer=(QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots;
+                if(!openerContainer.tile.opener() || openerContainer.inventorySlots.size()!=46 || openerContainer.queuedLoot!=2) throw new IllegalStateException("Crate opener inventory or pending counter did not synchronize");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-crate-opener.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=73; waiting=0; break;
             case 73:
                 if(waiting<20) return;

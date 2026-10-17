@@ -12,7 +12,7 @@ public final class QuestDeviceScreen extends GuiContainer {
     public QuestDeviceScreen(EntityPlayer player,QuestDevice tile) { super(new QuestDeviceContainer(player,tile)); container=(QuestDeviceContainer)inventorySlots; xSize=280; ySize=192; }
     @Override public void initGui() {
         int mode=container.tile.getBlockType() instanceof QuestBlocks.DeviceBlock?((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode:0; xSize=mode==0 || mode==1 || mode==4 || mode==5?390:280;
-        ySize=mode==3?228:192;
+        ySize=mode==3 || mode==6?228:192;
         super.initGui(); Keyboard.enableRepeatEvents(true); ClientProxy.send(new QuestNetwork.Action());
         if(mode==4 || mode==5) {
             detectorFields=new GuiTextField[4]; String[] values={Double.toString(container.tile.detectorRadius),Double.toString(container.tile.detectorOffsetY),Double.toString(container.tile.detectorHeight),Integer.toString(container.tile.detectorPower)};
@@ -26,8 +26,7 @@ public final class QuestDeviceScreen extends GuiContainer {
         }
         quest=new GuiTextField(fontRendererObj,guiLeft+56,guiTop+24,210,16); quest.setMaxStringLength(160); quest.setText(container.tile.quest);
         task=new GuiTextField(fontRendererObj,guiLeft+56,guiTop+44,210,16); task.setMaxStringLength(64); task.setText(container.tile.task);
-        buttonList.add(new GuiButton(0,guiLeft+184,guiTop+72,82,20,QuestText.tr("Bind")));
-        buttonList.add(new GuiButton(1,guiLeft+184,guiTop+98,82,20,QuestText.tr("Unbind")));
+        if(mode!=6) { buttonList.add(new GuiButton(0,guiLeft+184,guiTop+72,82,20,QuestText.tr("Bind"))); buttonList.add(new GuiButton(1,guiLeft+184,guiTop+98,82,20,QuestText.tr("Unbind"))); }
         if(container.tile.getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode==9) buttonList.add(new GuiButton(5,guiLeft+184,guiTop+46,82,20,"0/15 / analog"));
         if(mode==0 || mode==1) { buttonList.add(new GuiButton(3,guiLeft+184,guiTop+150,40,20,"W+")); buttonList.add(new GuiButton(4,guiLeft+226,guiTop+150,40,20,"H+")); }
         if(mode==3) buttonList.add(new GuiButton(8,guiLeft+184,guiTop+150,82,20,"Reward >"));
@@ -56,23 +55,24 @@ public final class QuestDeviceScreen extends GuiContainer {
     @Override protected void drawGuiContainerBackgroundLayer(float partial,int x,int y) {
         GL11.glColor4f(1,1,1,1); drawRect(guiLeft,guiTop,guiLeft+xSize,guiTop+ySize,0xFF26313D);
         for(Object raw:container.inventorySlots) { net.minecraft.inventory.Slot slot=(net.minecraft.inventory.Slot)raw; drawRect(guiLeft+slot.xDisplayPosition-1,guiTop+slot.yDisplayPosition-1,guiLeft+slot.xDisplayPosition+17,guiTop+slot.yDisplayPosition+17,0xFF65717D); drawRect(guiLeft+slot.xDisplayPosition,guiTop+slot.yDisplayPosition,guiLeft+slot.xDisplayPosition+16,guiTop+slot.yDisplayPosition+16,0xFF101820); }
-        drawRect(guiLeft+(container.tile.collector()?82:42),guiTop+78,guiLeft+164,guiTop+88,0xFF101820); drawRect(guiLeft+(container.tile.collector()?83:43),guiTop+79,guiLeft+(container.tile.collector()?83:43)+container.percent*(container.tile.collector()?80:120)/100,guiTop+87,0xFF60B978);
+        if(!container.tile.opener()) { int left=container.tile.collector()?82:42; drawRect(guiLeft+left,guiTop+78,guiLeft+164,guiTop+88,0xFF101820); drawRect(guiLeft+left+1,guiTop+79,guiLeft+left+1+container.percent*(162-left)/100,guiTop+87,0xFF60B978); }
     }
     @Override protected void drawGuiContainerForegroundLayer(int x,int y) {
         for(Object raw:buttonList) { GuiButton button=(GuiButton)raw; if(button.id==9) button.displayString=container.tile.getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode==0?"Input only: "+container.tile.screenInputOnly:"Fullscreen: "+container.tile.screenFullscreen; if(button.id==10 && ((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode==1) button.displayString="Hide icons: "+container.tile.screenHideIcons; if(button.id==7) button.displayString="Notifications: "+(container.tile.detectorNotifications?"ON":"OFF"); }
         String[] detectorLabels={"Radius","Vertical offset","Height","Redstone threshold"}; for(int i=0;i<detectorFields.length;i++) fontRendererObj.drawString(detectorLabels[i],282,14+i*30,0xEEEEEE);
-        fontRendererObj.drawString(QuestText.tr("Quest device"),12,8,0xFFFFFF); fontRendererObj.drawString(QuestText.tr("Quest"),12,28,0xEEEEEE); fontRendererObj.drawString(QuestText.tr(container.tile.collector()?"Reward":"Task"),12,48,0xEEEEEE);
-        if(!container.tile.collector()) fontRendererObj.drawString(container.tile.screenWidth+" x "+container.tile.screenHeight,184,174,0xB8CDD9);
-        fontRendererObj.drawString(container.percent+"% / signal "+container.signal,42,66,0xEEEEEE);
+        fontRendererObj.drawString(QuestText.tr(container.tile.opener()?"Crate opener":"Quest device"),12,8,0xFFFFFF);
+        if(container.tile.opener()) { fontRendererObj.drawString(QuestText.tr("Queued loot")+": "+container.queuedLoot,12,28,0xEEEEEE); fontRendererObj.drawString(QuestText.tr("Input"),12,60,0xEEEEEE); fontRendererObj.drawString(QuestText.tr("Outputs"),50,60,0xEEEEEE); }
+        else { fontRendererObj.drawString(QuestText.tr("Quest"),12,28,0xEEEEEE); fontRendererObj.drawString(QuestText.tr(container.tile.collector()?"Reward":"Task"),12,48,0xEEEEEE); fontRendererObj.drawString(container.percent+"% / signal "+container.signal,42,66,0xEEEEEE); }
+        if(!container.tile.collector() && !container.tile.opener()) fontRendererObj.drawString(container.tile.screenWidth+" x "+container.tile.screenHeight,184,174,0xB8CDD9);
         if(ClientProxy.snapshot!=null) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(ClientProxy.snapshot.message,260),12,ySize-8,0xFFDD77);
     }
-    @Override public void drawScreen(int x,int y,float partial) { super.drawScreen(x,y,partial); quest.drawTextBox(); task.drawTextBox(); for(GuiTextField field:detectorFields) field.drawTextBox(); }
+    @Override public void drawScreen(int x,int y,float partial) { super.drawScreen(x,y,partial); if(!container.tile.opener()) { quest.drawTextBox(); task.drawTextBox(); } for(GuiTextField field:detectorFields) field.drawTextBox(); }
     @Override protected void keyTyped(char ch,int key) {
         if(key==Keyboard.KEY_ESCAPE) { mc.thePlayer.closeScreen(); return; }
         for(GuiTextField field:detectorFields) if(field.textboxKeyTyped(ch,key)) return;
-        if(!quest.textboxKeyTyped(ch,key) && !task.textboxKeyTyped(ch,key)) super.keyTyped(ch,key);
+        if(container.tile.opener() || !quest.textboxKeyTyped(ch,key) && !task.textboxKeyTyped(ch,key)) super.keyTyped(ch,key);
     }
-    @Override protected void mouseClicked(int x,int y,int button) { super.mouseClicked(x,y,button); quest.mouseClicked(x,y,button); task.mouseClicked(x,y,button); for(GuiTextField field:detectorFields) field.mouseClicked(x,y,button); }
+    @Override protected void mouseClicked(int x,int y,int button) { super.mouseClicked(x,y,button); if(!container.tile.opener()) { quest.mouseClicked(x,y,button); task.mouseClicked(x,y,button); } for(GuiTextField field:detectorFields) field.mouseClicked(x,y,button); }
     @Override public void updateScreen() { super.updateScreen(); quest.updateCursorCounter(); task.updateCursorCounter(); for(GuiTextField field:detectorFields) field.updateCursorCounter(); }
     @Override public void onGuiClosed() { super.onGuiClosed(); Keyboard.enableRepeatEvents(false); }
 }
