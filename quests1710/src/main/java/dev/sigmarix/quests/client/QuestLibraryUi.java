@@ -28,16 +28,17 @@ final class QuestLibraryUi extends Gui {
     static void slot(int x,int y,int w,int h) {patch("container_beacon",35,136,18,18,3,x-1,y-1,w+2,h+2);}
     static void textBox(int x,int y,int w,int h) {patch("container_enchanting_table",0,185,108,19,6,x,y,w,h);}
     static class Button extends GuiButton {
-        final String icon;
+        final String icon;private boolean centered=true;
         Button(int id,int x,int y,int w,int h,String title,String icon) {super(id,x,y,w,h,title);this.icon=icon;}
+        Button left(){centered=false;return this;}
         @Override public void drawButton(Minecraft mc,int mx,int my) {
             if(!visible)return; field_146123_n=mx>=xPosition && my>=yPosition && mx<xPosition+width && my<yPosition+height;
             patch("widgets",0,!enabled?46:field_146123_n?86:66,200,20,4,xPosition,yPosition,width,height);
             int color=!enabled?0xFFA0A0A0:field_146123_n?0xFFFFFFA0:0xFFFFFFFF;
             int off=(height-16)/2,tx=xPosition+4;
-            if(!icon.isEmpty()) {QuestClassicUi.icon(icon,xPosition+off,yPosition+off,16,color);tx+=off+16;}
+            if(!icon.isEmpty()) {QuestClassicUi.libraryIcon(icon,xPosition+off,yPosition+off,16,color);tx+=off+16;}
             String title=mc.fontRenderer.trimStringToWidth(displayString,width-(tx-xPosition)-4);
-            if(icon.isEmpty())tx=xPosition+(width-mc.fontRenderer.getStringWidth(title))/2;
+            if(icon.isEmpty() && centered)tx=xPosition+(width-mc.fontRenderer.getStringWidth(title))/2;
             mc.fontRenderer.drawStringWithShadow(title,tx,yPosition+(height-9+1)/2,color);
         }
     }

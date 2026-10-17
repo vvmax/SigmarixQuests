@@ -219,8 +219,13 @@ public final class QuestsMod {
                         device.quest=quest.id; device.task=action.text;
                     }
                     device.bindingChanged(); message="Device binding updated"; break;
+                case "autopin":service.progress().autoPin(player.getUniqueID(),!service.progress().autoPin(player.getUniqueID()));message="Automatic tracking updated";break;
+                case "team_settings":service.progress().teamSettings(player.getUniqueID(),action.teamSettings);message="Team settings saved";break;
+                case "team_select":service.progress().selectTeam(player.getUniqueID(),action.text);message="Team selection updated";break;
+                case "team_player":service.progress().teamPlayerAction(player.getUniqueID(),UUID.fromString(action.id),action.text);message="Team player updated";break;
+                case "team_exit":service.progress().exitTeam(player.getUniqueID());message="Left team";break;
                 case "team_create": case "team_invite": case "team_join": case "team_kick": case "team_leave": case "team_disband":
-                    if(action.text==null || action.text.length()>32) throw new IllegalArgumentException("Invalid team input");
+                    if(action.text==null || action.text.length()>(action.action.equals("team_create")?35:32))throw new IllegalArgumentException("Invalid team input");
                     if(action.action.equals("team_create") && (action.x<0 || action.x>0xFFFFFF))throw new IllegalArgumentException("Invalid team color");
                     new QuestCommand().team(player,player,new String[]{"team",action.action.substring(5),action.text});
                     if(action.action.equals("team_create"))service.progress().teamColor(player.getUniqueID(),action.x==0?0x0094FF:action.x);
@@ -230,9 +235,17 @@ public final class QuestsMod {
                 case "submit": if(quest==null) throw new IllegalArgumentException("Unknown quest"); message="Submitted: "+service.submit(player,quest,action.text); break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
                 case "click_task": service.clickTask(player,quest,action.text); message="Task updated"; break;
+                case "claim_all":message="Rewards claimed: "+service.claimAll(player);break;
                 case "claim_reward": service.claimReward(player,quest,action.text,choices); message="Reward claimed"; break;
                 case "claim": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.claim(player,quest,choices); message="Rewards claimed"; break;
                 case "repeat": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.repeat(player,quest); message="Quest reset"; break;
+                case "progress_reset": case "progress_complete":
+                    if(!editor(player))throw new IllegalArgumentException("Operator permission required");
+                    for(QuestCore.Quest target:service.book.quests)if(action.id==null || action.id.isEmpty() || action.id.equals(target.id)) {
+                        if(action.action.equals("progress_reset")) service.progress().reset(player.getUniqueID(),target.id);
+                        else {for(QuestCore.Task task:target.tasks){service.progress().add(player.getUniqueID(),target.id,task.id,task.count,task.count);service.progress().markTask(player.getUniqueID(),target.id,task.id);}service.progress().complete(player.getUniqueID(),target.id);service.progress().timestamp(player.getUniqueID(),target.id,player.worldObj.getTotalWorldTime());}
+                    }
+                    message="Progress updated";break;
                 case "save": if(!editor(player)) throw new IllegalArgumentException("Operator permission required"); service.save(action.book,action.revision); message="Book saved (backup written)"; break;
                 default: throw new IllegalArgumentException("Unknown action");
             }
@@ -248,6 +261,9 @@ public final class QuestsMod {
         QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot(); snapshot.profile=service.progress().profile(); snapshot.revision=service.revision; snapshot.canEdit=editor(player); snapshot.message=message;
         QuestProgress data=service.progress(); UUID id=player.getUniqueID(); Set<String> done=data.completed(id);
         snapshot.emergencyWait=service.emergencyWait(player); snapshot.team=data.teamName(id); snapshot.teamLeader=data.leader(id); snapshot.teamColor=data.teamColor(id);
+        for(Object raw:net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList){EntityPlayerMP online=(EntityPlayerMP)raw;data.remember(online.getUniqueID(),online.getCommandSenderName());}
+        snapshot.autoPin=data.autoPin(id);snapshot.teamId=data.team(id);snapshot.teamModerator=data.moderator(id);snapshot.teamSettings=data.teamSettings(id);snapshot.teams=data.publicTeams(id);snapshot.teamPlayers=data.teamPlayers(id);
+        for(QuestNetwork.TeamPlayer entry:snapshot.teamPlayers)for(Object raw:net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList)if(((EntityPlayerMP)raw).getUniqueID().toString().equals(entry.id))entry.online=true;
         for(UUID member:data.members(id)) snapshot.teamMembers.add(playerName(member));
         for(UUID leader:data.invitations(id)) snapshot.teamInvites.add(playerName(leader));
         snapshot.leaderboard=data.leaderboard(service.quests.keySet());

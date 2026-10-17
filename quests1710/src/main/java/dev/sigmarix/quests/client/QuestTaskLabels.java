@@ -10,7 +10,7 @@ public final class QuestTaskLabels {
     public static String title(QuestCore.Task task) {
         if(!task.title.isEmpty()) return task.title;
         switch(task.type) {
-            case "check": return QuestText.tr("Confirm");
+            case "check": return net.minecraft.util.StatCollector.translateToLocal("ftbquests.task.ftbquests.checkmark");
             case "item": String item=item(task.target,task.meta,task.nbt); return item.isEmpty()?QuestText.tr("Items"):item;
             case "fluid": net.minecraftforge.fluids.Fluid fluid=net.minecraftforge.fluids.FluidRegistry.getFluid(task.target); return fluid==null?QuestText.tr("Fluid"):fluid.getLocalizedName(new net.minecraftforge.fluids.FluidStack(fluid,1));
             case "energy": return QuestText.tr("Energy")+" (RF)";
@@ -38,10 +38,10 @@ public final class QuestTaskLabels {
     public static String reward(QuestCore.Reward reward) {
         if(!reward.title.isEmpty()) return reward.title;
         switch(reward.type) {
-            case "item": String item=item(reward.item,reward.meta,reward.nbt); return (item.isEmpty()?QuestText.tr("Items"):item)+" x"+reward.count;
-            case "xp": return reward.count+" "+QuestText.tr("Experience");
-            case "xp_levels": return reward.count+" "+QuestText.tr("Experience levels");
-            case "choice": return QuestText.tr("Choose a reward");
+            case "item": String item=item(reward.item,reward.meta,reward.nbt); return (reward.count>1?(reward.randomBonus>0?reward.count+"-"+(reward.count+reward.randomBonus):Integer.toString(reward.count))+"x ":"")+(item.isEmpty()?QuestText.tr("Items"):item);
+            case "xp": return net.minecraft.util.StatCollector.translateToLocal("ftbquests.reward.ftbquests.xp")+": §a+"+reward.count;
+            case "xp_levels": return net.minecraft.util.StatCollector.translateToLocal("ftbquests.reward.ftbquests.xp_levels")+": §a+"+reward.count;
+            case "choice": return net.minecraft.util.StatCollector.translateToLocal("ftbquests.reward.ftbquests.choice");
             case "random": case "loot": return QuestText.tr("Random reward");
             case "command": return QuestText.tr("Command");
             case "toast": return QuestText.tr("Notification");

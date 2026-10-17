@@ -20,6 +20,20 @@ public final class QuestObjectScreen extends GuiScreen {
         this.parent=parent; session=new Session(); session.root=QuestEditing.tree(ClientProxy.snapshot.book).getAsJsonObject(); session.revision=ClientProxy.snapshot.revision; session.destination=parent;
         node=session.root; field="book"; path="Book";
     }
+    /** Opens a scoped draft while preserving the complete book for validation and atomic save. */
+    public QuestObjectScreen(GuiScreen parent,String questId,String collection,String objectId) {
+        this.parent=parent;session=new Session();session.root=QuestEditing.tree(ClientProxy.snapshot.book).getAsJsonObject();session.revision=ClientProxy.snapshot.revision;session.destination=parent;
+        JsonElement selected=session.root;String scope="book",label="Book";
+        if(!questId.isEmpty()) for(JsonElement entry:session.root.getAsJsonArray("quests")) if(entry.getAsJsonObject().get("id").getAsString().equals(questId)) {
+            selected=entry;scope="quests";label=questId;
+            if(!collection.isEmpty()) {selected=entry.getAsJsonObject().get(collection);scope=collection;label+=" / "+collection;
+                if(objectId!=null && !objectId.isEmpty()) for(JsonElement value:selected.getAsJsonArray()) if(value.getAsJsonObject().has("id") && value.getAsJsonObject().get("id").getAsString().equals(objectId)){selected=value;break;}
+            }
+            break;
+        }
+        if(questId.isEmpty() && !collection.isEmpty()) {selected=session.root.get(collection);scope=collection;label=collection;if(objectId!=null && !objectId.isEmpty() && selected.isJsonObject() && selected.getAsJsonObject().has(objectId)){selected=selected.getAsJsonObject().get(objectId);scope=collection.equals("lootTables")?"lootEntries":collection;label+=" / "+objectId;}}
+        node=selected;field=scope;path=label;
+    }
     private QuestObjectScreen(QuestObjectScreen parent,JsonElement node,String field,String label) { this.parent=parent; session=parent.session; this.node=node; this.field=field; path=parent.path+" / "+label; }
     @Override public void initGui() { rebuild(); }
     private int size() { return node.isJsonArray()?node.getAsJsonArray().size():keys.size(); }

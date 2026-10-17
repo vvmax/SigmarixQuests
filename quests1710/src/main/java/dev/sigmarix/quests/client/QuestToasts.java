@@ -1,48 +1,41 @@
 package dev.sigmarix.quests.client;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import dev.sigmarix.quests.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.*;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import org.lwjgl.opengl.GL11;
-/** Bounded main-render-thread notification queue. No GUI screen is opened by a toast. */
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;import cpw.mods.fml.common.gameevent.TickEvent;
+import dev.sigmarix.quests.*;import java.util.*;import java.util.concurrent.ArrayBlockingQueue;
+import net.minecraft.client.Minecraft;import net.minecraft.client.gui.*;import net.minecraft.util.*;import org.lwjgl.opengl.GL11;
+/** The 1.12 toast sheet, timing, five-slot stack and bounded notification history. */
 public final class QuestToasts extends Gui {
     private static final ArrayBlockingQueue<String> QUEUE=new ArrayBlockingQueue<String>(32);
-    private static final java.util.ArrayDeque<QuestNetwork.Toast> pending=new java.util.ArrayDeque<QuestNetwork.Toast>(),history=new java.util.ArrayDeque<QuestNetwork.Toast>();
-    private static volatile boolean reset;
-    public static java.util.List<QuestNetwork.Toast> history() { return new java.util.ArrayList<QuestNetwork.Toast>(history); }
-    public static void disconnect() { clear(); history.clear(); }
-    public static void pump() {
-        String json; while((json=QUEUE.poll())!=null) try {
-            QuestNetwork.Toast toast=QuestService.JSON.fromJson(json,QuestNetwork.Toast.class);
-            if(toast==null || toast.title==null || toast.text==null || toast.title.length()>8192 || toast.text.length()>8192 || toast.iconMeta<0 || toast.iconNbt==null || toast.iconNbt.length()>65536) continue;
-            if(toast.task!=null && (toast.task.type==null || toast.task.title==null || toast.task.title.length()>256)) continue;
-            if(history.size()>=64) history.removeLast(); history.addFirst(toast); if(pending.size()>=32) pending.removeFirst(); pending.addLast(toast);
-        } catch(RuntimeException invalid) {}
-    }
-    public static void clear() { QUEUE.clear(); pending.clear(); reset=true; }
-    private QuestNetwork.Toast current; private long since;
-    public static void enqueue(String json) { QUEUE.offer(json); }
-    @SubscribeEvent public void render(TickEvent.RenderTickEvent event) {
-        if(event.phase!=TickEvent.Phase.END) return;
-        Minecraft mc=Minecraft.getMinecraft();
-        if(reset) { current=null; reset=false; }
-        if(mc.theWorld==null) { disconnect(); current=null; return; }
-        long now=Minecraft.getSystemTime();
-        if(current!=null && now-since>5000) current=null;
-        if(current==null) { current=pending.pollFirst(); if(current==null) return; since=now; }
-        int x=new net.minecraft.client.gui.ScaledResolution(mc,mc.displayWidth,mc.displayHeight).getScaledWidth()-224,y=36;
-        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
-        GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glPushMatrix(); GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPushMatrix();
-        mc.entityRenderer.setupOverlayRendering(); GL11.glDisable(GL11.GL_DEPTH_TEST);
-        drawRect(x,y,x+220,y+46,0xEF18212B); drawRect(x,y,x+3,y+46,0xFF60B978);
-        Item item=(Item)Item.itemRegistry.getObject(current.icon==null?"minecraft:book":current.icon);
-        if(item!=null) { ItemStack stack=new ItemStack(item,1,current.iconMeta); try { stack.setTagCompound(QuestService.tag(current.iconNbt)); } catch(RuntimeException invalid) {} RenderHelper.enableGUIStandardItemLighting(); new net.minecraft.client.renderer.entity.RenderItem().renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,x+10,y+13); RenderHelper.disableStandardItemLighting(); }
-        mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(current.task==null?current.title:QuestTaskLabels.title(current.task),174),x+36,y+10,0xFFFFCC66);
-        mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(QuestText.tr(current.text),174),x+36,y+26,0xFFEEEEEE);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPopMatrix(); GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glPopMatrix(); GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPopAttrib();
+    private static final ArrayDeque<QuestNetwork.Toast> pending=new ArrayDeque<QuestNetwork.Toast>(),history=new ArrayDeque<QuestNetwork.Toast>();
+    private static volatile boolean reset;private static final class Active{QuestNetwork.Toast toast;long since;int slot;Active(QuestNetwork.Toast t,long now,int slot){toast=t;since=now;this.slot=slot;}}
+    private final List<Active> active=new ArrayList<Active>();
+    public static List<QuestNetwork.Toast> history(){return new ArrayList<QuestNetwork.Toast>(history);}
+    public static void disconnect(){clear();history.clear();}
+    public static void clear(){QUEUE.clear();pending.clear();reset=true;}
+    public static void enqueue(String json){QUEUE.offer(json);}
+    public static void pump(){String json;while((json=QUEUE.poll())!=null)try{
+        QuestNetwork.Toast toast=QuestService.JSON.fromJson(json,QuestNetwork.Toast.class);if(toast==null || toast.title==null || toast.text==null || toast.title.length()>8192 || toast.text.length()>8192 || toast.iconMeta<0 || toast.iconNbt==null || toast.iconNbt.length()>65536)continue;
+        if(toast.task!=null && (toast.task.type==null || toast.task.title==null || toast.task.title.length()>256))continue;
+        if(history.size()>=64)history.removeLast();history.addFirst(toast);
+        GuiScreen screen=Minecraft.getMinecraft().currentScreen;if(toast.reward!=null && screen instanceof QuestNotificationsScreen && ((QuestNotificationsScreen)screen).rewardReceived(toast))continue;
+        if(pending.size()>=32)pending.removeFirst();pending.addLast(toast);
+    }catch(RuntimeException invalid){}}
+    @SubscribeEvent public void render(TickEvent.RenderTickEvent event){
+        if(event.phase!=TickEvent.Phase.END)return;Minecraft mc=Minecraft.getMinecraft();if(reset){active.clear();reset=false;}if(mc.theWorld==null){disconnect();active.clear();return;}if(mc.gameSettings.hideGUI)return;
+        long now=Minecraft.getSystemTime();active.removeIf(a->now-a.since>=6200);
+        while(active.size()<5 && !pending.isEmpty()){int slot=0;for(;slot<5;slot++){boolean used=false;for(Active a:active)if(a.slot==slot)used=true;if(!used)break;}active.add(new Active(pending.removeFirst(),now,slot));}
+        if(active.isEmpty())return;ScaledResolution res=new ScaledResolution(mc,mc.displayWidth,mc.displayHeight);
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glMatrixMode(GL11.GL_PROJECTION);GL11.glPushMatrix();GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glPushMatrix();
+        try{mc.entityRenderer.setupOverlayRendering();GL11.glDisable(GL11.GL_DEPTH_TEST);GL11.glDisable(GL11.GL_LIGHTING);GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
+            for(Active a:active){long age=now-a.since,delta=Math.max(0,age-600);double transition=age<600?age/600D:age>5600?1-(age-5600)/600D:1;transition=Math.max(0,Math.min(1,transition));if(age<600)transition*=transition;else if(age>5600)transition=1-Math.pow(1-transition,2);int x=(int)(res.getScaledWidth()-160*transition),y=a.slot*32;
+                mc.getTextureManager().bindTexture(new ResourceLocation("sigmarixquests:textures/reference/toasts.png"));GL11.glColor4f(1,1,1,1);drawTexturedModalRect(x,y,0,0,160,32);
+                QuestNetwork.Toast t=a.toast;String title=t.reward!=null?StatCollector.translateToLocal("ftbquests.reward.collected"):t.task!=null?StatCollector.translateToLocal("ftbquests.task.completed"):t.text.equals("Quest complete")?StatCollector.translateToLocal("ftbquests.quest.completed"):t.title;
+                String subtitle=t.reward!=null?QuestTaskLabels.reward(t.reward):t.task!=null?QuestTaskLabels.title(t.task):t.text.equals("Quest complete")?t.title:t.text;
+                List<String> lines=mc.fontRenderer.listFormattedStringToWidth(subtitle,125);
+                if(lines.size()==1){mc.fontRenderer.drawString(title,x+30,y+7,0xFFFFFF00);mc.fontRenderer.drawString(lines.get(0),x+30,y+18,0xFFFFFFFF);}
+                else if(delta<1500){int alpha=((int)(Math.max(0,Math.min(1,(1500-delta)/300F))*255)<<24)|0x04000000;mc.fontRenderer.drawString(title,x+30,y+11,alpha|0xFFFF00);}
+                else{int alpha=((int)(Math.max(0,Math.min(1,(delta-1500)/300F))*252)<<24)|0x04000000;int ty=y+16-lines.size()*mc.fontRenderer.FONT_HEIGHT/2;for(String line:lines){mc.fontRenderer.drawString(line,x+30,ty,alpha|0xFFFFFF);ty+=mc.fontRenderer.FONT_HEIGHT;}}
+                if(t.reward!=null)QuestClassicUi.reward(mc,t.reward,x+8,y+8,16);else if(t.task!=null)QuestClassicUi.task(mc,t.task,true,x+8,y+8,16);else QuestClassicUi.item(mc,t.icon,t.iconMeta,t.iconNbt,x+8,y+8,16);
+            }
+        }finally{GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glPopMatrix();GL11.glMatrixMode(GL11.GL_PROJECTION);GL11.glPopMatrix();GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glPopAttrib();}
     }
 }

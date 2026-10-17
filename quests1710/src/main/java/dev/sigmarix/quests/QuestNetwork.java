@@ -82,6 +82,7 @@ public final class QuestNetwork {
         public String title="",text="",icon="minecraft:book",iconNbt="";
         public int iconMeta;
         public QuestCore.Task task;
+        public QuestCore.Reward reward;
     }
     public static void toast(EntityPlayerMP player,String title,String text,String icon) {
         toast(player,title,text,icon,0,"");
@@ -98,20 +99,38 @@ public final class QuestNetwork {
         toast.icon=task.icon.isEmpty()?quest.icon:task.icon; toast.iconMeta=task.icon.isEmpty()?quest.iconMeta:task.iconMeta; toast.iconNbt=task.icon.isEmpty()?quest.iconNbt:task.iconNbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
+    public static void rewardToast(EntityPlayerMP player,QuestCore.Reward source){
+        if(channel==null || QuestEvents.notificationsMuted() || source.type.equals("toast"))return;
+        Toast toast=new Toast();toast.text="Reward collected";toast.reward=new QuestCore.Reward();QuestCore.Reward r=toast.reward;
+        r.type=source.type;r.title=source.title;r.item=source.item;r.meta=source.meta;r.nbt=source.nbt;r.count=source.count;r.randomBonus=source.randomBonus;r.icon=source.icon;r.iconMeta=source.iconMeta;r.iconNbt=source.iconNbt;
+        toast.icon=source.icon.isEmpty()?(source.type.equals("item")?source.item:source.type.startsWith("xp")?"minecraft:experience_bottle":"minecraft:paper"):source.icon;toast.iconMeta=source.icon.isEmpty()?source.meta:source.iconMeta;toast.iconNbt=source.icon.isEmpty()?source.nbt:source.iconNbt;
+        channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
+    }
     public static final class Action {
         public String action="view", id="", text="";
         public long revision;
         public int[] choices=new int[0];
         public int x,y,z;
         public QuestCore.Book book;
+        public TeamSettings teamSettings;
     }
     public static final class Rank { public String name; public int completed,total; }
+    public static final class TeamSettings {
+        public String title="",description="",fakePlayerStatus="none";
+        public int color=0x0094FF;public boolean freeToJoin;
+    }
+    public static final class TeamPlayer {public String id="",name="",status="none";public boolean requesting,online;}
+    public static final class TeamEntry {public String id="",name="",title="",description="",owner="";public int color=0x0094FF;public boolean freeToJoin,invited,requesting,enemy;}
     public static final class Snapshot {
         public QuestWorldMap screen;
         public QuestCore.Book book;
         public long revision;
         public long emergencyWait;
-        public boolean canEdit,teamLeader;
+        public boolean canEdit,teamLeader,teamModerator,autoPin;
+        public String teamId="";
+        public TeamSettings teamSettings=new TeamSettings();
+        public java.util.List<TeamPlayer> teamPlayers=new java.util.ArrayList<TeamPlayer>();
+        public java.util.List<TeamEntry> teams=new java.util.ArrayList<TeamEntry>();
         public int teamColor=0x0094FF;
         public java.util.List<String> pinned=new java.util.ArrayList<String>();
         public java.util.Map<String,Integer> percentages=new java.util.LinkedHashMap<String,Integer>();

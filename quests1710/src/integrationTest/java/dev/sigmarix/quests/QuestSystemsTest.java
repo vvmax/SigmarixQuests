@@ -500,6 +500,40 @@ public class QuestSystemsTest {
         NBTTagCompound saved=new NBTTagCompound();data.writeToNBT(saved);QuestProgress restored=new QuestProgress();restored.readFromNBT(saved);
         assertEquals(0xB342FF,restored.teamColor(owner));assertEquals(0xB342FF,restored.teamColor(member));
     }
+    @Test public void teamRolesRequestsRelationsAndOwnershipRoundTrip() {
+        UUID owner=player.getUniqueID(),alice=UUID.randomUUID(),bob=UUID.randomUUID();data.remember(owner,"Owner");data.remember(alice,"Alice");data.remember(bob,"Bob");data.createTeam(owner,"team");
+        data.selectTeam(alice,data.team(owner));assertTrue(data.teamPlayers(owner).stream().anyMatch(p->p.id.equals(alice.toString()) && p.requesting));
+        data.teamPlayerAction(owner,alice,"invite");assertEquals(data.team(owner),data.team(alice));
+        try{data.teamPlayerAction(alice,bob,"moderator");fail();}catch(IllegalArgumentException expected){}
+        try{data.teamSettings(alice,new QuestNetwork.TeamSettings());fail();}catch(IllegalArgumentException expected){}
+        data.teamPlayerAction(owner,alice,"moderator");assertTrue(data.moderator(alice));
+        data.teamPlayerAction(alice,bob,"enemy");try{data.selectTeam(bob,data.team(owner));fail();}catch(IllegalArgumentException expected){}
+        data.teamPlayerAction(owner,bob,"ally");assertEquals("ally",data.teamStatus(owner,bob));
+        data.selectTeam(bob,data.team(owner));data.teamPlayerAction(alice,bob,"invite");assertEquals("member",data.teamStatus(owner,bob));
+        QuestNetwork.TeamSettings settings=data.teamSettings(owner);settings.title="Display";settings.description="Description";settings.freeToJoin=true;settings.color=0xB342FF;data.teamSettings(alice,settings);
+        data.complete(owner,"shared");data.teamPlayerAction(owner,bob,"transfer");assertTrue(data.leader(bob));assertFalse(data.leader(owner));assertTrue(data.completed(bob).contains("shared"));
+        try{data.disband(owner);fail();}catch(IllegalArgumentException expected){}
+        NBTTagCompound saved=new NBTTagCompound();data.writeToNBT(saved);QuestProgress restored=new QuestProgress();restored.readFromNBT(saved);assertTrue(restored.leader(bob));assertTrue(restored.moderator(alice));assertEquals("Display",restored.teamSettings(bob).title);assertEquals(0xB342FF,restored.teamColor(bob));
+    }
+    @Test public void freeJoinAndSoloExitPreserveProgressAndRemoveStaleModeratorRole() {
+        UUID owner=player.getUniqueID(),guest=UUID.randomUUID();data.remember(guest,"Guest");data.createTeam(owner,"team");QuestNetwork.TeamSettings settings=data.teamSettings(owner);settings.freeToJoin=true;data.teamSettings(owner,settings);
+        data.selectTeam(guest,data.team(owner));data.teamPlayerAction(owner,guest,"moderator");data.complete(guest,"shared");data.exitTeam(guest);assertFalse(data.moderator(guest));assertTrue(data.completed(guest).contains("shared"));data.selectTeam(guest,data.team(owner));assertFalse(data.moderator(guest));
+        try{data.exitTeam(owner);fail();}catch(IllegalArgumentException expected){}data.exitTeam(guest);data.exitTeam(owner);assertEquals("",data.team(owner));assertTrue(data.completed(owner).contains("shared"));
+    }
+    @Test public void claimAllExcludesChoicesAndCannotPayTwice() {
+        task("check",null,1,false);xpReward(2,"team");QuestCore.Reward choice=new QuestCore.Reward();choice.id="choice";choice.type="choice";QuestCore.Reward option=new QuestCore.Reward();option.type="xp";option.count=9;choice.options.add(option);quest.rewards.add(choice);
+        service.book.quests.clear();service.book.quests.add(quest);service.finish(player,quest);assertEquals(1,service.claimAll(player));assertEquals(0,service.claimAll(player));verify(player,times(1)).addExperience(2);verify(player,never()).addExperience(9);assertFalse(service.claimed(player.getUniqueID(),quest));
+    }
+    @Test public void claimAllAlsoSkipsChoicesReachedThroughLootTables() {
+        task("check",null,1,false);xpReward(2,"team");
+        QuestCore.Reward choice=new QuestCore.Reward();choice.type="choice";QuestCore.Reward option=new QuestCore.Reward();option.type="xp";option.count=9;choice.options.add(option);
+        service.book.lootTables.put("nested",Collections.singletonList(choice));QuestCore.Reward loot=new QuestCore.Reward();loot.id="loot";loot.type="loot";loot.target="nested";quest.rewards.add(loot);
+        service.book.quests.clear();service.book.quests.add(quest);service.finish(player,quest);
+        assertEquals(1,service.claimAll(player));assertEquals(0,service.claimAll(player));verify(player).addExperience(2);verify(player,never()).addExperience(9);assertFalse(data.rewardClaimed(player.getUniqueID(),quest.id,"loot",false));
+    }
+    @Test public void autoTrackingIsPersonalAndProfileScoped() {
+        UUID id=player.getUniqueID(),other=UUID.randomUUID();data.autoPin(id,true);assertTrue(data.autoPin(id));assertFalse(data.autoPin(other));data.profile("expert");assertFalse(data.autoPin(id));data.autoPin(id,true);data.profile("default");assertTrue(data.autoPin(id));NBTTagCompound saved=new NBTTagCompound();data.writeToNBT(saved);QuestProgress restored=new QuestProgress();restored.readFromNBT(saved);assertTrue(restored.autoPin(id));restored.profile("expert");assertTrue(restored.autoPin(id));
+    }
     @Test public void mixedRewardsPaySharedOnceAndIndividualForEachMember() {
         EntityPlayerMP other=teammate(); task("check",null,1,false); xpReward(3,"team"); xpReward(7,"individual");
         assertTrue(service.check(player,quest,true)); service.claim(player,quest,Collections.<Integer>emptyList());

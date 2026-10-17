@@ -1,28 +1,16 @@
 package dev.sigmarix.quests.client;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import dev.sigmarix.quests.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
-import org.lwjgl.opengl.GL11;
-/** Personal server-persisted pins follow the active pack mode and synchronized percentages. */
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;import cpw.mods.fml.common.gameevent.TickEvent;
+import dev.sigmarix.quests.*;import java.util.*;
+import net.minecraft.client.Minecraft;import net.minecraft.client.gui.*;import org.lwjgl.opengl.GL11;
+/** Original right-center text HUD, including automatic tracking and the theme scale. */
 public final class QuestPins extends Gui {
-    @SubscribeEvent public void render(TickEvent.RenderTickEvent event) {
-        Minecraft mc=Minecraft.getMinecraft(); QuestNetwork.Snapshot snapshot=ClientProxy.snapshot;
-        if(event.phase!=TickEvent.Phase.END || mc.theWorld==null || mc.currentScreen!=null || snapshot==null || snapshot.book==null || snapshot.pinned.isEmpty() || mc.gameSettings.hideGUI) return;
-        ScaledResolution screen=new ScaledResolution(mc,mc.displayWidth,mc.displayHeight); int x=screen.getScaledWidth()-194,y=90;
-        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glPushMatrix(); GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPushMatrix();
-        try {
-            mc.entityRenderer.setupOverlayRendering(); GL11.glDisable(GL11.GL_DEPTH_TEST); GL11.glDisable(GL11.GL_LIGHTING);
-            for(String id:snapshot.pinned) {
-                QuestCore.Quest quest=null; for(QuestCore.Quest q:snapshot.book.quests) if(q.id.equals(id)) quest=q;
-                if(quest==null) continue; int rows=Math.min(2,quest.tasks.size()),height=24+rows*10; if(y+height>screen.getScaledHeight()-8) break;
-                int percent=Math.max(0,Math.min(100,snapshot.percentages.getOrDefault(id,0)));
-                drawRect(x,y,x+188,y+height,0xC018212B); mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(quest.title,151),x+4,y+4,0xFFFFFF);
-                mc.fontRenderer.drawString(percent+"%",x+157,y+4,0xFFFFCC66); drawRect(x+4,y+16,x+184,y+19,0xFF45505C); drawRect(x+4,y+16,x+4+180*percent/100,y+19,0xFF60B978);
-                for(int i=0;i<rows;i++) { QuestCore.Task task=quest.tasks.get(i); String key=id+":"+task.id; boolean done=Boolean.TRUE.equals(snapshot.taskStates.get(key)); String label=(done?"[+] ":"[ ] ")+QuestTaskLabels.title(task)+" "+(done?task.count:snapshot.counters.getOrDefault(key,0L))+"/"+task.count; mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(label,178),x+5,y+23+i*10,done?0x91D6A1:0xDDDDDD); }
-                y+=height+4;
-            }
-        } finally { GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPopMatrix(); GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glPopMatrix(); GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPopAttrib(); }
+    @SubscribeEvent public void render(TickEvent.RenderTickEvent event){
+        Minecraft mc=Minecraft.getMinecraft();QuestNetwork.Snapshot snap=ClientProxy.snapshot;if(event.phase!=TickEvent.Phase.END || mc.theWorld==null || mc.currentScreen!=null || snap==null || mc.gameSettings.hideGUI || snap.pinned.isEmpty() && !snap.autoPin)return;
+        List<String> lines=new ArrayList<String>();for(QuestCore.Quest quest:snap.book.quests){String state=snap.states.get(quest.id);boolean complete="complete".equals(state) || "claimed".equals(state);if(snap.autoPin?!"available".equals(state):!snap.pinned.contains(quest.id))continue;
+            if(!lines.isEmpty())lines.add("");lines.add("\u00a7l"+(complete?"\u00a7a":"")+mc.fontRenderer.trimStringToWidth(quest.title,160)+(complete?"\u00a72 100%":" \u00a73"+snap.percentages.getOrDefault(quest.id,0)+"%"));
+            if(!complete)for(QuestCore.Task task:quest.tasks)if(!Boolean.TRUE.equals(snap.taskStates.get(quest.id+":"+task.id)))lines.add("\u00a77"+mc.fontRenderer.trimStringToWidth(QuestTaskLabels.title(task),160)+" \u00a7a"+snap.counters.getOrDefault(quest.id+":"+task.id,0L)+"/"+task.count);
+        }if(lines.isEmpty())return;int mw=0;for(String line:lines)mw=Math.max(mw,mc.fontRenderer.getStringWidth(line));ScaledResolution res=new ScaledResolution(mc,mc.displayWidth,mc.displayHeight);double scale=snap.book.theme.pinnedQuestSize;
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glMatrixMode(GL11.GL_PROJECTION);GL11.glPushMatrix();GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glPushMatrix();
+        try{mc.entityRenderer.setupOverlayRendering();GL11.glDisable(GL11.GL_DEPTH_TEST);GL11.glDisable(GL11.GL_LIGHTING);GL11.glTranslated(res.getScaledWidth()-mw*scale-8,res.getScaledHeight()/2-lines.size()*4.5*scale,100);GL11.glScaled(scale,scale,1);drawRect(0,0,mw+8,lines.size()*9+8,0x64000000);for(int i=0;i<lines.size();i++)mc.fontRenderer.drawStringWithShadow(lines.get(i),4,i*9+4,0xFFFFFFFF);}finally{GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glPopMatrix();GL11.glMatrixMode(GL11.GL_PROJECTION);GL11.glPopMatrix();GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glPopAttrib();}
     }
 }

@@ -52,7 +52,7 @@ public final class QuestBlocks {
         @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
         public void registerBlockIcons(net.minecraft.client.renderer.texture.IIconRegister registry) {
             String[] names=mode<=1?new String[]{"screen_side","screen_front","screen_front_input"}:mode==2?new String[]{"barrier","barrier_completed"}:mode==7?new String[]{"chest_side","chest_top","chest_front"}:new String[]{new String[]{"","","","reward_collector","redstone_detector","player_detector","loot_crate_opener","","loot_crate_storage","progress_detector"}[mode]};
-            textures=new net.minecraft.util.IIcon[names.length];for(int i=0;i<names.length;i++)textures[i]=registry.registerIcon("ftbquests:"+names[i]);blockIcon=textures[0];
+            textures=new net.minecraft.util.IIcon[names.length];for(int i=0;i<names.length;i++){String name="ftbquests:"+names[i];if(mode==2 && registry instanceof net.minecraft.client.renderer.texture.TextureMap){net.minecraft.client.renderer.texture.TextureMap atlas=(net.minecraft.client.renderer.texture.TextureMap)registry;net.minecraft.client.renderer.texture.TextureAtlasSprite sprite=atlas.getTextureExtry(name);if(sprite==null){sprite=new dev.sigmarix.quests.client.QuestAnimatedSprite(name);atlas.setTextureEntry(name,sprite);}textures[i]=sprite;}else textures[i]=registry.registerIcon(name);}blockIcon=textures[0];
         }
         @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
         public net.minecraft.util.IIcon getIcon(int side,int meta) {
@@ -120,7 +120,7 @@ public final class QuestBlocks {
         }
     }
     public static final class CustomIconItem extends Item {
-        CustomIconItem() { setMaxStackSize(1); setUnlocalizedName("sigmarixquests.custom_icon"); setTextureName("minecraft:paper"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
+        CustomIconItem() { setMaxStackSize(1); setUnlocalizedName("sigmarixquests.custom_icon"); setTextureName("minecraft:painting"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
         @Override public String getItemStackDisplayName(ItemStack stack) { return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
         @Override public ItemStack onItemRightClick(ItemStack stack,World world,EntityPlayer player) { if(world.isRemote) QuestsMod.proxy.openIcon(); return stack; }
     }

@@ -23,11 +23,10 @@ public final class ClientProxy extends CommonProxy {
     private long neiRevision=Long.MIN_VALUE;
     public static QuestNetwork.Snapshot snapshot;
     @Override public void init() {
-        QuestBotaniaGuide.register();
+        QuestBotaniaGuide.register();net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new QuestGuiSprites());
         screenRenderType=cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId(); cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(new QuestScreenBlockRenderer(screenRenderType));
         if(cpw.mods.fml.common.Loader.isModLoaded("NotEnoughItems")) try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("register").invoke(null); }
         catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI integration registration failed",ex); }
-        net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon"),new QuestIconRenderer());
         net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","loot_crate"),new QuestModelItemRenderer(-1));
         net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(QuestBlocks.crateParcel,new QuestModelItemRenderer(-1));
         for(int i=0;i<QuestBlocks.devices.length;i++) net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(net.minecraft.item.Item.getItemFromBlock(QuestBlocks.devices[i]),new QuestModelItemRenderer(i));
@@ -55,7 +54,7 @@ public final class ClientProxy extends CommonProxy {
         if(mc.theWorld==null) { QuestWorldMaps.clear(); QuestImages.clear(); QuestToasts.disconnect(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; pinTicks=0; opening=false; return; }
         if(snapshot==null && mc.thePlayer!=null && ++syncTicks%20==0) send(new QuestNetwork.Action());
         QuestToasts.pump();
-        if(snapshot!=null && !snapshot.pinned.isEmpty() && mc.currentScreen==null && ++pinTicks%40==0) send(new QuestNetwork.Action());
+        if(snapshot!=null && (!snapshot.pinned.isEmpty() || snapshot.autoPin) && mc.currentScreen==null && ++pinTicks%40==0) send(new QuestNetwork.Action());
         String json;
         while((json=queue.poll())!=null) {
             try {

@@ -78,7 +78,7 @@ public class QuestService {
         if (next == null) throw new IllegalArgumentException("Empty book");
         Map<String, QuestCore.Quest> result = next.validate();
         for (QuestCore.Quest q : next.quests) {
-            item(q.icon); tag(q.iconNbt);
+            if(!q.icon.isEmpty()) item(q.icon); tag(q.iconNbt);
             for(QuestPresentation.GuidePage page:q.richPages) for(QuestPresentation.GuideElement element:page.elements) if(element.type.equals("item")) { item(element.item); tag(element.nbt); }
             for (QuestCore.Task t : q.tasks) {
                 if(!t.icon.isEmpty()) item(t.icon); tag(t.iconNbt);
@@ -519,10 +519,22 @@ public class QuestService {
     }
     public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices) { claim(p,q,choices,null); }
     public void claim(EntityPlayerMP p, QuestCore.Quest q, List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink) { claim(p,q,choices,itemSink,false); }
-    private boolean hasChoice(QuestCore.Reward reward) {
+    private boolean hasChoice(QuestCore.Reward reward) { return hasChoice(reward,new HashSet<String>()); }
+    private boolean hasChoice(QuestCore.Reward reward,Set<String> tables) {
         if(reward.type.equals("choice")) return true;
-        for(QuestCore.Reward option:reward.options) if(hasChoice(option)) return true;
+        for(QuestCore.Reward option:reward.options) if(hasChoice(option,tables)) return true;
+        if(reward.type.equals("loot") && tables.add(reward.target)) {
+            List<QuestCore.Reward> entries=book.lootTables.get(reward.target);
+            if(entries!=null) for(QuestCore.Reward entry:entries) if(hasChoice(entry,tables)) return true;
+        }
         return false;
+    }
+    public int claimAll(EntityPlayerMP player){
+        int claimed=0;UUID id=player.getUniqueID();for(QuestCore.Quest q:book.quests){if(!progress().completed(id).contains(q.id))continue;
+            for(int i=0;i<q.rewards.size();i++){QuestCore.Reward root=q.rewards.get(i);if(hasChoice(root) || progress().rewardClaimed(id,q.id,rewardId(root,i),individual(q,root)))continue;
+                claimReward(player,q,rewardId(root,i),Collections.<Integer>emptyList());claimed++;
+            }
+        }return claimed;
     }
     public void autoClaim(EntityPlayerMP p,QuestCore.Quest q) {
         if(!progress().completed(p.getUniqueID()).contains(q.id) || claimed(p.getUniqueID(),q)) return;
@@ -703,11 +715,11 @@ public class QuestService {
     }
     private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink) {
         UUID id=p.getUniqueID();
-        for(QuestCore.Reward r:leaves) switch(r.type) {
+        for(QuestCore.Reward r:leaves) { boolean delivered=true;switch(r.type) {
             case "item":
                 Item reward=item(r.item); ItemStack prototype=new ItemStack(reward,1,r.meta); prototype.setTagCompound(tag(r.nbt));
                 boolean exists=false; for(ItemStack stack:p.inventory.mainInventory) if(stack!=null && stack.isItemEqual(prototype) && ItemStack.areItemStackTagsEqual(stack,prototype)) exists=true;
-                if(r.onlyOne && exists) break;
+                if(r.onlyOne && exists){delivered=false;break;}
                 int remaining=r.count+(r.randomBonus>0?p.getRNG().nextInt(r.randomBonus+1):0);
                 while(remaining>0) { int count=Math.min(remaining,Math.min(64,prototype.getMaxStackSize())); ItemStack stack=new ItemStack(reward,count,r.meta); stack.setTagCompound(tag(r.nbt)); if(itemSink==null) give(p,stack); else itemSink.accept(stack); remaining-=count; } break;
             case "gamestage": progress().stage(id,r.target,!r.remove); break;
@@ -722,6 +734,8 @@ public class QuestService {
             case "toast": QuestNetwork.toast(p,r.target,r.text,r.item==null?"minecraft:book":r.item); break;
             case "custom": QuestHooks.REWARDS.get(r.target).grant(p,r); break;
             default: throw new IllegalStateException("Unexpected flattened reward");
+        }
+        if(delivered && itemSink==null)QuestNetwork.rewardToast(p,r);
         }
         p.inventoryContainer.detectAndSendChanges();
     }

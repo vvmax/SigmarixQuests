@@ -1,0 +1,136 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 / FTBLib 5.4.7.2 / Minecraft 1.12.2",
+  "resolution": [
+    854,
+    480
+  ],
+  "gui_scale": 2,
+  "background": "#414852",
+  "includes_background": true,
+  "exclusions": [
+    "animated barrier: frame phase differs",
+    "labels: Minecraft version font differences"
+  ],
+  "items": {
+    "book": {
+      "bounds": [
+        28,
+        70,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "custom_icon": {
+      "bounds": [
+        142,
+        70,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "lootcrate": {
+      "bounds": [
+        256,
+        70,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "screen": {
+      "bounds": [
+        370,
+        70,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "progress_screen": {
+      "bounds": [
+        484,
+        70,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "reward_collector": {
+      "bounds": [
+        712,
+        70,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "redstone_detector": {
+      "bounds": [
+        28,
+        190,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "player_detector": {
+      "bounds": [
+        142,
+        190,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "loot_crate_opener": {
+      "bounds": [
+        256,
+        190,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "chest": {
+      "bounds": [
+        370,
+        190,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "loot_crate_storage": {
+      "bounds": [
+        484,
+        190,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    },
+    "progress_detector": {
+      "bounds": [
+        598,
+        190,
+        64,
+        64
+      ],
+      "pixels_compared": 4096,
+      "different_pixels": 0
+    }
+  }
+}

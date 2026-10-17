@@ -9,15 +9,16 @@ import org.lwjgl.opengl.GL11;
 /** Cuboid models and separate tint layers used by the original devices and loot crate. */
 final class QuestModelItemRenderer implements IItemRenderer {
     private final int mode;
+    private boolean inventoryRendering;
     QuestModelItemRenderer(int mode){this.mode=mode;}
     @Override public boolean handleRenderType(ItemStack stack,ItemRenderType type){return true;}
     @Override public boolean shouldUseRenderHelper(ItemRenderType type,ItemStack stack,ItemRendererHelper helper){return helper==ItemRendererHelper.ENTITY_ROTATION || helper==ItemRendererHelper.ENTITY_BOBBING;}
     @Override public void renderItem(ItemRenderType type,ItemStack stack,Object... data){
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glPushMatrix();
         try {
-            GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);GL11.glDisable(GL11.GL_CULL_FACE);GL11.glDepthFunc(GL11.GL_LEQUAL);
-            boolean inventory=type==ItemRenderType.INVENTORY;
-            if(inventory){GL11.glTranslatef(8,8,0);GL11.glScalef(10,-10,10);GL11.glRotatef(30,1,0,0);GL11.glRotatef(225,0,1,0);GL11.glTranslatef(-.5f,-.5f,-.5f);GL11.glDisable(GL11.GL_LIGHTING);}
+            GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);GL11.glEnable(GL11.GL_CULL_FACE);GL11.glEnable(GL11.GL_DEPTH_TEST);GL11.glDepthFunc(GL11.GL_LEQUAL);
+            boolean inventory=type==ItemRenderType.INVENTORY;inventoryRendering=inventory;
+            if(inventory){GL11.glTranslatef(8,8,0);GL11.glScalef(10,-10,10);GL11.glRotatef(30,1,0,0);GL11.glRotatef(225,0,1,0);GL11.glTranslatef(-.5f,-.5f,-.5f);GL11.glEnable(GL11.GL_LIGHTING);GL11.glEnable(org.lwjgl.opengl.GL12.GL_RESCALE_NORMAL);}
             else if(type==ItemRenderType.ENTITY){GL11.glScalef(.5f,.5f,.5f);GL11.glTranslatef(-.5f,0,-.5f);}
             if(mode<0){
                 box("items/lootcrate/",true,0xFFFFFF);
@@ -40,9 +41,12 @@ final class QuestModelItemRenderer implements IItemRenderer {
         face(prefix+side,color,.6f,1,0,0,new double[][]{{b,0,b},{b,0,a},{b,h,a},{b,h,b}},a,1-h,b,1);
     }
     private void face(String texture,int color,float shade,float nx,float ny,float nz,double[][] points,double u1,double v1,double u2,double v2){
-        Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation("ftbquests:textures/"+texture+".png"));
+        if(inventoryRendering) shade=1;
+        net.minecraft.util.IIcon animated=mode==2?QuestBlocks.devices[2].getIcon(0,0):null;
+        Minecraft.getMinecraft().getTextureManager().bindTexture(animated==null?new ResourceLocation("ftbquests:textures/"+texture+".png"):net.minecraft.client.renderer.texture.TextureMap.locationBlocksTexture);
+        if(animated!=null){u1=animated.getMinU();u2=animated.getMaxU();v1=animated.getMinV();v2=animated.getMaxV();}
         Tessellator t=Tessellator.instance;t.startDrawingQuads();t.setNormal(nx,ny,nz);t.setColorOpaque_F((color>>16&255)/255f*shade,(color>>8&255)/255f*shade,(color&255)/255f*shade);
-        double[][] uv={{u2,v2},{u1,v2},{u1,v1},{u2,v1}};
+        double[][] uv=ny>0?new double[][]{{u1,v1},{u1,v2},{u2,v2},{u2,v1}}:ny==0?new double[][]{{u1,v2},{u2,v2},{u2,v1},{u1,v1}}:new double[][]{{u2,v2},{u1,v2},{u1,v1},{u2,v1}};
         for(int i=0;i<4;i++)t.addVertexWithUV(points[i][0],points[i][1],points[i][2],uv[i][0],uv[i][1]);t.draw();
     }
 }

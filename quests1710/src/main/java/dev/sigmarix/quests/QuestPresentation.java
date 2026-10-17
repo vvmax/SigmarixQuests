@@ -20,7 +20,7 @@ public final class QuestPresentation {
     public static final class Theme {
         public String background="EE17202A",panel="EE26313D",text="FFEEEEEE",edge="FF738CA6",selected="FFFFFFFF";
         public String available="FF397CB2",complete="FFB28B29",claimed="FF3A784E",locked="FF50545A";
-        public double questSpacing=1,lineWidth=1;
+        public double questSpacing=1,lineWidth=1,pinnedQuestSize=.75;
     }
     public static final class Style {
         public String selector="*",color="",textColor="",shape="";
@@ -47,6 +47,7 @@ public final class QuestPresentation {
         if(!Double.isFinite(book.gridScale) || book.gridScale<1D/32 || book.gridScale>8 || !shape(book.defaultQuestShape)) throw new IllegalArgumentException("Invalid map scale or default shape");
         if(book.theme==null || book.styles==null || book.styles.size()>128) throw new IllegalArgumentException("Invalid theme");
         Theme t=book.theme;
+        if(!Double.isFinite(t.pinnedQuestSize) || t.pinnedQuestSize<.1 || t.pinnedQuestSize>4)throw new IllegalArgumentException("Invalid pinned quest scale");
         if(!Double.isFinite(t.questSpacing) || t.questSpacing<.125 || t.questSpacing>8 || !Double.isFinite(t.lineWidth) || t.lineWidth<0 || t.lineWidth>8) throw new IllegalArgumentException("Invalid theme geometry");
         for(String value:Arrays.asList(t.background,t.panel,t.text,t.edge,t.selected,t.available,t.complete,t.claimed,t.locked)) color(value);
         for(Style style:book.styles) {
@@ -64,6 +65,7 @@ public final class QuestPresentation {
             }
         }
         for(QuestCore.Quest q:book.quests) {
+            metadata(q.title,q.description,q.icon,q.iconMeta,q.iconNbt);
             if(!Double.isFinite(q.size) || q.size<0.0625 || q.size>8 || q.iconMeta<0 || q.iconNbt==null || q.tags==null || q.tags.size()>64 || q.pages==null || q.pages.size()>64 || q.shape==null || !q.shape.isEmpty() && !shape(q.shape) || !Arrays.asList("inherit","enabled","disabled").contains(q.itemBrowser) || !link(q.uri)) throw new IllegalArgumentException("Invalid quest presentation: "+q.id);
             for(String tag:q.tags) if(!QuestCore.validId(tag)) throw new IllegalArgumentException("Invalid quest tag");
             if(q.richPages==null || q.richPages.size()>64) throw new IllegalArgumentException("Invalid rich guide pages");

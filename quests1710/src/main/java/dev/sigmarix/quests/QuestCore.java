@@ -149,7 +149,7 @@ public final class QuestCore {
         public List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
     }
     public static final class Quest {
-        public String id, title, description = "", subtitle="", guidePage="", customClick="", chapter = "", icon = "minecraft:book";
+        public String id, title, description = "", subtitle="", guidePage="", customClick="", chapter = "", icon = "";
         public String dependencyState="completed", rewardMode="team", shape="", uri="",itemBrowser="inherit";
         public List<QuestPresentation.GuidePage> richPages=new ArrayList<QuestPresentation.GuidePage>();
         public List<String> tags=new ArrayList<String>(),pages=new ArrayList<String>();

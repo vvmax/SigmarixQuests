@@ -15,6 +15,7 @@ import net.minecraft.util.ScreenShotHelper;
 @Mod(modid="sigmarixquestpreview",name="Quest GUI preview fixture",version="1",dependencies="required-after:sigmarixquests")
 public final class QuestPreview {
     private QuestNetwork.Snapshot fixture;
+    private String renderMode="";
     private int ticks,stage,waiting,loginRetries,lastServerStep=-5;
     private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
@@ -46,6 +47,7 @@ public final class QuestPreview {
             boolean loaded=cpw.mods.fml.common.Loader.isModLoaded(mod[0]); if(loaded!=expected.contains(mod[0])) throw new IllegalStateException("Unexpected optional mod state: "+mod[0]+"="+loaded);
             if(!loaded) try { Class.forName(mod[1],false,getClass().getClassLoader()); throw new IllegalStateException("Compile-only API leaked into game runtime: "+mod[0]); } catch(ClassNotFoundException correct) {}
         }
+        renderMode=new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/card-only").exists()?"card":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/catalog-only").exists()?"catalog":"";
         fixture=new QuestNetwork.Snapshot();
         try(Reader reader=new InputStreamReader(getClass().getResourceAsStream("/example-quests.json"),StandardCharsets.UTF_8)) {
             fixture.book=QuestService.JSON.fromJson(reader,QuestCore.Book.class);
@@ -176,6 +178,19 @@ public final class QuestPreview {
         Minecraft mc=Minecraft.getMinecraft(); mc.guiAchievement.func_146257_b(); mc.gameSettings.showInventoryAchievementHint=false; mc.gameSettings.pauseOnLostFocus=false; mc.gameSettings.renderDistanceChunks=2; mc.gameSettings.fancyGraphics=false; mc.gameSettings.enableVsync=false; mc.gameSettings.limitFramerate=30;
         if(testing) { smoke(mc); return; }
         ClientProxy.snapshot=fixture; ticks++;
+        if(renderMode.equals("card")) {
+            mc.gameSettings.guiScale=2;
+            if(ticks==30){fixture.book=new QuestCore.Book();QuestCore.Quest quest=new QuestCore.Quest();quest.id="card";quest.title="Classic quest view";quest.subtitle="Two columns, individual rewards";quest.description="Click the task, then claim each reward separately.";for(int i=0;i<2;i++){QuestCore.Task task=new QuestCore.Task();task.id="t"+i;task.type="check";quest.tasks.add(task);QuestCore.Reward reward=new QuestCore.Reward();reward.id="r"+i;reward.type="xp";quest.rewards.add(reward);}fixture.book.quests.add(quest);fixture.book.validate();fixture.states.put("card","locked");QuestBookScreen screen=new QuestBookScreen();mc.displayGuiScreen(screen);java.lang.reflect.Field selected=QuestBookScreen.class.getDeclaredField("selected");selected.setAccessible(true);selected.set(screen,"card");screen.refresh();}
+            if(ticks==65){File destination=new File(mc.mcDataDir,"../build/preview");destination.mkdirs();ScreenShotHelper.saveScreenshot(destination,"quest-card-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());}
+            if(ticks==75)mc.shutdown();return;
+        }
+        if(renderMode.equals("catalog")) {
+            mc.gameSettings.guiScale=2;
+            if(ticks==30) mc.displayGuiScreen(new QuestVisualCatalog());
+            if(ticks==65) { File destination=new File(mc.mcDataDir,"../build/preview"); destination.mkdirs(); ScreenShotHelper.saveScreenshot(destination,"item-catalog-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer()); }
+            if(ticks==75) mc.shutdown();
+            return;
+        }
         if(ticks==30) {
             mc.gameSettings.guiScale=2;
             QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen);
@@ -196,13 +211,13 @@ public final class QuestPreview {
         }
     }
     private void press(net.minecraft.client.gui.GuiScreen screen,int id) throws Exception {
-        java.lang.reflect.Method method=screen.getClass().getDeclaredMethod("actionPerformed",net.minecraft.client.gui.GuiButton.class); method.setAccessible(true);
+        Class<?> owner=screen.getClass();java.lang.reflect.Method method=null;while(owner!=null){try{method=owner.getDeclaredMethod("actionPerformed",net.minecraft.client.gui.GuiButton.class);break;}catch(NoSuchMethodException missing){owner=owner.getSuperclass();}}if(method==null)throw new NoSuchMethodException("actionPerformed");method.setAccessible(true);
         method.invoke(screen,new net.minecraft.client.gui.GuiButton(id,0,0,"fixture"));
     }
     private void clickCard(Minecraft mc,boolean reward,int index) throws Exception {
         java.lang.reflect.Field field=QuestBookScreen.class.getDeclaredField("card"); field.setAccessible(true); QuestViewLayout card=(QuestViewLayout)field.get(mc.currentScreen);
         java.lang.reflect.Method click=QuestBookScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class); click.setAccessible(true);
-        click.invoke(mc.currentScreen,card.cellX(reward,index,2)+8,card.cellY(index)+8,0);
+        click.invoke(mc.currentScreen,card.cellX(reward,index,2)+8,card.cellY(reward,index)+8,0);
     }
     private void action(String kind) {
         QuestNetwork.Action action=new QuestNetwork.Action(); action.action=kind; action.id="welcome"; ClientProxy.send(action);
@@ -248,15 +263,16 @@ public final class QuestPreview {
             case 30: if(bcPassed) { QuestNetwork.Action afterBC=new QuestNetwork.Action(); afterBC.action="start"; afterBC.id="smoke-manual"; ClientProxy.send(afterBC); stage=9; } break;
             case 25: if(npcPassed) stage=0; break;
             case 27:
-                if(!"Fixture team".equals(snap.team)) return;
+                if(!"fixture_team".equals(snap.team) || waiting<15 || !(mc.currentScreen instanceof QuestTeamScreen))return;
                 if(snap.teamColor!=0xB342FF)throw new IllegalStateException("Team palette color did not synchronize");QuestToasts.clear();mc.ingameGUI.getChatGUI().clearChatMessages();
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-teams.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
-                press(mc.currentScreen,1); stage=28; break;
+                press(mc.currentScreen,30);stage=103;waiting=0;break;
             case 28:
-                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-leaderboard.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
-                press(mc.currentScreen,1); press(mc.currentScreen,15); press(mc.currentScreen,0); stage=29; break;
+                if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-leaderboard.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                java.lang.reflect.Method back=net.minecraft.client.gui.GuiScreen.class.getDeclaredMethod("keyTyped",char.class,int.class);back.setAccessible(true);back.invoke(mc.currentScreen,(char)0,org.lwjgl.input.Keyboard.KEY_ESCAPE);press(mc.currentScreen,14);press(mc.currentScreen,0);stage=29;break;
             case 29: if(snap.team.isEmpty()) { teamPassed=true;QuestToasts.clear();mc.ingameGUI.getChatGUI().clearChatMessages();mc.displayGuiScreen(new QuestVisualCatalog());stage=101;waiting=0; } break;
-            case 102: if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-create-team.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());press(mc.currentScreen,20);stage=27;break;
+            case 102: if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-create-team.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());press(mc.currentScreen,20);stage=27;waiting=0;break;
+            case 103:if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-team-settings.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());press(mc.currentScreen,1);Class<?> board=Class.forName("dev.sigmarix.quests.client.QuestLeaderboardScreen");java.lang.reflect.Constructor<?> constructor=board.getDeclaredConstructor(net.minecraft.client.gui.GuiScreen.class);constructor.setAccessible(true);mc.displayGuiScreen((net.minecraft.client.gui.GuiScreen)constructor.newInstance(mc.currentScreen));stage=28;waiting=0;break;
             case 101: if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-reference-items.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());mc.displayGuiScreen(null);stage=1;break;
             case 1:
                 if(snap==null || snap.book==null) return;
@@ -276,8 +292,8 @@ public final class QuestPreview {
                     QuestToasts.clear();mc.ingameGUI.getChatGUI().clearChatMessages();
                     QuestTeamScreen teams=new QuestTeamScreen(new QuestBookScreen()); mc.displayGuiScreen(teams);
                     press(teams,10);
-                    java.lang.reflect.Field input=QuestTeamScreen.class.getDeclaredField("input"); input.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)input.get(teams)).setText("Fixture team");
-                    java.lang.reflect.Method palette=QuestTeamScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class);palette.setAccessible(true);palette.invoke(teams,(teams.width-162)/2+110,(teams.height-118)/2+74,0);
+                    net.minecraft.client.gui.GuiScreen create=mc.currentScreen;java.lang.reflect.Field input=create.getClass().getDeclaredField("input");input.setAccessible(true);((net.minecraft.client.gui.GuiTextField)input.get(create)).setText("fixture_team");
+                    java.lang.reflect.Method palette=create.getClass().getDeclaredMethod("mouseClicked",int.class,int.class,int.class);palette.setAccessible(true);palette.invoke(create,(create.width-162)/2+110,(create.height-118)/2+74,0);
                     stage=102;waiting=0;return;
                 }
                 if(!iconPassed) { iconRequested=true; stage=39; return; }
@@ -444,7 +460,7 @@ public final class QuestPreview {
                 net.minecraft.item.ItemStack icon=mc.thePlayer.getHeldItem();
                 if(icon==null || !icon.hasTagCompound() || !"Native icon".equals(icon.getTagCompound().getString("name"))) return;
                 if(!QuestIcons.resource(icon).equals(remoteImage) || QuestIcons.color(icon)!=0xFFCC44) throw new IllegalStateException("Custom icon edit was not synchronized");
-                if(!QuestImages.loaded(remoteImage)) return;
+                QuestImages.texture(remoteImage);if(!QuestImages.loaded(remoteImage)) return;
                 net.minecraft.util.ResourceLocation cached=QuestImages.texture(remoteImage);
                 int textureId=mc.getTextureManager().getTexture(cached).getGlTextureId(); QuestImages.clear();
                 if(mc.getTextureManager().getTexture(cached)!=net.minecraft.client.renderer.texture.TextureUtil.missingTexture || org.lwjgl.opengl.GL11.glIsTexture(textureId)) throw new IllegalStateException("Remote texture cache did not release CPU/GPU storage");

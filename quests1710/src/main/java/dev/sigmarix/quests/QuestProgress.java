@@ -8,20 +8,20 @@ import net.minecraft.world.WorldSavedData;
 public final class QuestProgress extends WorldSavedData {
     private NBTTagCompound profiles=new NBTTagCompound();
     private String activeProfile="default";
-    private NBTTagCompound attributes=new NBTTagCompound();
+    private NBTTagCompound attributes=new NBTTagCompound(),directory=new NBTTagCompound();
     private NBTTagCompound players = new NBTTagCompound();
     private NBTTagCompound personalRewards = new NBTTagCompound();
     private NBTTagCompound teams = new NBTTagCompound(), membership = new NBTTagCompound();
     public QuestProgress() { super("sigmarixquests"); }
     public QuestProgress(String name) { super(name); }
     @Override public void readFromNBT(NBTTagCompound tag) {
-        attributes=tag.getCompoundTag("attributes"); teams=tag.getCompoundTag("teams"); membership=tag.getCompoundTag("membership"); profiles=tag.getCompoundTag("profiles");
+        directory=tag.getCompoundTag("directory"); attributes=tag.getCompoundTag("attributes"); teams=tag.getCompoundTag("teams"); membership=tag.getCompoundTag("membership"); profiles=tag.getCompoundTag("profiles");
         if(!profiles.hasKey("default")) { NBTTagCompound legacy=new NBTTagCompound(); legacy.setTag("players",tag.getCompoundTag("players")); legacy.setTag("personalRewards",tag.getCompoundTag("personalRewards")); profiles.setTag("default",legacy); }
         String selected=tag.getString("profile"); activeProfile=QuestCore.validId(selected)?selected:"default"; selectProfile(activeProfile);
     }
     @Override public void writeToNBT(NBTTagCompound tag) {
         storeProfile(); NBTTagCompound legacy=profiles.getCompoundTag("default");
-        tag.setTag("attributes",attributes); tag.setTag("players",legacy.getCompoundTag("players")); tag.setTag("personalRewards",legacy.getCompoundTag("personalRewards"));
+        tag.setTag("directory",directory); tag.setTag("attributes",attributes); tag.setTag("players",legacy.getCompoundTag("players")); tag.setTag("personalRewards",legacy.getCompoundTag("personalRewards"));
         tag.setTag("teams",teams); tag.setTag("membership",membership); tag.setTag("profiles",profiles); tag.setString("profile",activeProfile);
     }
     private void storeProfile() {
@@ -48,6 +48,8 @@ public final class QuestProgress extends WorldSavedData {
         for(int i=0;i<list.tagCount() && result.size()<16;i++) { String quest=list.getStringTagAt(i); if(QuestCore.validId(quest) && !result.contains(quest)) result.add(quest); }
         return result;
     }
+    public boolean autoPin(UUID id){return attributes(id).getCompoundTag("autoPins").getBoolean(activeProfile);}
+    public void autoPin(UUID id,boolean enabled){NBTTagCompound p=attributes(id),modes=p.getCompoundTag("autoPins");modes.setBoolean(activeProfile,enabled);p.setTag("autoPins",modes);markDirty();}
     public void pins(UUID id,Collection<String> quests) {
         if(quests==null || quests.size()>16) throw new IllegalArgumentException("At most 16 quests can be pinned");
         NBTTagList list=new NBTTagList(); Set<String> unique=new HashSet<String>();
@@ -132,8 +134,72 @@ public final class QuestProgress extends WorldSavedData {
     public int teamColor(UUID id) {NBTTagCompound entry=teams.getCompoundTag(team(id));return entry.hasKey("color")?entry.getInteger("color"):0x0094FF;}
     public void teamColor(UUID id,int color) {if(!leader(id) || color<0 || color>0xFFFFFF)throw new IllegalArgumentException("Only team leader can set a valid team color");teams.getCompoundTag(team(id)).setInteger("color",color);markDirty();}
     public boolean leader(UUID id) { return teams.getCompoundTag(team(id)).getString("leader").equals(id.toString()); }
+    public boolean moderator(UUID id){return leader(id) || !team(id).isEmpty() && teams.getCompoundTag(team(id)).getBoolean("mod-"+id);}
+    public void remember(UUID id,String name){if(name!=null && name.length()<=32 && !name.equals(directory.getString(id.toString()))){directory.setString(id.toString(),name);markDirty();}}
+    public QuestNetwork.TeamSettings teamSettings(UUID id){
+        NBTTagCompound t=teams.getCompoundTag(team(id));QuestNetwork.TeamSettings settings=new QuestNetwork.TeamSettings();settings.color=teamColor(id);settings.title=t.getString("title");settings.description=t.getString("description");settings.freeToJoin=t.getBoolean("freeToJoin");settings.fakePlayerStatus=t.hasKey("fakePlayerStatus")?t.getString("fakePlayerStatus"):"none";return settings;
+    }
+    public void teamSettings(UUID id,QuestNetwork.TeamSettings settings){
+        if(!moderator(id))throw new IllegalArgumentException("Only team moderators can edit settings");
+        if(settings==null || settings.title==null || settings.title.length()>128 || settings.description==null || settings.description.length()>1024 || settings.color<0 || settings.color>0xFFFFFF || !Arrays.asList("none","ally","member","mod").contains(settings.fakePlayerStatus))throw new IllegalArgumentException("Invalid team settings");
+        NBTTagCompound t=teams.getCompoundTag(team(id));t.setString("title",settings.title);t.setString("description",settings.description);t.setInteger("color",settings.color);t.setBoolean("freeToJoin",settings.freeToJoin);t.setString("fakePlayerStatus",settings.fakePlayerStatus);markDirty();
+    }
+    public String teamStatus(UUID actor,UUID target){return statusForTeam(team(actor),target);}
+    private String statusForTeam(String key,UUID target){
+        if(key.isEmpty())return "none";NBTTagCompound t=teams.getCompoundTag(key);
+        if(t.getString("leader").equals(target.toString()))return "owner";
+        if(key.equals(team(target)))return t.getBoolean("mod-"+target)?"mod":"member";
+        if(t.getBoolean("enemy-"+target))return "enemy";if(t.getBoolean("ally-"+target))return "ally";if(t.getBoolean("invite-"+target))return "invited";return "none";
+    }
+    public List<QuestNetwork.TeamPlayer> teamPlayers(UUID actor){
+        List<QuestNetwork.TeamPlayer> out=new ArrayList<QuestNetwork.TeamPlayer>();Set<String> ids=new HashSet<String>();ids.addAll(directory.func_150296_c());ids.addAll(membership.func_150296_c());
+        for(String key:ids){UUID target;try{target=UUID.fromString(key);}catch(IllegalArgumentException bad){continue;}if(target.equals(actor))continue;
+            QuestNetwork.TeamPlayer entry=new QuestNetwork.TeamPlayer();entry.id=key;entry.name=directory.getString(key);if(entry.name.isEmpty())entry.name=key;entry.status=teamStatus(actor,target);entry.requesting=teams.getCompoundTag(team(actor)).getBoolean("request-"+target);out.add(entry);
+        }
+        out.sort(Comparator.comparing((QuestNetwork.TeamPlayer v)->v.name,String.CASE_INSENSITIVE_ORDER));return out;
+    }
+    public List<QuestNetwork.TeamEntry> publicTeams(UUID actor){
+        List<QuestNetwork.TeamEntry> out=new ArrayList<QuestNetwork.TeamEntry>();
+        for(Object raw:teams.func_150296_c()){
+            String key=raw.toString();NBTTagCompound t=teams.getCompoundTag(key);QuestNetwork.TeamEntry entry=new QuestNetwork.TeamEntry();entry.id=key;entry.name=t.getString("name");entry.title=t.getString("title");entry.description=t.getString("description");entry.owner=t.getString("leader");entry.color=t.hasKey("color")?t.getInteger("color"):0x0094FF;entry.freeToJoin=t.getBoolean("freeToJoin");entry.invited=t.getBoolean("invite-"+actor);entry.requesting=t.getBoolean("request-"+actor);entry.enemy=t.getBoolean("enemy-"+actor);out.add(entry);
+        }
+        out.sort(Comparator.comparing((QuestNetwork.TeamEntry v)->v.name,String.CASE_INSENSITIVE_ORDER));return out;
+    }
+    public void selectTeam(UUID actor,String key){
+        if(!team(actor).isEmpty() || !teams.hasKey(key))throw new IllegalArgumentException("Already in a team or unknown team");NBTTagCompound t=teams.getCompoundTag(key);
+        if(t.getBoolean("enemy-"+actor))throw new IllegalArgumentException("Team has marked you as an enemy");
+        if(t.getBoolean("freeToJoin") || t.getBoolean("invite-"+actor)){membership.setString(actor.toString(),key);t.removeTag("invite-"+actor);t.removeTag("request-"+actor);t.removeTag("ally-"+actor);t.removeTag("mod-"+actor);}
+        else t.setBoolean("request-"+actor,true);markDirty();
+    }
+    public void teamPlayerAction(UUID actor,UUID target,String operation){
+        if(!directory.hasKey(target.toString()) && !membership.hasKey(target.toString()))throw new IllegalArgumentException("Unknown player");
+        if(!moderator(actor) || actor.equals(target))throw new IllegalArgumentException("Only moderators can manage other players");
+        NBTTagCompound t=teams.getCompoundTag(team(actor));String status=teamStatus(actor,target);
+        if(status.equals("owner"))throw new IllegalArgumentException("Cannot alter the owner");
+        switch(operation){
+            case "invite":
+                if(status.equals("enemy") || status.equals("member") || status.equals("mod"))throw new IllegalArgumentException("Player cannot be invited");
+                t.removeTag("ally-"+target);t.setBoolean("invite-"+target,true);if(t.getBoolean("request-"+target) && team(target).isEmpty()){membership.setString(target.toString(),team(actor));t.removeTag("invite-"+target);t.removeTag("request-"+target);}break;
+            case "cancel_invite":t.removeTag("invite-"+target);break;
+            case "deny_request":t.removeTag("request-"+target);break;
+            case "kick":
+                if(!team(actor).equals(team(target)))throw new IllegalArgumentException("Player is not a member");
+                mergePersonal(target);membership.removeTag(target.toString());t.removeTag("mod-"+target);t.setBoolean("request-"+target,true);break;
+            case "ally":case "enemy":
+                if(status.equals("member") || status.equals("mod"))throw new IllegalArgumentException("Cannot change member relationship");
+                boolean previous=t.getBoolean(operation+"-"+target);t.removeTag("ally-"+target);t.removeTag("enemy-"+target);t.removeTag("invite-"+target);if(!previous)t.setBoolean(operation+"-"+target,true);break;
+            case "moderator":
+                if(!leader(actor) || !team(actor).equals(team(target)))throw new IllegalArgumentException("Only owner can change member roles");
+                t.setBoolean("mod-"+target,!t.getBoolean("mod-"+target));break;
+            case "transfer":
+                if(!leader(actor) || !team(actor).equals(team(target)))throw new IllegalArgumentException("Only owner can transfer to a member");
+                t.setString("leader",target.toString());t.removeTag("mod-"+target);t.removeTag("mod-"+actor);break;
+            default:throw new IllegalArgumentException("Unknown team player action");
+        }markDirty();
+    }
+    public void exitTeam(UUID actor){if(leader(actor)){if(members(actor).size()!=1)throw new IllegalArgumentException("Transfer ownership before leaving");disband(actor);}else leave(actor);}
     public void createTeam(UUID id, String name) {
-        if (!team(id).isEmpty() || name == null || name.length() < 1 || name.length() > 32) throw new IllegalArgumentException("Already in team or invalid name");
+        if (!team(id).isEmpty() || name == null || name.length() < 1 || name.length() > 35) throw new IllegalArgumentException("Already in team or invalid name");
         String key = UUID.randomUUID().toString();
         NBTTagCompound team = new NBTTagCompound(); team.setString("leader", id.toString()); team.setString("name", name);
         // Seed the new team with the creator's solo progress; solo data remains intact.
@@ -147,16 +213,16 @@ public final class QuestProgress extends WorldSavedData {
     public void join(UUID id, UUID leader) {
         String key = team(leader); NBTTagCompound team = teams.getCompoundTag(key);
         if (!team(id).isEmpty() || key.isEmpty() || !team.getBoolean("invite-" + id)) throw new IllegalArgumentException("No invitation or already in team");
-        team.removeTag("invite-" + id); membership.setString(id.toString(), key); markDirty();
+        team.removeTag("invite-" + id);team.removeTag("request-"+id);team.removeTag("ally-"+id);team.removeTag("enemy-"+id);team.removeTag("mod-"+id); membership.setString(id.toString(), key); markDirty();
     }
     public void leave(UUID id) {
         if (team(id).isEmpty()) throw new IllegalArgumentException("Not in a team");
         if (leader(id)) throw new IllegalArgumentException("Leader must disband the team");
-        mergePersonal(id); membership.removeTag(id.toString()); markDirty();
+        mergePersonal(id);teams.getCompoundTag(team(id)).removeTag("mod-"+id); membership.removeTag(id.toString()); markDirty();
     }
     public void kick(UUID leader, UUID target) {
         if (!leader(leader) || !team(leader).equals(team(target)) || leader.equals(target)) throw new IllegalArgumentException("Cannot kick player");
-        mergePersonal(target); membership.removeTag(target.toString()); markDirty();
+        mergePersonal(target);teams.getCompoundTag(team(leader)).removeTag("mod-"+target); membership.removeTag(target.toString()); markDirty();
     }
     public void disband(UUID id) {
         if (!leader(id)) throw new IllegalArgumentException("Only leader can disband");

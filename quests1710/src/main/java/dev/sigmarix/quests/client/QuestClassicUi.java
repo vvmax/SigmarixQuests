@@ -17,12 +17,15 @@ public final class QuestClassicUi extends Gui {
     private static final QuestPresentation.Theme defaults=new QuestPresentation.Theme();
     private static final RenderItem items=new RenderItem();
     public static void background(Minecraft mc,int width,int height) { background(mc,0,0,width,height); }
-    public static void background(Minecraft mc,int x,int y,int width,int height) {
-        if(ClientProxy.snapshot!=null && ClientProxy.snapshot.book!=null && !ClientProxy.snapshot.book.theme.background.equals(defaults.background)) { drawRect(x,y,x+width,y+height,QuestPresentation.color(ClientProxy.snapshot.book.theme.background)); return; }
-        if(background==null) background=new ResourceLocation("ftblib:textures/gui/background_squares.png");
-        GL11.glColor4f(1,1,1,1); mc.getTextureManager().bindTexture(background); GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_WRAP_S,GL11.GL_REPEAT); GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_WRAP_T,GL11.GL_REPEAT);
-        net.minecraft.client.renderer.Tessellator t=net.minecraft.client.renderer.Tessellator.instance;
-        t.startDrawingQuads(); t.addVertexWithUV(x,y+height,0,0,height/64D); t.addVertexWithUV(x+width,y+height,0,width/64D,height/64D); t.addVertexWithUV(x+width,y,0,width/64D,0); t.addVertexWithUV(x,y,0,0,0); t.draw();
+    public static void background(Minecraft mc,int x,int y,int width,int height) { tiled(mc,x,y,width,height,0xDCFFFFFF); }
+    private static void tiled(Minecraft mc,int x,int y,int width,int height,int color) {
+        if(ClientProxy.snapshot!=null && ClientProxy.snapshot.book!=null && !ClientProxy.snapshot.book.theme.background.equals(defaults.background)) {drawRect(x,y,x+width,y+height,QuestPresentation.color(ClientProxy.snapshot.book.theme.background));return;}
+        if(background==null)background=new ResourceLocation("ftblib:textures/gui/background_squares.png");
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        try{mc.getTextureManager().bindTexture(background);GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_WRAP_S,GL11.GL_REPEAT);GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_WRAP_T,GL11.GL_REPEAT);GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
+            net.minecraft.client.renderer.Tessellator t=net.minecraft.client.renderer.Tessellator.instance;t.startDrawingQuads();t.setColorRGBA(color>>16&255,color>>8&255,color&255,color>>>24);
+            t.addVertexWithUV(x,y+height,0,x/64D,(y+height)/64D);t.addVertexWithUV(x+width,y+height,0,(x+width)/64D,(y+height)/64D);t.addVertexWithUV(x+width,y,0,(x+width)/64D,y/64D);t.addVertexWithUV(x,y,0,x/64D,y/64D);t.draw();
+        }finally{GL11.glPopAttrib();}
     }
     public static void bindDependencies(Minecraft mc) {
         if(dependency==null) dependency=new ResourceLocation("ftbquests:textures/gui/dependency.png");
@@ -35,11 +38,21 @@ public final class QuestClassicUi extends Gui {
     public static void panel(Minecraft mc,int x,int y,int width,int height) {
         background(mc,x,y,width,height); drawRect(x+1,y+1,x+width-1,y+height-1,ClientProxy.snapshot!=null && !ClientProxy.snapshot.book.theme.panel.equals(defaults.panel)?QuestPresentation.color(ClientProxy.snapshot.book.theme.panel):0x4A000000); frame(x,y,width,height,BORDER);
     }
+    public static void context(Minecraft mc,int x,int y,int w,int h) {
+        tiled(mc,x+1,y+1,w-2,h-2,0xFFB4B4B4);
+        drawRect(x+1,y,x+w-1,y+1,BORDER);drawRect(x+1,y+h-1,x+w-1,y+h,BORDER);
+        drawRect(x,y+1,x+1,y+h-1,BORDER);drawRect(x+w-1,y+1,x+w,y+h-1,BORDER);
+    }
     public static void item(Minecraft mc,String id,int meta,String nbt,int x,int y,int size) {
         Item item=id==null?null:(Item)Item.itemRegistry.getObject(id); if(item==null) return;
+        if(item instanceof QuestBlocks.CustomIconItem) { ItemStack iconStack=new ItemStack(item,1,meta); try { iconStack.setTagCompound(QuestService.tag(nbt)); } catch(RuntimeException invalid) {} texture(QuestIcons.resource(iconStack),x,y,size,size,0xFF000000|QuestIcons.color(iconStack)); return; }
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glPushMatrix();
-        try { ItemStack stack=new ItemStack(item,1,meta); stack.setTagCompound(QuestService.tag(nbt)); GL11.glTranslated(x,y,100); GL11.glScaled(size/16D,size/16D,1); RenderHelper.enableGUIStandardItemLighting(); items.renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0); }
+        try { ItemStack stack=new ItemStack(item,1,meta); stack.setTagCompound(QuestService.tag(nbt)); GL11.glTranslated(x,y,100); GL11.glScaled(size/16D,size/16D,1); RenderHelper.enableGUIStandardItemLighting(); if(item==net.minecraft.init.Items.experience_bottle && !stack.isItemEnchanted())items.renderItemIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0);else items.renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0); }
         catch(RuntimeException ignored) {} finally { RenderHelper.disableStandardItemLighting(); GL11.glPopMatrix(); GL11.glPopAttrib(); }
+    }
+    public static void quest(Minecraft mc,QuestCore.Quest quest,int x,int y,int size) {
+        if(!quest.icon.isEmpty())item(mc,quest.icon,quest.iconMeta,quest.iconNbt,x,y,size);
+        else if(!quest.tasks.isEmpty()){QuestCore.Task task=quest.tasks.get((int)(System.currentTimeMillis()/1000%quest.tasks.size()));boolean done=ClientProxy.snapshot!=null && Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(quest.id+":"+task.id));task(mc,task,done,x,y,size);}
     }
     public static String taskItem(QuestCore.Task task) {
         if(!task.icon.isEmpty()) return task.icon;
@@ -56,7 +69,7 @@ public final class QuestClassicUi extends Gui {
     public static void task(Minecraft mc,QuestCore.Task task,boolean done,int x,int y,int size) {
         if(task.icon.isEmpty()) {
             String type=task.type;
-            if(type.equals("check")){texture("ftblib:textures/icons/accept"+(done?"":"_gray")+".png",x,y,size,size,0xFFFFFFFF);return;}
+            if(type.equals("check")){libraryIcon("accept"+(done?"":"_gray"),x,y,size,0xFFFFFFFF);return;}
             String energy=type.equals("botania_mana")?"botania_mana":type.equals("ic2_energy")?"ic2":type.equals("energy") || type.equals("buildcraft_mj")?"fe":"";
             if(!energy.isEmpty()){
                 texture("ftbquests:textures/tasks/"+energy+(energy.equals("fe")?"_empty":"_full")+".png",x,y,size,size,0xFFFFFFFF);
@@ -99,8 +112,24 @@ public final class QuestClassicUi extends Gui {
     }
     /** Small geometry icons remain sharp at every GUI scale. */
     public static void icon(String kind,int x,int y,int size,int color) {
+        if(kind.equals("check")){
+            GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glPushMatrix();
+            try{GL11.glTranslated(x,y,200);GL11.glScaled(size/16D,size/16D,1);GL11.glDisable(GL11.GL_TEXTURE_2D);net.minecraft.client.renderer.Tessellator t=net.minecraft.client.renderer.Tessellator.instance;t.startDrawingQuads();
+                int[][][] shapes={{{0,8},{6,14},{6,8},{3,5}},{{6,8},{6,14},{16,4},{13,1}},{{1,8},{6,13},{6,9},{3,6}},{{6,9},{6,13},{15,4},{13,2}}};
+                for(int i=0;i<shapes.length;i++){t.setColorOpaque_I(i<2?0x408300:0x9BC600);for(int[] v:shapes[i])t.addVertex(v[0],v[1],0);}t.draw();
+            }finally{GL11.glPopMatrix();GL11.glPopAttrib();}return;
+        }
+        if(kind.equals("add")){double scale=size/16D;GL11.glPushMatrix();GL11.glTranslated(x,y,200);GL11.glScaled(scale,scale,1);drawRect(6,2,10,14,0xFF408300);drawRect(2,6,14,10,0xFF408300);drawRect(7,3,9,13,0xFF9BC600);drawRect(3,7,13,9,0xFF9BC600);GL11.glPopMatrix();return;}
         String resource=kind.equals("left")?"ftbquests:textures/gui/arrow_left.png":kind.equals("right")?"ftbquests:textures/gui/arrow_right.png":kind.equals("reward")?"ftbquests:textures/gui/collect_rewards.png":kind.equals("team")?"ftblib:textures/icons/friends.png":kind.equals("check")?"ftblib:textures/icons/check.png":kind.equals("add")?"ftblib:textures/icons/add.png":kind.equals("refresh")?"ftblib:textures/icons/refresh.png":kind.equals("book")?"ftbquests:textures/gui/guide.png":kind.equals("shop") || kind.equals("emergency_items") || kind.equals("guide") || kind.equals("info") || kind.equals("settings") || kind.equals("search") || kind.equals("close") || kind.equals("pin") || kind.equals("alert")?"ftbquests:textures/gui/"+kind+".png":"ftblib:textures/icons/"+kind+".png";
-        texture(resource,x,y,size,size,color);
+        if(resource.startsWith("ftblib:textures/icons/") && !resource.endsWith("support.png"))libraryIcon(resource.substring("ftblib:textures/icons/".length(),resource.length()-4),x,y,size,color);else texture(resource,x,y,size,size,color);
+    }
+    public static void libraryIcon(String name,int x,int y,int size,int color){
+        Minecraft mc=Minecraft.getMinecraft();net.minecraft.util.IIcon sprite=mc.getTextureMapBlocks().getAtlasSprite("ftblib:icons/"+name);
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glPushMatrix();
+        try{GL11.glTranslated(0,0,200);mc.getTextureManager().bindTexture(net.minecraft.client.renderer.texture.TextureMap.locationBlocksTexture);GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
+            int min=GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MIN_FILTER),mag=GL11.glGetTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MAG_FILTER);GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_NEAREST);GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MAG_FILTER,GL11.GL_NEAREST);
+            try{net.minecraft.client.renderer.Tessellator t=net.minecraft.client.renderer.Tessellator.instance;t.startDrawingQuads();t.setColorRGBA(color>>16&255,color>>8&255,color&255,color>>>24);t.addVertexWithUV(x,y+size,0,sprite.getMinU(),sprite.getMaxV());t.addVertexWithUV(x+size,y+size,0,sprite.getMaxU(),sprite.getMaxV());t.addVertexWithUV(x+size,y,0,sprite.getMaxU(),sprite.getMinV());t.addVertexWithUV(x,y,0,sprite.getMinU(),sprite.getMinV());t.draw();}finally{GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MIN_FILTER,min);GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MAG_FILTER,mag);}
+        }finally{GL11.glPopMatrix();GL11.glPopAttrib();}
     }
     public static void texture(String resource,int x,int y,int w,int h,int color) {
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glPushMatrix();
