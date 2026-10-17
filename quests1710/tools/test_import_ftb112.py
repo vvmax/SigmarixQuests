@@ -62,8 +62,6 @@ class ImportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'manual conversion'):
                 convert(root)
 
-if __name__ == '__main__':
-    unittest.main()
 
 class VersionMappingTests(unittest.TestCase):
     def test_explicit_identity_maps_preserve_mod_mobs_biomes_and_classes(self):
@@ -120,3 +118,7 @@ class VersionMappingTests(unittest.TestCase):
         for bad in [{'items': {'x': {'id': 'y', 'meta': -1}}}, {'items': {'x': {'id': 'y', 'meta': True}}}]:
             with self.assertRaises(ValueError):
                 mapping_rules(bad)
+
+
+if __name__ == '__main__':
+    unittest.main()
