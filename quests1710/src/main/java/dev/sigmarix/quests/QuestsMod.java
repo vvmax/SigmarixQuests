@@ -29,7 +29,7 @@ public final class QuestsMod {
     private File config;
     private int ticks;
     private static final ArrayBlockingQueue<Pending> QUEUE=new ArrayBlockingQueue<Pending>(128);
-    private static final Map<UUID,Long> LAST_REQUEST=new HashMap<UUID,Long>(),LAST_VIEW=new HashMap<UUID,Long>();
+    private static final Map<UUID,Long> LAST_REQUEST=new HashMap<UUID,Long>(),LAST_VIEW=new HashMap<UUID,Long>(),LAST_SCREEN=new HashMap<UUID,Long>();
     private static final Set<UUID> PENDING_VIEWS=new HashSet<UUID>();
     private static final Map<UUID,String> LAST_MESSAGE=new HashMap<UUID,String>();
     private static final class Pending {
@@ -61,12 +61,12 @@ public final class QuestsMod {
         }
     };
     @Mod.EventHandler public void starting(FMLServerStartingEvent event) throws IOException {
-        QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); ticks=0;
+        QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); LAST_SCREEN.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); ticks=0;
         QuestEvents.off("task_completed",taskToast); QuestEvents.on("task_completed",taskToast);
         QuestScripts.load(new File(config.getParentFile(),"scripts"));
         service=new QuestService(config); service.loadActiveProfile(); event.registerServerCommand(new QuestCommand());
     }
-    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { QuestEvents.off("task_completed",taskToast); service=null; QuestScripts.clear(); QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
+    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { QuestEvents.off("task_completed",taskToast); service=null; QuestScripts.clear(); QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); LAST_SCREEN.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
     @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void onDeath(LivingDeathEvent event) {
         if(service!=null && !event.entity.worldObj.isRemote && event.source.getEntity() instanceof EntityPlayerMP)
             service.credit((EntityPlayerMP)event.source.getEntity(),"kill",EntityList.getEntityString(event.entityLiving),1);
@@ -92,7 +92,7 @@ public final class QuestsMod {
         }
     }
     @SubscribeEvent public void login(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) { if(service!=null) { service.clearObservations(event.player.getUniqueID()); PENDING_VIEWS.add(event.player.getUniqueID()); } }
-    @SubscribeEvent public void logout(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent event) { UUID id=event.player.getUniqueID(); if(service!=null) service.clearObservations(id); LAST_REQUEST.remove(id); LAST_VIEW.remove(id); PENDING_VIEWS.remove(id); LAST_MESSAGE.remove(id); }
+    @SubscribeEvent public void logout(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent event) { UUID id=event.player.getUniqueID(); if(service!=null) service.clearObservations(id); LAST_REQUEST.remove(id); LAST_VIEW.remove(id); LAST_SCREEN.remove(id); PENDING_VIEWS.remove(id); LAST_MESSAGE.remove(id); }
     @SubscribeEvent public void serverTick(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END || service==null) return;
         ticks++;
@@ -128,6 +128,14 @@ public final class QuestsMod {
             QuestNetwork.Action action=QuestService.JSON.fromJson(json,QuestNetwork.Action.class);
             if(action!=null) actionName=action.action;
             if(action==null || action.action==null || action.id==null || action.choices==null || action.choices.length>128) throw new IllegalArgumentException("Invalid action");
+            if(action.action.equals("screen_view")) {
+                Long previous=LAST_SCREEN.get(player.getUniqueID()); if(previous!=null && ticks-previous<5) return; LAST_SCREEN.put(player.getUniqueID(),(long)ticks);
+                if(player.getDistanceSq(action.x+.5,action.y+.5,action.z+.5)>4096 || !player.worldObj.blockExists(action.x,action.y,action.z)) return;
+                net.minecraft.tileentity.TileEntity raw=player.worldObj.getTileEntity(action.x,action.y,action.z);
+                if(!(raw instanceof QuestDevice) || !(raw.getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)raw.getBlockType()).mode!=1) return;
+                QuestNetwork.Snapshot response=new QuestNetwork.Snapshot(); response.screen=QuestWorldMap.create(service,player.getUniqueID(),(QuestDevice)raw);
+                QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(response)),player); return;
+            }
             if(action.action.equals("view") || action.action.equals("refresh")) { if(action.action.equals("refresh")) LAST_MESSAGE.remove(player.getUniqueID()); PENDING_VIEWS.add(player.getUniqueID()); return; }
             Long last=LAST_REQUEST.get(player.getUniqueID());
             if(last!=null && ticks-last<2) {
@@ -152,12 +160,25 @@ public final class QuestsMod {
                     String command=service.clickCommand(player.getUniqueID(),action.id);
                     MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
-                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode": case "detector_settings":
+                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode": case "detector_settings": case "screen_options":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
                     QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
                     if(device.xCoord!=action.x || device.yCoord!=action.y || device.zCoord!=action.z || !device.isUseableByPlayer(player)) throw new IllegalArgumentException("Device unavailable");
                     int deviceMode=((QuestBlocks.DeviceBlock)device.getBlockType()).mode;
                     if((deviceMode==4 || deviceMode==5) && !editor(player)) throw new IllegalArgumentException("Operator permission required to configure task detectors");
+                    if(action.action.equals("screen_options")) {
+                        if(deviceMode!=0 && deviceMode!=1 || device.screenLinked || action.choices.length!=1 || action.choices[0]<0 || action.choices[0]>3) throw new IllegalArgumentException("Invalid screen option");
+                        int option=action.choices[0];
+                        if(deviceMode==1 && option==0) device.screenFullscreen=!device.screenFullscreen;
+                        else if(deviceMode==1 && option==1) device.screenHideIcons=!device.screenHideIcons;
+                        else if(deviceMode==0 && option==2) device.screenInputOnly=!device.screenInputOnly;
+                        else if(deviceMode==0 && option==3) {
+                            net.minecraft.item.ItemStack icon=player.getHeldItem()==null?null:player.getHeldItem().copy();
+                            if(icon!=null) { icon.stackSize=1; net.minecraft.nbt.NBTTagCompound encoded=new net.minecraft.nbt.NBTTagCompound(); icon.writeToNBT(encoded); if(encoded.toString().length()>8192 || net.minecraft.nbt.CompressedStreamTools.compress(encoded).length>4096) throw new IllegalArgumentException("Screen icon NBT is too large"); }
+                            device.screenInputIcon=icon;
+                        } else throw new IllegalArgumentException("Option does not apply to this screen");
+                        device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Screen options updated"; break;
+                    }
                     if(action.action.equals("detector_settings")) {
                         if(!editor(player) || deviceMode!=4 && deviceMode!=5) throw new IllegalArgumentException("Operator task detector required");
                         String[] settings=action.text.split(",",-1); if(settings.length!=5 || !settings[4].equals("true") && !settings[4].equals("false")) throw new IllegalArgumentException("Expected radius, offset, height, power");

@@ -23,7 +23,7 @@ public final class QuestPreview {
     private long oldRevision,lastSmokeStep,lastBookAttempt;
     private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
-    private volatile boolean detectorRequested,openCollectorRequested;
+    private volatile boolean detectorRequested,openCollectorRequested,inputRequested,openProgressRequested;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
@@ -129,6 +129,11 @@ public final class QuestPreview {
                 }
                 if((Boolean)bridge.getMethod("tick").invoke(null)) { emcPassed=true; emcRunning=false; }
             } catch(Exception ex) { throw new IllegalStateException("ProjectE smoke failed",ex); }
+        }
+        if(openProgressRequested) { openProgressRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0); owner.openGui(QuestsMod.instance,0,owner.worldObj,deviceX,deviceY,deviceZ); }
+        if(inputRequested) {
+            inputRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            owner.worldObj.setBlock(deviceX+4,deviceY,deviceZ,QuestBlocks.devices[0]); QuestDevice inputTile=(QuestDevice)owner.worldObj.getTileEntity(deviceX+4,deviceY,deviceZ); inputTile.owner=owner.getUniqueID(); inputTile.facing=4; inputTile.bindingChanged(); detectorDelay=30;
         }
         if(detectorRequested) {
             detectorRequested=false;
@@ -480,7 +485,27 @@ public final class QuestPreview {
                 for(QuestCore.Quest entry:snap.book.quests) if(QuestCore.required(entry) && QuestPresentation.within(snap.book,entry.chapter,"start")) { requiredQuests++; if("complete".equals(snap.states.get(entry.id)) || "claimed".equals(snap.states.get(entry.id))) completedQuests++; }
                 int expectedProgress=requiredQuests==0?100:(int)Math.round(completedQuests*100D/requiredQuests);
                 if(!progressContainer.tile.quest.equals("chapter:start") || progressContainer.percent!=expectedProgress) return;
-                mc.thePlayer.closeScreen(); detectorRequested=true; stage=60; waiting=0; break;
+                mc.thePlayer.closeScreen(); QuestToasts.clear(); mc.gameSettings.hideGUI=true; stage=63; waiting=0; break;
+            case 63:
+                if(waiting<20) return;
+                QuestDevice graphTile=(QuestDevice)mc.theWorld.getTileEntity(deviceX,deviceY,deviceZ); QuestWorldMap graph=QuestWorldMaps.get(graphTile);
+                if(graph==null || !graph.reference.equals("chapter:start") || graph.values.isEmpty()) return;
+                if(graph.values.getOrDefault("welcome",0)/101!=3) throw new IllegalStateException("World chapter map lost its owner's claimed state");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-world-map.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.gameSettings.hideGUI=false; openProgressRequested=true; stage=66; waiting=0; break;
+            case 66:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
+                press(mc.currentScreen,9); stage=64; waiting=0; break;
+            case 64:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || !((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenFullscreen) return;
+                press(mc.currentScreen,10); stage=65; waiting=0; break;
+            case 65:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || !((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenHideIcons) return;
+                mc.thePlayer.closeScreen(); QuestToasts.clear(); mc.gameSettings.hideGUI=true; stage=67; waiting=0; break;
+            case 67:
+                if(waiting<20) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-world-map-fullscreen.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.gameSettings.hideGUI=false; detectorRequested=true; stage=60; waiting=0; break;
             case 60:
                 if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
                 java.lang.reflect.Field settingsFields=QuestDeviceScreen.class.getDeclaredField("detectorFields"); settingsFields.setAccessible(true); net.minecraft.client.gui.GuiTextField[] fields=(net.minecraft.client.gui.GuiTextField[])settingsFields.get(mc.currentScreen);
@@ -492,6 +517,16 @@ public final class QuestPreview {
                 QuestDevice configuredDetector=((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile;
                 if(configuredDetector.detectorRadius!=2.5 || configuredDetector.detectorOffsetY!=-1 || configuredDetector.detectorHeight!=5 || configuredDetector.detectorPower!=12) throw new IllegalStateException("Server detector settings did not synchronize");
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-detector-settings.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.thePlayer.closeScreen(); inputRequested=true; stage=68; waiting=0; break;
+            case 68:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
+                press(mc.currentScreen,9); stage=69; waiting=0; break;
+            case 69:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || !((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenInputOnly) return;
+                press(mc.currentScreen,10); stage=70; waiting=0; break;
+            case 70:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || ((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenInputIcon==null) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-input-options.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 mc.thePlayer.closeScreen(); openCollectorRequested=true; stage=62; waiting=0; break;
             case 62:
                 if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;

@@ -46,7 +46,7 @@ public final class ClientProxy extends CommonProxy {
     @SubscribeEvent public void tick(TickEvent.ClientTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
         Minecraft mc=Minecraft.getMinecraft();
-        if(mc.theWorld==null) { QuestImages.clear(); QuestToasts.disconnect(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; pinTicks=0; opening=false; return; }
+        if(mc.theWorld==null) { QuestWorldMaps.clear(); QuestImages.clear(); QuestToasts.disconnect(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; pinTicks=0; opening=false; return; }
         if(snapshot==null && mc.thePlayer!=null && ++syncTicks%20==0) send(new QuestNetwork.Action());
         QuestToasts.pump();
         if(snapshot!=null && !snapshot.pinned.isEmpty() && mc.currentScreen==null && ++pinTicks%40==0) send(new QuestNetwork.Action());
@@ -55,6 +55,7 @@ public final class ClientProxy extends CommonProxy {
             try {
                 QuestNetwork.Snapshot received=QuestService.JSON.fromJson(json,QuestNetwork.Snapshot.class);
                 if(received==null) throw new IllegalArgumentException("Empty server response");
+                if(received.screen!=null) { QuestWorldMaps.receive(received.screen); continue; }
                 if(received.book==null) {
                     if(snapshot!=null) snapshot.message=received.message;
                     if(mc.currentScreen instanceof QuestEditorScreen) ((QuestEditorScreen)mc.currentScreen).saved(received);

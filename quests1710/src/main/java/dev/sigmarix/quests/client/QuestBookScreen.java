@@ -98,8 +98,8 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
             int x=sx(q),y=sy(q); String state=ClientProxy.snapshot.states.get(q.id);
             String[] style=QuestPresentation.resolve(ClientProxy.snapshot.book,q,state);
             int color=QuestPresentation.color(style[0]);
-            if(q.id.equals(selected)) node(x+12,y+12,(int)(13*q.size)+3,style[2],QuestPresentation.color(theme.selected));
-            node(x+12,y+12,Math.max(1,(int)(13*q.size)),style[2],color);
+            if(q.id.equals(selected)) QuestNodeRenderer.draw(mc,x+12,y+12,(int)(13*q.size)+3,style[2],QuestPresentation.color(theme.selected));
+            QuestNodeRenderer.draw(mc,x+12,y+12,Math.max(1,(int)(13*q.size)),style[2],color);
             try { Item item=(Item)Item.itemRegistry.getObject(q.icon); if(item!=null) { RenderHelper.enableGUIStandardItemLighting(); ItemStack icon=new ItemStack(item,1,q.iconMeta); icon.setTagCompound(QuestService.tag(q.iconNbt)); GL11.glPushMatrix(); GL11.glTranslated(x+12,y+12,0); GL11.glScaled(q.size,q.size,1); itemRender.renderItemAndEffectIntoGUI(fontRendererObj,mc.getTextureManager(),icon,-8,-8); GL11.glPopMatrix(); RenderHelper.disableStandardItemLighting(); } } catch(RuntimeException ignored) {}
             fontRendererObj.drawString(fontRendererObj.trimStringToWidth(q.title,100),x-12,y+16+(int)(13*q.size),QuestPresentation.color(style[1]));
             if(Math.abs(mouseX-x-12)<=13*q.size+2 && Math.abs(mouseY-y-12)<=13*q.size+2) hover=q;
@@ -111,26 +111,6 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         super.drawScreen(mouseX,mouseY,partial);
         if(hover!=null && mouseX<split() && mouseY>60 && mouseY<height-8) func_146283_a(Arrays.asList(hover.title,hover.id+" - "+ClientProxy.snapshot.states.get(hover.id)),mouseX,mouseY);
         else if(imageHover!=null && mouseX<split() && mouseY>60 && mouseY<height-48) { List<String> tooltip=imageHover.hover.isEmpty()?imageHover.uri.isEmpty()?Collections.<String>emptyList():Collections.singletonList(imageHover.uri):imageHover.hover; if(!tooltip.isEmpty()) func_146283_a(tooltip,mouseX,mouseY); }
-    }
-    private void node(int x,int y,int radius,String shape,int color) {
-        if(QuestPresentation.image(shape)) {
-            GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
-            try { mc.getTextureManager().bindTexture(QuestImages.texture(shape)); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA); GL11.glColor4f((color>>16&255)/255f,(color>>8&255)/255f,(color&255)/255f,(color>>>24)/255f); func_152125_a(x-radius,y-radius,0,0,256,256,radius*2,radius*2,256,256); }
-            finally { GL11.glPopAttrib(); } return;
-        }
-        if(shape.equals("square")) { drawRect(x-radius,y-radius,x+radius,y+radius,color); return; }
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT); GL11.glDisable(GL11.GL_CULL_FACE);
-        int count=shape.equals("heart") || shape.equals("rsquare")?64:shape.equals("gear")?48:shape.equals("circle")?32:shape.equals("diamond")?4:shape.equals("pentagon")?5:shape.equals("hexagon")?6:8;
-        GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glColor4f((color>>16&255)/255f,(color>>8&255)/255f,(color&255)/255f,(color>>>24)/255f); GL11.glBegin(GL11.GL_TRIANGLE_FAN); GL11.glVertex2d(x,y);
-        for(int i=0;i<=count;i++) {
-            double angle=-Math.PI/2+Math.PI*2*i/count,dx=Math.cos(angle),dy=Math.sin(angle);
-            if(shape.equals("rsquare")) { dx=Math.copySign(Math.sqrt(Math.abs(dx)),dx); dy=Math.copySign(Math.sqrt(Math.abs(dy)),dy); }
-            else if(shape.equals("heart")) { double t=Math.PI*2*i/count; dx=Math.pow(Math.sin(t),3); dy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/17D; }
-            else if(shape.equals("gear")) { double gear=i%4<2?1:.76; dx*=gear; dy*=gear; }
-            GL11.glVertex2d(x+dx*radius,y+dy*radius);
-        }
-        GL11.glEnd(); GL11.glColor4f(1,1,1,1); GL11.glDisable(GL11.GL_BLEND); GL11.glEnable(GL11.GL_TEXTURE_2D); GL11.glPopAttrib();
     }
     private void drawDetails() {
         QuestCore.Quest q=find(selected); int x=split()+8,max=width-split()-16;

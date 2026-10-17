@@ -107,6 +107,7 @@ public final class QuestNetwork {
     }
     public static final class Rank { public String name; public int completed,total; }
     public static final class Snapshot {
+        public QuestWorldMap screen;
         public QuestCore.Book book;
         public long revision;
         public long emergencyWait;

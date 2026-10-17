@@ -6,6 +6,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class QuestBoundaryTest {
+    @Test public void largestWorldMapFitsBoundedWireAndRejectsExtraEntries() throws Exception {
+        QuestWorldMap map=new QuestWorldMap(); map.reference="book:";
+        for(int i=0;i<4096;i++) map.values.put(String.format("%064x",i),403);
+        map.validate(); String json=QuestService.JSON.toJson(map); assertEquals(json,QuestNetwork.decode(QuestNetwork.encode(json)));
+        map.values.put("overflow",0); try { map.validate(); fail(); } catch(IllegalArgumentException expected) {}
+        map.values.remove("overflow"); map.values.put(String.format("%064x",0),404); try { map.validate(); fail(); } catch(IllegalArgumentException expected) {}
+    }
     @Test public void invitationAndLeadershipAreEnforced() {
         QuestProgress p=new QuestProgress(); UUID owner=UUID.randomUUID(),member=UUID.randomUUID(),intruder=UUID.randomUUID();
         p.createTeam(owner,"Builders");

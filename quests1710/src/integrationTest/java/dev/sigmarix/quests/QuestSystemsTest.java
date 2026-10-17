@@ -38,6 +38,21 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void worldMapUsesOfflineOwnerProgressWithoutRevealingHiddenViewerGoals() throws Exception {
+        QuestCore.Task energy=task("energy",null,100,false); QuestCore.Chapter group=new QuestCore.Chapter(); group.id="group"; group.title="Group"; QuestCore.Chapter child=new QuestCore.Chapter(); child.id="child"; child.title="Child"; child.parent=group.id;
+        service.book.chapters.add(group); service.book.chapters.add(child); service.book.quests.add(quest); quest.chapter=child.id;
+        QuestCore.Quest hidden=new QuestCore.Quest(); hidden.id="secret"; hidden.title="Secret"; hidden.chapter=child.id; hidden.hidden=true; hidden.dependencies.add(quest.id); service.book.quests.add(hidden); service.quests.put(hidden.id,hidden);
+        net.minecraft.world.WorldProvider provider=mock(net.minecraft.world.WorldProvider.class); provider.dimensionId=7; java.lang.reflect.Field providerField=World.class.getDeclaredField("provider"); providerField.setAccessible(true); providerField.set(player.worldObj,provider);
+        QuestDevice tile=new QuestDevice(); tile.setWorldObj(player.worldObj); tile.owner=UUID.randomUUID(); tile.quest="chapter:group"; service.creditTask(tile.owner,quest.id,energy.id,50);
+        QuestWorldMap map=QuestWorldMap.create(service,player.getUniqueID(),tile); map.validate(); assertTrue(map.matches(tile,service.revision,"default")); assertFalse(map.matches(tile,service.revision+1,"default")); assertFalse(map.matches(tile,service.revision,"expert")); UUID savedOwner=tile.owner; tile.owner=UUID.randomUUID(); assertFalse(map.matches(tile,service.revision,"default")); tile.owner=savedOwner; assertEquals(7,map.dimension); assertEquals(Integer.valueOf(151),map.values.get(quest.id)); assertFalse(map.values.containsKey(hidden.id));
+        data.complete(tile.owner,quest.id); map=QuestWorldMap.create(service,player.getUniqueID(),tile); assertEquals(Integer.valueOf(302),map.values.get(quest.id)); assertFalse(map.values.containsKey(hidden.id));
+        tile.bindingProfile="expert"; assertTrue(QuestWorldMap.create(service,player.getUniqueID(),tile).values.isEmpty());
+    }
+    @Test public void screenPresentationOptionsPersistWithoutChangingResourceBindings() {
+        QuestDevice tile=new QuestDevice(); tile.owner=UUID.randomUUID(); tile.quest="quest"; tile.task="task"; tile.screenFullscreen=true; tile.screenHideIcons=true; tile.screenInputOnly=true; tile.screenInputIcon=new ItemStack(Items.diamond,1,0);
+        NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved); QuestDevice restored=new QuestDevice(); restored.readFromNBT(saved);
+        assertTrue(restored.screenFullscreen); assertTrue(restored.screenHideIcons); assertTrue(restored.screenInputOnly); assertEquals(Items.diamond,restored.screenInputIcon.getItem()); assertEquals(tile.owner,restored.owner); assertEquals("task",restored.task);
+    }
     @Test public void collectorClaimsOnlySelectedRootAndLeavesChoiceAvailable() {
         task("check",null,1,false); QuestCore.Reward item=new QuestCore.Reward(); item.id="item"; item.item="minecraft:iron_ingot"; item.count=2; quest.rewards.add(item);
         QuestCore.Reward choice=new QuestCore.Reward(); choice.id="choice"; choice.type="choice"; QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=7; choice.options.add(xp); quest.rewards.add(choice);
