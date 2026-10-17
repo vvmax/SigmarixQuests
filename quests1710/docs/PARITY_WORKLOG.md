@@ -157,3 +157,18 @@ native desktop Save and restart). A fresh combined run is checking the subsequen
 world-display, toast, sound, progress and context-action refinements. Remaining
 visual work includes fractional map sizes/zoom and further interaction states;
 this is still not a claim of complete parity.
+
+The combined client passed again after world/toast/progress changes, including all
+six optional integrations, native text/device saves, restart, and three registered
+native toast OGG assets. Two failed attempts exposed eager TESR type verification
+inside the development @Mod fixture; deferring canonical render fixtures fixed
+that loader timing issue. The production JAR contains none of these fixture classes.
+
+Fractional quest sizes (.125/1.3/2.1/.6) now match complete map frames at native zoom
+16 and 20. Widget positions and widths are quantized separately, hit masks and
+edges use the resulting centers, and icon/badge sizes retain fractional values.
+The standard map was rechecked and still matches its full reference frame.
+Chapter illustrations now use the native button size, integer center, float
+rotation and per-vertex color; unrotated and 27-degree frames both match completely.
+See `map-geometry-pixel-comparison.json` (four complete frames, zero exclusions).
+The latest render changes are undergoing the final build/game checks.

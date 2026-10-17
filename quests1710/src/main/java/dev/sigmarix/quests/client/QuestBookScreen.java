@@ -11,7 +11,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
     private static final QuestPresentation.Theme DEFAULT_THEME=new QuestPresentation.Theme();
     private GuiTextField search;
     private String selected="",chapter="",group="",pendingLink="",hoverChapter="",movingId="";
-    private double panX,panY,zoom=1;private long lastShiftPress;
+    private double panX,panY,zoom=1,layoutMinX=-40,layoutMinY=-30;private long lastShiftPress;
     private int lastX,lastY,detailsScroll,chapterIndex=-1,groupIndex=-1,refreshTicks,chapterScroll,hoverY,viewportWidth,viewportHeight;
     private boolean positioned,dragging,moving,showSearch,menu,hideCard;
     private final Set<String> selectedObjects=new LinkedHashSet<String>();
@@ -35,7 +35,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         List<QuestCore.Quest> list=visible(); double minX=Double.POSITIVE_INFINITY,maxX=Double.NEGATIVE_INFINITY,minY=minX,maxY=maxX;
         for(QuestCore.Quest q:list) { minX=Math.min(minX,q.x-q.size/2); maxX=Math.max(maxX,q.x+q.size/2); minY=Math.min(minY,q.y-q.size/2); maxY=Math.max(maxY,q.y+q.size/2); }
         for(QuestPresentation.MapImage image:images()){minX=Math.min(minX,image.x-image.width/2);maxX=Math.max(maxX,image.x+image.width/2);minY=Math.min(minY,image.y-image.height/2);maxY=Math.max(maxY,image.y+image.height/2);}
-        panX=width/2D-(!Double.isFinite(minX)?0:(minX+maxX)/2*mapUnit()*zoom); panY=height/2D-(!Double.isFinite(minY)?0:(minY+maxY)/2*mapUnit()*zoom);
+        updateNodeBounds(list);panX=width/2D-(!Double.isFinite(minX)?0:(minX+maxX)/2*mapUnit()*zoom); panY=height/2D-(!Double.isFinite(minY)?0:(minY+maxY)/2*mapUnit()*zoom);
     }
     public void refresh() {
         if(ClientProxy.snapshot==null || search==null) return;
@@ -77,35 +77,39 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         return result;
     }
     private double mapUnit() { return 24+4*book().theme.questSpacing; }
-    private int sx(QuestCore.Quest q) { return (int)Math.round(panX+q.x*mapUnit()*zoom); }
-    private int sy(QuestCore.Quest q) { return (int)Math.round(panY+q.y*mapUnit()*zoom); }
+    private void updateNodeBounds(List<QuestCore.Quest> list){double minX=Double.POSITIVE_INFINITY,minY=minX;for(QuestCore.Quest quest:list){minX=Math.min(minX,quest.x-quest.size/2);minY=Math.min(minY,quest.y-quest.size/2);}for(QuestPresentation.MapImage image:images()){minX=Math.min(minX,image.x-image.width/2);minY=Math.min(minY,image.y-image.height/2);}layoutMinX=(Double.isFinite(minX)?minX:0)-40;layoutMinY=(Double.isFinite(minY)?minY:0)-30;}
+    private int nodeSize(QuestCore.Quest q){return Math.max(0,(int)(24*zoom*q.size));}
+    private int nodeLeft(QuestCore.Quest q){double unit=mapUnit()*zoom,scroll=20-panX-layoutMinX*unit;return 20+(int)-scroll+(int)((q.x-layoutMinX)*unit-12*zoom*q.size);}
+    private int nodeTop(QuestCore.Quest q){double unit=mapUnit()*zoom,scroll=1-panY-layoutMinY*unit;return 1+(int)-scroll+(int)((q.y-layoutMinY)*unit-12*zoom*q.size);}
+    private double sx(QuestCore.Quest q) { return nodeLeft(q)+nodeSize(q)/2D; }
+    private double sy(QuestCore.Quest q) { return nodeTop(q)+nodeSize(q)/2D; }
     private boolean hit(QuestCore.Quest quest,int x,int y){return QuestNodeRenderer.contains(mc,sx(quest),sy(quest),radius(quest),QuestPresentation.resolve(book(),quest,ClientProxy.snapshot.states.get(quest.id))[2],x,y);}
-    private int radius(QuestCore.Quest q) { return Math.max(3,(int)Math.round(12*q.size*zoom)); }
+    private double radius(QuestCore.Quest q) { return nodeSize(q)/2D; }
     @Override public void drawScreen(int mx,int my,float partial) {
         if(movingImage!=null && mx>=0 && my>=0){movingImage.x=(mx-panX)/(mapUnit()*zoom);movingImage.y=(my-panY)/(mapUnit()*zoom);}
         QuestClassicUi.background(mc,width,height);drawRect(19,1,20,height-1,QuestClassicUi.BORDER);drawRect(1,1,19,height-1,0x44000000);drawRect(width-20,1,width-19,height-1,QuestClassicUi.BORDER);drawRect(width-19,1,width-1,height-1,0x44000000);
-        List<QuestCore.Quest> list=visible(); QuestCore.Quest hover=null; QuestPresentation.MapImage imageHover=null;
+        List<QuestCore.Quest> list=visible();updateNodeBounds(list); QuestCore.Quest hover=null; QuestPresentation.MapImage imageHover=null;
         clip(20,0,width-40,height);
         QuestCore.Chapter definition=QuestPresentation.chapter(book(),chapter);
         if(definition!=null && !definition.image.isEmpty()) { mc.getTextureManager().bindTexture(QuestImages.texture(definition.image)); GL11.glColor4f(1,1,1,.5f); func_152125_a(20,0,0,0,256,256,width-40,height,256,256); GL11.glColor4f(1,1,1,1); }
         for(QuestPresentation.MapImage image:images()) {
-            int iw=Math.max(1,(int)(image.width*mapUnit()*zoom)),ih=Math.max(1,(int)(image.height*mapUnit()*zoom));
-            GL11.glPushMatrix(); GL11.glTranslated(imageX(image),imageY(image),0); GL11.glRotated(image.rotation,0,0,1); GL11.glColor4f(1,1,1,(float)image.opacity); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
-            mc.getTextureManager().bindTexture(QuestImages.texture(image.resource)); func_152125_a(-iw/2,-ih/2,0,0,256,256,iw,ih,256,256); GL11.glPopMatrix(); GL11.glColor4f(1,1,1,1); if(imageContains(image,mx,my)) imageHover=image;
+            int iw=Math.max(1,(int)(image.width*24*zoom)),ih=Math.max(1,(int)(image.height*24*zoom));
+            GL11.glPushMatrix(); GL11.glTranslated(imageX(image),imageY(image),0); GL11.glRotatef((float)image.rotation,0,0,1); GL11.glColor4f(1,1,1,(float)image.opacity); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
+            mc.getTextureManager().bindTexture(QuestImages.texture(image.resource));GL11.glScaled(iw/2D,ih/2D,1);net.minecraft.client.renderer.Tessellator imageQuad=net.minecraft.client.renderer.Tessellator.instance;imageQuad.startDrawingQuads();imageQuad.setColorRGBA_F(1,1,1,(float)image.opacity);imageQuad.addVertexWithUV(-1,1,0,0,1);imageQuad.addVertexWithUV(1,1,0,1,1);imageQuad.addVertexWithUV(1,-1,0,1,0);imageQuad.addVertexWithUV(-1,-1,0,0,0);imageQuad.draw(); GL11.glPopMatrix(); GL11.glColor4f(1,1,1,1); if(imageContains(image,mx,my)) imageHover=image;
         }
         String focus=selected;
         drawEdges(list,focus);int nodeIndex=0;
         for(QuestCore.Quest q:list) {
-            int x=sx(q),y=sy(q),r=radius(q); String state=ClientProxy.snapshot.states.get(q.id); String[] style=QuestPresentation.resolve(book(),q,state);
+            double x=sx(q),y=sy(q),r=radius(q); String state=ClientProxy.snapshot.states.get(q.id); String[] style=QuestPresentation.resolve(book(),q,state);
             boolean over=hit(q,mx,my);
             int outline="complete".equals(state) || "claimed".equals(state)?0xC856FF56:"locked".equals(state)?0xFF999999:ClientProxy.snapshot.percentages.getOrDefault(q.id,0)>0?0xC800FFFF:0x96FFFFFF;
             if(!style[0].equals(defaultColor(state))) outline=QuestPresentation.color(style[0]);
             QuestNodeRenderer.node(mc,x,y,r,style[2],outline);
-            int size=Math.max(2,r*4/3); QuestClassicUi.quest(mc,q,x-size/2,y-size/2,size,nodeIndex++>0); GL11.glEnable(GL11.GL_ALPHA_TEST); GL11.glAlphaFunc(GL11.GL_GREATER,.1F);
+            double size=r*4/3;GL11.glPushMatrix();GL11.glTranslated(x-size/2,y-size/2,0);GL11.glScaled(size,size,1);QuestClassicUi.quest(mc,q,0,0,1,nodeIndex++>0);GL11.glPopMatrix(); GL11.glEnable(GL11.GL_ALPHA_TEST); GL11.glAlphaFunc(GL11.GL_GREATER,.1F);
             if("locked".equals(state)) nodeOverlay(x,y,r,style[2],0x64000000);
             if(q.id.equals(selected) || selectedObjects.contains(q.id)){GL11.glPushMatrix();GL11.glTranslated(0,0,500);QuestNodeRenderer.highlight(mc,x,y,r,style[2],((int)(190+Math.sin(System.currentTimeMillis()*.003)*50)<<24)|0xFFFFFF);GL11.glPopMatrix();}
             if(over && card==null) { hover=q; nodeOverlay(x,y,r,style[2],0x64FFFFFF); }
-            if("claimed".equals(state)) QuestClassicUi.icon("check",x,y-r,r,0xFF65D529); else if("complete".equals(state)) QuestClassicUi.icon("alert",x,y-r,r,0xFFFFDD55);
+            if("claimed".equals(state) || "complete".equals(state)){GL11.glPushMatrix();GL11.glTranslated(x,y-r,0);GL11.glScaled(r,r,1);QuestClassicUi.icon("claimed".equals(state)?"check":"alert",0,0,1,"claimed".equals(state)?0xFF65D529:0xFFFFDD55);GL11.glPopMatrix();}
         }
         drawEditorCursor(mx,my);unclip(); GL11.glPushMatrix(); GL11.glTranslated(0,0,300); drawChapters(mx,my); GL11.glPopMatrix();
         if(showSearch && card==null) search.drawTextBox();
@@ -119,7 +123,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(Object raw:buttonList) { QuestFlatButton b=(QuestFlatButton)raw; if(b.visible && mx>=b.xPosition && my>=b.yPosition && mx<b.xPosition+b.width && my<b.yPosition+b.height && !b.glyph.isEmpty()) drawHoveringText(Collections.singletonList(b.tooltip),mx,my,fontRendererObj); }
         if(ClientProxy.snapshot.message.startsWith("Error:")) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(ClientProxy.snapshot.message,width-48),24,height-11,0xFFFF8888);
     }
-    private void nodeOverlay(int x,int y,int radius,String shape,int color) { GL11.glPushMatrix(); GL11.glTranslated(0,0,500); GL11.glEnable(GL11.GL_ALPHA_TEST); GL11.glAlphaFunc(GL11.GL_GREATER,.1F); QuestNodeRenderer.draw(mc,x,y,radius,shape,color); GL11.glPopMatrix(); }
+    private void nodeOverlay(double x,double y,double radius,String shape,int color) { GL11.glPushMatrix(); GL11.glTranslated(0,0,500); GL11.glEnable(GL11.GL_ALPHA_TEST); GL11.glAlphaFunc(GL11.GL_GREATER,.1F); QuestNodeRenderer.draw(mc,x,y,radius,shape,color); GL11.glPopMatrix(); }
     private String defaultColor(String state) { QuestPresentation.Theme t=DEFAULT_THEME; return "claimed".equals(state)?t.claimed:"complete".equals(state)?t.complete:"available".equals(state)?t.available:t.locked; }
     private static int visualId(String id){String code=id.startsWith("ftb_")?id.substring(4):id;return code.matches("[a-fA-F0-9]{8}")?(int)Long.parseLong(code,16):id.hashCode();}
     private void drawEdges(List<QuestCore.Quest> list,String focus) {
@@ -370,9 +374,11 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
     private void claim(QuestCore.Quest q,QuestCore.Reward r) { QuestNetwork.Action a=new QuestNetwork.Action(); a.action="claim_reward"; a.id=q.id; a.text=r.id; ClientProxy.send(a); }
     private List<QuestCore.Chapter> groups() { Set<String> parents=new HashSet<String>(); for(QuestCore.Chapter c:book().chapters) if(!c.parent.isEmpty()) parents.add(c.parent); List<QuestCore.Chapter> result=new ArrayList<QuestCore.Chapter>(); for(QuestCore.Chapter c:book().chapters) if(parents.contains(c.id)) result.add(c); return result; }
     private List<QuestPresentation.MapImage> images() { QuestCore.Chapter c=QuestPresentation.chapter(book(),chapter); List<QuestPresentation.MapImage> result=new ArrayList<QuestPresentation.MapImage>(); if(c!=null) for(QuestPresentation.MapImage i:c.images) if(!i.dev || ClientProxy.snapshot.canEdit) result.add(i); return result; }
-    private double imageX(QuestPresentation.MapImage image) { return panX+image.x*mapUnit()*zoom; }
-    private double imageY(QuestPresentation.MapImage image) { return panY+image.y*mapUnit()*zoom; }
-    private boolean imageContains(QuestPresentation.MapImage image,int x,int y) { double dx=x-imageX(image),dy=y-imageY(image),a=Math.toRadians(image.rotation),s=mapUnit()*zoom; return Math.abs(Math.cos(a)*dx+Math.sin(a)*dy)<=image.width*s/2 && Math.abs(-Math.sin(a)*dx+Math.cos(a)*dy)<=image.height*s/2; }
+    private int imageLeft(QuestPresentation.MapImage image){double unit=mapUnit()*zoom,scroll=20-panX-layoutMinX*unit;return 20+(int)-scroll+(int)((image.x-layoutMinX)*unit-12*zoom*image.width);}
+    private int imageTop(QuestPresentation.MapImage image){double unit=mapUnit()*zoom,scroll=1-panY-layoutMinY*unit;return 1+(int)-scroll+(int)((image.y-layoutMinY)*unit-12*zoom*image.height);}
+    private double imageX(QuestPresentation.MapImage image) { return (int)(imageLeft(image)+(int)(image.width*24*zoom)/2D); }
+    private double imageY(QuestPresentation.MapImage image) { return (int)(imageTop(image)+(int)(image.height*24*zoom)/2D); }
+    private boolean imageContains(QuestPresentation.MapImage image,int x,int y) {if(image.click.isEmpty() && image.uri.isEmpty() && !ClientProxy.snapshot.canEdit)return false;int left=imageLeft(image),top=imageTop(image),w=(int)(image.width*24*zoom),h=(int)(image.height*24*zoom);return x>=left && y>=top && x<left+w && y<top+h;}
     @Override public void confirmClicked(boolean accepted,int id) { if(accepted && id==1000 && !pendingLink.isEmpty() && QuestPresentation.link(pendingLink)) try { java.awt.Desktop.getDesktop().browse(new java.net.URI(pendingLink)); } catch(Exception ex) { cpw.mods.fml.common.FMLLog.warning("Could not open map link: %s",ex.toString()); } mc.displayGuiScreen(this); }
     @Override protected void mouseClickMove(int x,int y,int button,long elapsed) { if(dragging) { panX+=x-lastX; panY+=y-lastY; } if(moving) { QuestCore.Quest q=find(movingId); if(q!=null) { q.x+=(x-lastX)/(mapUnit()*zoom); q.y+=(y-lastY)/(mapUnit()*zoom); } } lastX=x; lastY=y; }
     @Override protected void mouseMovedOrUp(int x,int y,int button) { super.mouseMovedOrUp(x,y,button); dragging=false; if(moving) { moving=false; QuestCore.Quest q=find(movingId); if(q!=null) { q.x=QuestPresentation.snap(book(),q.x,q.size); q.y=QuestPresentation.snap(book(),q.y,q.size); } QuestNetwork.Action a=new QuestNetwork.Action(); a.action="save"; a.revision=ClientProxy.snapshot.revision; a.book=book(); ClientProxy.send(a); } }

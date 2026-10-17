@@ -1,0 +1,51 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 standard theme; fractional node sizes at zoom 16/20 and chapter illustration at 0/27 degrees",
+  "resolution": [
+    854,
+    480
+  ],
+  "map_fractional_16_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "map_fractional_20_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "map_illustration_0_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "map_illustration_27_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  }
+}
