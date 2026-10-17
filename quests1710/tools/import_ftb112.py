@@ -304,7 +304,7 @@ def convert_task(raw, index, defaults=None, repeat=False):
     elif kind == 'reskillable':
         result.update(type='skill', target=raw.get('skill', ''), count=int(raw.get('skill_level', 1)))
     elif kind == 'custom':
-        raise ValueError('Custom tasks require a registered 1.7 handler and manual conversion')
+        result.update(type='custom', target='', count=1)
     else:
         raise ValueError('Task requires manual conversion: ' + kind)
     return result

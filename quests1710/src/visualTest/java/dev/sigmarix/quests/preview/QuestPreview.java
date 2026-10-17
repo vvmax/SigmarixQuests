@@ -23,6 +23,7 @@ public final class QuestPreview {
     private long oldRevision,lastSmokeStep,lastBookAttempt;
     private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
+    private volatile boolean detectorRequested;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
@@ -34,7 +35,7 @@ public final class QuestPreview {
     private boolean emcRunning;
     private boolean manaRunning;
     private boolean euRunning;
-    private int deviceDelay,deviceX,deviceY,deviceZ;
+    private int detectorDelay,deviceDelay,deviceX,deviceY,deviceZ;
     @Mod.EventHandler public void init(FMLInitializationEvent event) throws Exception {
         remoteImage=PreviewImageServer.start(); GuideSmoke.register();
         java.util.List<String> expected=java.nio.file.Files.readAllLines(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/expected-mods.txt").toPath(),StandardCharsets.UTF_8);
@@ -124,6 +125,17 @@ public final class QuestPreview {
                 }
                 if((Boolean)bridge.getMethod("tick").invoke(null)) { emcPassed=true; emcRunning=false; }
             } catch(Exception ex) { throw new IllegalStateException("ProjectE smoke failed",ex); }
+        }
+        if(detectorRequested) {
+            detectorRequested=false;
+            net.minecraft.entity.player.EntityPlayerMP detectorPlayer=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            detectorPlayer.worldObj.setBlock(deviceX+4,deviceY,deviceZ,QuestBlocks.devices[5]);
+            QuestDevice detectorTile=(QuestDevice)detectorPlayer.worldObj.getTileEntity(deviceX+4,deviceY,deviceZ); detectorTile.owner=detectorPlayer.getUniqueID(); detectorTile.bindingChanged();
+            detectorDelay=30;
+        }
+        if(detectorDelay>0 && --detectorDelay==0) {
+            net.minecraft.entity.player.EntityPlayerMP detectorPlayer=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            detectorPlayer.openGui(QuestsMod.instance,0,detectorPlayer.worldObj,deviceX+4,deviceY,deviceZ);
         }
         if(!placeDevice && deviceDelay==0) return;
         net.minecraft.server.MinecraftServer server=net.minecraft.server.MinecraftServer.getServer();
@@ -464,6 +476,18 @@ public final class QuestPreview {
                 for(QuestCore.Quest entry:snap.book.quests) if(QuestCore.required(entry) && QuestPresentation.within(snap.book,entry.chapter,"start")) { requiredQuests++; if("complete".equals(snap.states.get(entry.id)) || "claimed".equals(snap.states.get(entry.id))) completedQuests++; }
                 int expectedProgress=requiredQuests==0?100:(int)Math.round(completedQuests*100D/requiredQuests);
                 if(!progressContainer.tile.quest.equals("chapter:start") || progressContainer.percent!=expectedProgress) return;
+                mc.thePlayer.closeScreen(); detectorRequested=true; stage=60; waiting=0; break;
+            case 60:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
+                java.lang.reflect.Field settingsFields=QuestDeviceScreen.class.getDeclaredField("detectorFields"); settingsFields.setAccessible(true); net.minecraft.client.gui.GuiTextField[] fields=(net.minecraft.client.gui.GuiTextField[])settingsFields.get(mc.currentScreen);
+                if(fields.length!=4) throw new IllegalStateException("Detector settings fields missing");
+                String[] settingsValues={"2.5","-1","5","12"}; for(int i=0;i<4;i++) fields[i].setText(settingsValues[i]);
+                press(mc.currentScreen,6); stage=61; waiting=0; break;
+            case 61:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || snap==null || !snap.message.equals("Detector settings updated")) return;
+                QuestDevice configuredDetector=((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile;
+                if(configuredDetector.detectorRadius!=2.5 || configuredDetector.detectorOffsetY!=-1 || configuredDetector.detectorHeight!=5 || configuredDetector.detectorPower!=12) throw new IllegalStateException("Server detector settings did not synchronize");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-detector-settings.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=8; waiting=0; break;
             case 8:
                 if(waiting<30) return;

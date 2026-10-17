@@ -10,6 +10,12 @@ public final class QuestEvents {
         public final UUID player;
         Event(String type,UUID player,String quest,String task) { this.type=type; this.player=player; this.quest=quest; this.task=task; }
     }
+    private static final ThreadLocal<Boolean> silent=new ThreadLocal<Boolean>();
+    public static boolean notificationsMuted() { return Boolean.TRUE.equals(silent.get()); }
+    public static void withNotifications(boolean enabled,Runnable action) {
+        Boolean previous=silent.get(); silent.set(!enabled || Boolean.TRUE.equals(previous));
+        try { action.run(); } finally { if(previous==null) silent.remove(); else silent.set(previous); }
+    }
     public static void on(String type,Consumer<Event> handler) {
         if(!TYPES.contains(type) || handler==null) throw new IllegalArgumentException("Unknown quest lifecycle event: "+type);
         listeners.computeIfAbsent(type,k->new ArrayList<Consumer<Event>>()).add(handler);

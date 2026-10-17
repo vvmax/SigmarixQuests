@@ -18,6 +18,9 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     public UUID owner;
     public String quest="",task="",bindingProfile="default";
     public boolean signal,analog;
+    public double detectorRadius=1.49,detectorOffsetY=1.01,detectorHeight=2.98;
+    public int detectorPower=1;
+    public boolean detectorNotifications=true;
     public int redstoneOutput;
     public int facing=2,screenPercent,screenWidth=1,screenHeight=1,coreX,coreY,coreZ;
     public boolean screenLinked;
@@ -82,8 +85,8 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
             int output=analog?(int)Math.round(percent*15/100D):next?15:0;
             if(redstoneOutput!=output) { redstoneOutput=output; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); worldObj.notifyBlocksOfNeighborChange(xCoord,yCoord,zCoord,getBlockType()); }
         }
-        if(mode==5) next=!worldObj.getEntitiesWithinAABB(net.minecraft.entity.player.EntityPlayer.class,AxisAlignedBB.getBoundingBox(xCoord-8,yCoord-8,zCoord-8,xCoord+9,yCoord+9,zCoord+9)).isEmpty();
-        if(mode==4) next=worldObj.isBlockIndirectlyGettingPowered(xCoord,yCoord,zCoord);
+        if(mode==5) next=detectPlayers(worldObj.getEntitiesWithinAABB(EntityPlayerMP.class,detectorBounds()));
+        if(mode==4) next=worldObj.getStrongestIndirectPower(xCoord,yCoord,zCoord)>=detectorPower;
         try {
             if(player!=null && mode==6 && input!=null) {
                 if(QuestBlocks.LootCrateItem.open(player,input)) { if(input.stackSize<=0) input=null; markDirty(); }
@@ -92,18 +95,49 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
                 if(input!=null) { s.acceptItems(owner,quest,task,input,false); if(input.stackSize<=0) input=null; markDirty(); }
                 if(player!=null) { if(s.active(player,q)) s.finish(player,q); } else s.finishStored(owner,q,worldObj.getTotalWorldTime());
             }
+            if(mode==4 && next && definition("custom")!=null && owner!=null) { creditDetected(owner,player); }
             if(player!=null && q!=null) {
                 if(mode==3 && s.progress().completed(owner).contains(quest) && !s.claimed(owner,q)) s.claim(player,q,java.util.Collections.<Integer>emptyList(),this::output);
-                if((mode==4 || mode==5) && next && definition("custom")!=null) s.creditTask(player,quest,task,1);
+
             }
         } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest device at %s,%s,%s: %s",xCoord,yCoord,zCoord,ex.toString()); }
         if(signal!=next) { signal=next; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); worldObj.notifyBlocksOfNeighborChange(xCoord,yCoord,zCoord,getBlockType()); }
+    }
+    public AxisAlignedBB detectorBounds() {
+        return AxisAlignedBB.getBoundingBox(xCoord+.5-detectorRadius,yCoord+detectorOffsetY,zCoord+.5-detectorRadius,xCoord+.5+detectorRadius,yCoord+detectorOffsetY+detectorHeight,zCoord+.5+detectorRadius);
+    }
+    public void configureDetector(double radius,double offset,double height,int power) {
+        if(!Double.isFinite(radius) || radius<.25 || radius>100 || !Double.isFinite(offset) || offset< -1000 || offset>1000 || !Double.isFinite(height) || height<.1 || height>1000 || power<1 || power>15) throw new IllegalArgumentException("Invalid detector settings");
+        detectorRadius=radius; detectorOffsetY=offset; detectorHeight=height; detectorPower=power;
+        markDirty(); if(worldObj!=null && !worldObj.isRemote) worldObj.markBlockForUpdate(xCoord,yCoord,zCoord);
+    }
+    private void creditDetected(UUID recipient,EntityPlayerMP online) {
+        QuestService service=QuestsMod.service; QuestCore.Task target=definition("custom"); if(target==null) return;
+        QuestCore.Quest q=service.quests.get(quest);
+        QuestEvents.withNotifications(detectorNotifications,() -> {
+            boolean completed=service.progress().completed(recipient).contains(quest);
+            service.creditTask(recipient,quest,task,target.count);
+            if(service.finishStored(recipient,q,worldObj.getTotalWorldTime()) && !completed && online!=null && !q.disableToast) QuestNetwork.toast(online,q.title,"Quest complete",q.icon,q.iconMeta,q.iconNbt);
+        });
+    }
+    /** A public detector credits the detected player's team, never its builder's team. */
+    public boolean detectPlayers(Iterable<?> players) {
+        QuestService service=QuestsMod.service; QuestCore.Task target=definition("custom"); boolean present=false;
+        for(Object raw:players) if(raw instanceof EntityPlayerMP) {
+            present=true; EntityPlayerMP detected=(EntityPlayerMP)raw;
+            if(target!=null) {
+                creditDetected(detected.getUniqueID(),detected);
+            }
+        }
+        return present;
     }
     @Override public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
         try { owner=UUID.fromString(nbt.getString("owner")); } catch(IllegalArgumentException e) { owner=null; }
         euFraction=nbt.getDouble("euFraction"); if(!Double.isFinite(euFraction) || euFraction<0 || euFraction>=1) euFraction=0; euBinding=nbt.getString("euBinding");
         input=nbt.hasKey("input")?net.minecraft.item.ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("input")):null;
+        detectorNotifications=!nbt.hasKey("detectorNotifications") || nbt.getBoolean("detectorNotifications");
+        if(nbt.hasKey("detectorRadius")) try { configureDetector(nbt.getDouble("detectorRadius"),nbt.getDouble("detectorOffsetY"),nbt.getDouble("detectorHeight"),nbt.getInteger("detectorPower")); } catch(IllegalArgumentException ignored) {}
         analog=nbt.getBoolean("analog"); redstoneOutput=Math.max(0,Math.min(15,nbt.getInteger("redstoneOutput")));
         screenWidth=Math.max(1,Math.min(8,nbt.getInteger("screenWidth"))); screenHeight=Math.max(1,Math.min(8,nbt.getInteger("screenHeight")));
         screenLinked=nbt.getBoolean("screenLinked"); coreX=nbt.getInteger("coreX"); coreY=nbt.getInteger("coreY"); coreZ=nbt.getInteger("coreZ");
@@ -113,6 +147,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         quest=nbt.getString("quest"); task=nbt.getString("task"); signal=nbt.getBoolean("signal");
     }
     @Override public void writeToNBT(NBTTagCompound nbt) {
+        nbt.setBoolean("detectorNotifications",detectorNotifications); nbt.setDouble("detectorRadius",detectorRadius); nbt.setDouble("detectorOffsetY",detectorOffsetY); nbt.setDouble("detectorHeight",detectorHeight); nbt.setInteger("detectorPower",detectorPower);
         super.writeToNBT(nbt); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
     }
     @Override public AxisAlignedBB getRenderBoundingBox() { return AxisAlignedBB.getBoundingBox(xCoord-8,yCoord,zCoord-8,xCoord+9,yCoord+9,zCoord+9); }

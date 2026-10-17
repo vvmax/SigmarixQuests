@@ -98,7 +98,7 @@ public class QuestService {
                         if(QuestRayMatcher.type(t).equals("entity_id")) { if(!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: "+t.target); }
                         else if(QuestRayMatcher.type(t).equals("block_id")) block(t.target); tag(t.nbt); break;
                     case "stat": case "achievement": stat(t.target, t.type.equals("achievement")); break;
-                    case "custom": if (!QuestHooks.TASKS.containsKey(t.target)) throw new IllegalArgumentException("Unregistered task hook: " + t.target); break;
+                    case "custom": if (t.target!=null && !t.target.isEmpty() && !QuestHooks.TASKS.containsKey(t.target)) throw new IllegalArgumentException("Unregistered task hook: " + t.target); break;
                     default: break;
                 }
             }
@@ -314,7 +314,7 @@ public class QuestService {
         switch (t.type) {
             case "check": return !t.manual || counter(p,q,t)>=t.count;
             case "kill": case "interaction": case "energy": case "ic2_energy": case "botania_mana": case "buildcraft_mj": return counter(p,q,t) >= t.count;
-            case "custom": return counter(p,q,t) >= t.count || QuestHooks.TASKS.get(t.target).complete(p,t);
+            case "custom": return counter(p,q,t) >= t.count || QuestHooks.TASKS.containsKey(t.target) && QuestHooks.TASKS.get(t.target).complete(p,t);
             case "gamestage": return progress().stage(p.getUniqueID(),t.target);
             case "skill": return progress().skill(p.getUniqueID(),t.target)>=t.count;
             case "npc_quest": case "npc_dialog": case "npc_faction": return QuestNPCs.task(p,t);

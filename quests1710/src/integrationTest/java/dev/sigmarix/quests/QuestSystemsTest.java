@@ -38,6 +38,55 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void customCountersCanBeSavedAndRemainIncompleteUntilCredited() throws Exception {
+        QuestCore.Task counter=task("custom","",3,false); QuestCore.Book book=new QuestCore.Book(); book.quests.add(quest);
+        java.nio.file.Path folder=java.nio.file.Files.createTempDirectory("quests-counter-test");
+        try {
+            QuestService configured=new QuestService(folder.resolve("quests.json").toFile()); configured.save(book,configured.revision);
+            assertFalse(service.check(player,quest,false)); service.creditTask(player,quest.id,counter.id,3); assertTrue(service.check(player,quest,false));
+            counter.target="missing:hook"; try { configured.save(book,configured.revision); fail(); } catch(IllegalArgumentException expected) {}
+        } finally { java.nio.file.Files.deleteIfExists(folder.resolve("quests.json")); java.nio.file.Files.deleteIfExists(folder.resolve("quests.json.bak")); java.nio.file.Files.deleteIfExists(folder); }
+    }
+    @Test public void detectorNotificationScopePreservesEventsAndRestoresNestedState() {
+        java.util.List<Boolean> seen=new ArrayList<Boolean>(); java.util.function.Consumer<QuestEvents.Event> listener=e->seen.add(QuestEvents.notificationsMuted()); QuestEvents.on("task_completed",listener);
+        try {
+            QuestEvents.withNotifications(false,()-> { QuestEvents.withNotifications(true,()->QuestEvents.fire("task_completed",player.getUniqueID(),quest.id,"task")); });
+            assertEquals(Collections.singletonList(true),seen); assertFalse(QuestEvents.notificationsMuted());
+            try { QuestEvents.withNotifications(false,()-> { throw new IllegalStateException("probe"); }); fail(); } catch(IllegalStateException expected) {}
+            assertFalse(QuestEvents.notificationsMuted());
+        } finally { QuestEvents.off("task_completed",listener); }
+    }
+    @Test public void detectorSettingsValidateAtomicallyAndSurviveNbt() {
+        QuestDevice tile=new QuestDevice(); tile.xCoord=10; tile.yCoord=20; tile.zCoord=30;
+        tile.configureDetector(3,-2,4,12);
+        assertEquals(7.5,tile.detectorBounds().minX,0); assertEquals(18,tile.detectorBounds().minY,0); assertEquals(22,tile.detectorBounds().maxY,0);
+        try { tile.configureDetector(4,0,Double.NaN,2); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(3,tile.detectorRadius,0); assertEquals(12,tile.detectorPower);
+        NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved); QuestDevice restored=new QuestDevice(); restored.readFromNBT(saved);
+        assertEquals(3,restored.detectorRadius,0); assertEquals(-2,restored.detectorOffsetY,0); assertEquals(4,restored.detectorHeight,0); assertEquals(12,restored.detectorPower);
+        restored.readFromNBT(new NBTTagCompound()); assertTrue(Double.isFinite(restored.detectorRadius));
+    }
+    @Test public void redstoneDetectorUsesConfiguredThresholdAndOfflineOwner() {
+        QuestCore.Task target=task("custom",null,9,false); QuestDevice tile=spy(new QuestDevice()); tile.owner=UUID.randomUUID(); tile.quest=quest.id; tile.task=target.id; tile.setWorldObj(player.worldObj);
+        doReturn(new QuestBlocks.DeviceBlock(4,"threshold_detector")).when(tile).getBlockType(); doReturn(null).when(tile).player(); tile.configureDetector(1,0,1,12); QuestsMod.service=service;
+        try {
+            when(player.worldObj.getStrongestIndirectPower(0,0,0)).thenReturn(11); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(0,data.value(tile.owner,quest.id,target.id));
+            when(player.worldObj.getStrongestIndirectPower(0,0,0)).thenReturn(12); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(9,data.value(tile.owner,quest.id,target.id)); assertTrue(data.completed(tile.owner).contains(quest.id));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void publicDetectorCreditsDetectedPlayersInsteadOfItsOfflineBuilder() {
+        QuestCore.Task target=task("custom",null,7,false); QuestDevice tile=new QuestDevice(); tile.owner=UUID.randomUUID(); tile.quest=quest.id; tile.task=target.id; tile.setWorldObj(player.worldObj); QuestsMod.service=service;
+        try {
+            assertTrue(tile.detectPlayers(Collections.singletonList(player)));
+            assertEquals(7,data.value(player.getUniqueID(),quest.id,target.id));
+            assertEquals(0,data.value(tile.owner,quest.id,target.id));
+            assertTrue(data.completed(player.getUniqueID()).contains(quest.id));
+            assertFalse(tile.detectPlayers(Collections.emptyList()));
+            tile.bindingProfile="another-profile";
+            EntityPlayerMP other=mock(EntityPlayerMP.class); when(other.getUniqueID()).thenReturn(UUID.randomUUID());
+            assertTrue(tile.detectPlayers(Collections.singletonList(other))); assertEquals(0,data.value(other.getUniqueID(),quest.id,target.id));
+        } finally { QuestsMod.service=null; }
+    }
     @Test public void incompleteTaskDoesNotConsumeEarlierRequirements() {
         player.inventory.mainInventory[0]=new ItemStack(Items.iron_ingot,4);
         task("item","minecraft:iron_ingot",3,true); task("dimension",null,1,false).dimension=-1;

@@ -152,10 +152,17 @@ public final class QuestsMod {
                     String command=service.clickCommand(player.getUniqueID(),action.id);
                     MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
-                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode":
+                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode": case "detector_settings":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
                     QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
                     if(device.xCoord!=action.x || device.yCoord!=action.y || device.zCoord!=action.z || !device.isUseableByPlayer(player)) throw new IllegalArgumentException("Device unavailable");
+                    int deviceMode=((QuestBlocks.DeviceBlock)device.getBlockType()).mode;
+                    if((deviceMode==4 || deviceMode==5) && !editor(player)) throw new IllegalArgumentException("Operator permission required to configure task detectors");
+                    if(action.action.equals("detector_settings")) {
+                        if(!editor(player) || deviceMode!=4 && deviceMode!=5) throw new IllegalArgumentException("Operator task detector required");
+                        String[] settings=action.text.split(",",-1); if(settings.length!=5 || !settings[4].equals("true") && !settings[4].equals("false")) throw new IllegalArgumentException("Expected radius, offset, height, power");
+                        device.configureDetector(Double.parseDouble(settings[0]),Double.parseDouble(settings[1]),Double.parseDouble(settings[2]),Integer.parseInt(settings[3])); device.detectorNotifications=Boolean.parseBoolean(settings[4]); device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Detector settings updated"; break;
+                    }
                     if(action.action.equals("detector_mode")) { device.analog=!device.analog; device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Detector mode updated"; break; }
                     if(action.action.equals("screen_size")) {
                         if(action.choices.length!=2) throw new IllegalArgumentException("Expected screen width and height");

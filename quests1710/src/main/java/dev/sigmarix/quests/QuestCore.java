@@ -63,7 +63,7 @@ public final class QuestCore {
                     QuestPresentation.metadata(t.title,t.description,t.icon,t.iconMeta,t.iconNbt);
                     if (t.id == null) t.id = "t" + i;
                     if (!validId(t.id) || !taskIds.add(t.id)) throw new IllegalArgumentException("Invalid task id: " + q.id);
-                    if (Arrays.asList("item", "kill", "biome", "stat", "achievement", "observation", "interaction", "fluid", "custom", "npc_quest", "npc_dialog", "npc_faction", "gamestage", "skill").contains(t.type) && (t.target == null || t.target.isEmpty()) && !(t.type.equals("item") && (t.targets!=null && !t.targets.isEmpty() || t.filter!=null)))
+                    if (Arrays.asList("item", "kill", "biome", "stat", "achievement", "observation", "interaction", "fluid", "npc_quest", "npc_dialog", "npc_faction", "gamestage", "skill").contains(t.type) && (t.target == null || t.target.isEmpty()) && !(t.type.equals("item") && (t.targets!=null && !t.targets.isEmpty() || t.filter!=null)))
                         throw new IllegalArgumentException("Missing task target: " + q.id);
                     if(!QuestRayMatcher.TYPES.contains(t.matchType)) throw new IllegalArgumentException("Invalid ray matcher type");
                     if(t.comparison==null || !Arrays.asList("at_least","at_most","equals","not_equals","greater","less").contains(t.comparison)) throw new IllegalArgumentException("Invalid comparison");

@@ -15,6 +15,12 @@ class ImportTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 SNBT(text).parse()
 
+    def test_custom_counter_is_preserved_for_detectors_and_native_callbacks(self):
+        task = convert_task({'type': 'ftbquests:custom', 'uid': 7}, 0)
+        self.assertEqual(task['type'], 'custom')
+        self.assertEqual(task['target'], '')
+        self.assertEqual(task['count'], 1)
+
     def test_unsupported_types_fail_instead_of_becoming_checkmarks(self):
         with self.assertRaises(ValueError):
             convert_task({'type': 'ftbquests:missing_integration'}, 0)

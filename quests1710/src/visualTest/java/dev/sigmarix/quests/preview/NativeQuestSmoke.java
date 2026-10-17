@@ -46,7 +46,11 @@ public final class NativeQuestSmoke {
         QuestCore.Task offlineFluid=new QuestCore.Task(); offlineFluid.id="water"; offlineFluid.type="fluid"; offlineFluid.target="water"; offlineFluid.count=250; offline.tasks.add(offlineFluid);
         QuestCore.Task offlineItems=new QuestCore.Task(); offlineItems.id="items"; offlineItems.type="item"; offlineItems.target="minecraft:iron_ingot"; offlineItems.count=2; offlineItems.consume=true; offline.tasks.add(offlineItems);
         QuestCore.Reward offlineReward=new QuestCore.Reward(); offlineReward.id="reward"; offlineReward.item="minecraft:diamond"; offline.rewards.add(offlineReward); utilities.quests.add(offline);
-        Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); utilityQuests.put(offline.id,offline); main.quests=utilityQuests;
+        QuestCore.Quest publicDetector=new QuestCore.Quest(); publicDetector.id="public-detector"; publicDetector.title="Public player detector"; publicDetector.optional=true;
+        QuestCore.Task detected=new QuestCore.Task(); detected.id="presence"; detected.type="custom"; detected.count=5; publicDetector.tasks.add(detected); utilities.quests.add(publicDetector);
+        QuestCore.Quest redstoneDetector=new QuestCore.Quest(); redstoneDetector.id="redstone-detector"; redstoneDetector.title="Redstone threshold"; redstoneDetector.optional=true;
+        QuestCore.Task powered=new QuestCore.Task(); powered.id="powered"; powered.type="custom"; powered.count=3; redstoneDetector.tasks.add(powered); utilities.quests.add(redstoneDetector);
+        Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); utilityQuests.put(offline.id,offline); utilityQuests.put(publicDetector.id,publicDetector); utilityQuests.put(redstoneDetector.id,redstoneDetector); main.quests=utilityQuests;
         DropObserver observer=new DropObserver(); net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(observer); main.book=utilities;
         try {
             storageX=(int)Math.floor(player.posX)+4; storageY=(int)Math.floor(player.posY); storageZ=(int)Math.floor(player.posZ)+4;
@@ -60,6 +64,15 @@ public final class NativeQuestSmoke {
             for(int i=0;i<40;i++) { feeder.updateEntity(); offlineMachine.updateEntity(); }
             if(!main.progress().completed(offlineOwner).contains(offline.id) || main.progress().value(offlineOwner,offline.id,offlineItems.id)!=2 || offlineMachine.getStackInSlot(0)!=null || main.claimed(offlineOwner,offline)) throw new IllegalStateException("Offline hopper submission did not finish stored requirements or claimed player rewards early");
             if(main.progress().value(id,offline.id,offlineRf.id)!=0) throw new IllegalStateException("Offline machine changed the bystander's progress"); world.setBlockToAir(offlineX,offlineY+1,offlineZ);
+            { int detectorX=(int)Math.floor(player.posX)+2,detectorY=(int)Math.floor(player.posY),detectorZ=(int)Math.floor(player.posZ);
+            world.setBlock(detectorX,detectorY,detectorZ,QuestBlocks.devices[5]); QuestDevice detector=(QuestDevice)world.getTileEntity(detectorX,detectorY,detectorZ); detector.owner=offlineOwner; detector.quest=publicDetector.id; detector.task=detected.id; detector.configureDetector(3,-2,6,15); detector.bindingChanged();
+            for(int i=0;i<20;i++) detector.updateEntity();
+            if(!main.progress().completed(id).contains(publicDetector.id) || main.progress().value(offlineOwner,publicDetector.id,detected.id)!=0) throw new IllegalStateException("Real public player detector credited its builder instead of the detected player");
+            world.setBlockToAir(detectorX,detectorY,detectorZ); world.setBlock(detectorX,detectorY,detectorZ,QuestBlocks.devices[4]); detector=(QuestDevice)world.getTileEntity(detectorX,detectorY,detectorZ); detector.owner=offlineOwner; detector.quest=redstoneDetector.id; detector.task=powered.id; detector.configureDetector(3,-2,6,15); detector.bindingChanged();
+            for(int i=0;i<20;i++) detector.updateEntity(); if(main.progress().completed(offlineOwner).contains(redstoneDetector.id)) throw new IllegalStateException("Unpowered redstone detector completed");
+            world.setBlock(detectorX,detectorY+1,detectorZ,net.minecraft.init.Blocks.redstone_block); for(int i=0;i<20;i++) detector.updateEntity();
+            if(!main.progress().completed(offlineOwner).contains(redstoneDetector.id)) throw new IllegalStateException("Real redstone threshold did not complete its offline owner's task");
+            world.setBlockToAir(detectorX,detectorY+1,detectorZ); world.setBlockToAir(detectorX,detectorY,detectorZ); }
             world.setBlock(storageX,storageY,storageZ,QuestBlocks.devices[7]); QuestStorage chest=(QuestStorage)world.getTileEntity(storageX,storageY,storageZ); chest.owner=id; chest.bindingChanged(); chest.setInventorySlotContents(26,new net.minecraft.item.ItemStack(net.minecraft.init.Items.iron_ingot,2));
             for(int i=0;i<20;i++) chest.updateEntity();
             if(chest.getStackInSlot(26)!=null || !main.progress().completed(id).contains(chestQuest.id)) throw new IllegalStateException("Quest chest did not submit items and finish its quest");
