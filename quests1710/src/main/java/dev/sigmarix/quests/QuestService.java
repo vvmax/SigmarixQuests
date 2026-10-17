@@ -522,13 +522,32 @@ public class QuestService {
         if(!progress().completed(p.getUniqueID()).contains(q.id) || claimed(p.getUniqueID(),q)) return;
         claim(p,q,Collections.<Integer>emptyList(),null,true);
     }
+    public void validateCollectorReward(QuestCore.Quest quest,String reward) {
+        if(reward==null) throw new IllegalArgumentException("Invalid collector reward");
+        if(reward.isEmpty()) return;
+        for(int i=0;i<quest.rewards.size();i++) if(rewardId(quest.rewards.get(i),i).equals(reward) && quest.rewards.get(i).type.equals("item")) return;
+        throw new IllegalArgumentException("Select an item reward ID");
+    }
+    public boolean collect(EntityPlayerMP player,QuestCore.Quest quest,String reward,java.util.function.Predicate<List<ItemStack>> capacity,java.util.function.Consumer<ItemStack> sink) {
+        validateCollectorReward(quest,reward);
+        for(int i=0;i<quest.rewards.size();i++) {
+            QuestCore.Reward root=quest.rewards.get(i); String id=rewardId(root,i);
+            if(!root.type.equals("item") || !reward.isEmpty() && !id.equals(reward) || progress().rewardClaimed(player.getUniqueID(),quest.id,id,individual(quest,root))) continue;
+            claim(player,quest,Collections.<Integer>emptyList(),sink,false,id,capacity); return true;
+        }
+        return false;
+    }
     private void claim(EntityPlayerMP p,QuestCore.Quest q,List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink,boolean automatic) {
+        claim(p,q,choices,itemSink,automatic,null,null);
+    }
+    private void claim(EntityPlayerMP p,QuestCore.Quest q,List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink,boolean automatic,String rootId,java.util.function.Predicate<List<ItemStack>> capacity) {
         QuestProgress data=progress(); UUID id=p.getUniqueID();
         if (!data.completed(id).contains(q.id) || claimed(id,q)) throw new IllegalArgumentException("Reward unavailable");
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>(); Iterator<Integer> selected=choices.iterator();
         List<Integer> pending=new ArrayList<Integer>(); boolean allShared=true; int[] budget={0};
         for(int i=0;i<q.rewards.size();i++) {
             QuestCore.Reward r=q.rewards.get(i); boolean personal=individual(q,r); allShared&=!personal;
+            if(rootId!=null && !rootId.equals(rewardId(r,i))) continue;
             if(data.rewardClaimed(id,q.id,rewardId(r,i),personal)) continue;
             if(automatic && (!(r.auto.equals("enabled") || r.auto.equals("invisible") || r.auto.equals("inherit") && q.autoClaim) || hasChoice(r))) continue;
             List<QuestCore.Reward> expanded=new ArrayList<QuestCore.Reward>(); flatten(r,selected,p.getRNG(),expanded,budget,0);
@@ -537,9 +556,19 @@ public class QuestService {
         if(automatic && pending.isEmpty() && !(q.rewards.isEmpty() && q.autoClaim)) return;
         if(selected.hasNext()) throw new IllegalArgumentException("Too many reward choices");
         for(QuestCore.Reward r:leaves) validateReward(r);
+        if(capacity!=null) {
+            List<ItemStack> maximum=new ArrayList<ItemStack>();
+            for(QuestCore.Reward reward:leaves) {
+                if(!reward.type.equals("item")) throw new IllegalArgumentException("Collector accepts item rewards only");
+                ItemStack stack=new ItemStack(item(reward.item),Math.addExact(reward.count,reward.randomBonus),reward.meta); stack.setTagCompound(tag(reward.nbt));
+                boolean exists=false; if(reward.onlyOne) for(ItemStack owned:p.inventory.mainInventory) if(owned!=null && owned.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(owned,stack)) exists=true;
+                if(!exists) maximum.add(stack);
+            }
+            if(!capacity.test(maximum)) throw new IllegalArgumentException("Reward collector is full");
+        }
         preflightRewardEffects(p,leaves);
         for(int index:pending) { QuestCore.Reward r=q.rewards.get(index); data.claimReward(id,q.id,rewardId(r,index),individual(q,r)); }
-        if(allShared && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
+        if(allShared && (rootId==null || claimed(id,q)) && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
         applyRewards(p,leaves,itemSink);
         for(int index:pending) QuestEvents.fire("reward_claimed",id,q.id,rewardId(q.rewards.get(index),index));
     }

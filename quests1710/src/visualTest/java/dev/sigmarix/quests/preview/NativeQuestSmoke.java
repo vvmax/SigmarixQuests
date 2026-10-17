@@ -8,6 +8,8 @@ public final class NativeQuestSmoke {
     private static String profile,original;
     private static int storageX,storageY,storageZ,offlineX,offlineY,offlineZ;
     private static UUID offlineOwner;
+    private static int collectorX,collectorY,collectorZ,collectorStored;
+    public static int[] collectorPosition() { return new int[]{collectorX,collectorY,collectorZ}; }
     public static int[] storagePosition() { return new int[]{storageX,storageY,storageZ}; }
     public static void run(EntityPlayerMP player) throws Exception {
         QuestService main=QuestsMod.service; UUID id=player.getUniqueID();
@@ -50,7 +52,11 @@ public final class NativeQuestSmoke {
         QuestCore.Task detected=new QuestCore.Task(); detected.id="presence"; detected.type="custom"; detected.count=5; publicDetector.tasks.add(detected); utilities.quests.add(publicDetector);
         QuestCore.Quest redstoneDetector=new QuestCore.Quest(); redstoneDetector.id="redstone-detector"; redstoneDetector.title="Redstone threshold"; redstoneDetector.optional=true;
         QuestCore.Task powered=new QuestCore.Task(); powered.id="powered"; powered.type="custom"; powered.count=3; redstoneDetector.tasks.add(powered); utilities.quests.add(redstoneDetector);
-        Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); utilityQuests.put(offline.id,offline); utilityQuests.put(publicDetector.id,publicDetector); utilityQuests.put(redstoneDetector.id,redstoneDetector); main.quests=utilityQuests;
+        QuestCore.Quest collectorQuest=new QuestCore.Quest(); collectorQuest.id="collector-machine"; collectorQuest.title="Selected reward collector"; collectorQuest.optional=true;
+        QuestCore.Task collectorCheck=new QuestCore.Task(); collectorCheck.id="check"; collectorCheck.type="check"; collectorQuest.tasks.add(collectorCheck);
+        QuestCore.Reward collectorReward=new QuestCore.Reward(); collectorReward.id="collected"; collectorReward.item="minecraft:iron_ingot"; collectorReward.count=70; collectorReward.randomBonus=3; collectorQuest.rewards.add(collectorReward);
+        QuestCore.Reward uncollected=new QuestCore.Reward(); uncollected.id="manual-xp"; uncollected.type="xp"; uncollected.count=7; collectorQuest.rewards.add(uncollected); utilities.quests.add(collectorQuest);
+        Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); utilityQuests.put(offline.id,offline); utilityQuests.put(publicDetector.id,publicDetector); utilityQuests.put(redstoneDetector.id,redstoneDetector); utilityQuests.put(collectorQuest.id,collectorQuest); main.quests=utilityQuests;
         DropObserver observer=new DropObserver(); net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(observer); main.book=utilities;
         try {
             storageX=(int)Math.floor(player.posX)+4; storageY=(int)Math.floor(player.posY); storageZ=(int)Math.floor(player.posZ)+4;
@@ -73,6 +79,18 @@ public final class NativeQuestSmoke {
             world.setBlock(detectorX,detectorY+1,detectorZ,net.minecraft.init.Blocks.redstone_block); for(int i=0;i<20;i++) detector.updateEntity();
             if(!main.progress().completed(offlineOwner).contains(redstoneDetector.id)) throw new IllegalStateException("Real redstone threshold did not complete its offline owner's task");
             world.setBlockToAir(detectorX,detectorY+1,detectorZ); world.setBlockToAir(detectorX,detectorY,detectorZ); }
+            collectorX=(int)Math.floor(player.posX)-3; collectorY=(int)Math.floor(player.posY); collectorZ=(int)Math.floor(player.posZ)+2;
+            world.setBlock(collectorX,collectorY,collectorZ,QuestBlocks.devices[3]); QuestDevice collector=(QuestDevice)world.getTileEntity(collectorX,collectorY,collectorZ); collector.owner=id; collector.quest=collectorQuest.id; collector.task=collectorReward.id; collector.bindingChanged(); main.finish(player,collectorQuest);
+            for(int slot=0;slot<9;slot++) collector.setInventorySlotContents(slot,new net.minecraft.item.ItemStack(net.minecraft.init.Blocks.cobblestone,64));
+            for(int i=0;i<20;i++) collector.updateEntity(); if(main.progress().rewardClaimed(id,collectorQuest.id,collectorReward.id,false)) throw new IllegalStateException("Full collector consumed a reward");
+            for(int slot=0;slot<9;slot++) collector.setInventorySlotContents(slot,null); for(int i=0;i<20;i++) collector.updateEntity();
+            int collected=0; for(int slot=0;slot<9;slot++) if(collector.getStackInSlot(slot)!=null) collected+=collector.getStackInSlot(slot).stackSize;
+            if(collected<70 || collected>73 || !main.progress().rewardClaimed(id,collectorQuest.id,collectorReward.id,false) || main.claimed(id,collectorQuest)) throw new IllegalStateException("Selected collector reward or partial claim ledger failed");
+            world.setBlock(collectorX,collectorY-1,collectorZ,net.minecraft.init.Blocks.hopper); net.minecraft.tileentity.TileEntityHopper collectorHopper=(net.minecraft.tileentity.TileEntityHopper)world.getTileEntity(collectorX,collectorY-1,collectorZ);
+            for(int i=0;i<16;i++) collectorHopper.updateEntity(); int extracted=0; for(int slot=0;slot<5;slot++) if(collectorHopper.getStackInSlot(slot)!=null) extracted+=collectorHopper.getStackInSlot(slot).stackSize;
+            collectorStored=0; for(int slot=0;slot<9;slot++) if(collector.getStackInSlot(slot)!=null) collectorStored+=collector.getStackInSlot(slot).stackSize;
+            if(extracted<=0 || collectorStored+extracted!=collected) throw new IllegalStateException("Real hopper lost collector outputs");
+            for(int slot=0;slot<5;slot++) collectorHopper.setInventorySlotContents(slot,null); world.setBlockToAir(collectorX,collectorY-1,collectorZ);
             world.setBlock(storageX,storageY,storageZ,QuestBlocks.devices[7]); QuestStorage chest=(QuestStorage)world.getTileEntity(storageX,storageY,storageZ); chest.owner=id; chest.bindingChanged(); chest.setInventorySlotContents(26,new net.minecraft.item.ItemStack(net.minecraft.init.Items.iron_ingot,2));
             for(int i=0;i<20;i++) chest.updateEntity();
             if(chest.getStackInSlot(26)!=null || !main.progress().completed(id).contains(chestQuest.id)) throw new IllegalStateException("Quest chest did not submit items and finish its quest");
@@ -122,6 +140,9 @@ public final class NativeQuestSmoke {
     }
     public static void verify(EntityPlayerMP player) throws Exception {
         QuestService main=QuestsMod.service; UUID id=player.getUniqueID();
+        QuestDevice collector=(QuestDevice)player.worldObj.getTileEntity(collectorX,collectorY,collectorZ); int savedCollected=0;
+        for(int slot=0;slot<9;slot++) if(collector.getStackInSlot(slot)!=null) savedCollected+=collector.getStackInSlot(slot).stackSize;
+        if(savedCollected!=collectorStored || !main.progress().rewardClaimed(player.getUniqueID(),"collector-machine","collected",false)) throw new IllegalStateException("Collector inventory or selected claim did not survive restart");
         net.minecraft.tileentity.TileEntity offlineRaw=player.worldObj.getTileEntity(offlineX,offlineY,offlineZ);
         if(!(offlineRaw instanceof QuestDevice) || !offlineOwner.equals(((QuestDevice)offlineRaw).owner) || !main.progress().completed(offlineOwner).contains("offline-machine") || main.progress().value(offlineOwner,"offline-machine","rf")!=100 || main.progress().value(offlineOwner,"offline-machine","water")!=250 || main.progress().value(offlineOwner,"offline-machine","items")!=2) throw new IllegalStateException("Offline machine progress or binding did not survive world restart");
         net.minecraft.tileentity.TileEntity raw=player.worldObj.getTileEntity(storageX,storageY,storageZ);

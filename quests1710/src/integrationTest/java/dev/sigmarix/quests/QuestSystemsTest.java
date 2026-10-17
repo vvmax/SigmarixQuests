@@ -38,6 +38,33 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void collectorClaimsOnlySelectedRootAndLeavesChoiceAvailable() {
+        task("check",null,1,false); QuestCore.Reward item=new QuestCore.Reward(); item.id="item"; item.item="minecraft:iron_ingot"; item.count=2; quest.rewards.add(item);
+        QuestCore.Reward choice=new QuestCore.Reward(); choice.id="choice"; choice.type="choice"; QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=7; choice.options.add(xp); quest.rewards.add(choice);
+        assertTrue(service.finish(player,quest)); List<ItemStack> received=new ArrayList<ItemStack>();
+        assertTrue(service.collect(player,quest,"item",stacks->true,received::add)); assertEquals(2,received.get(0).stackSize); assertFalse(service.claimed(player.getUniqueID(),quest)); assertFalse(data.claimed(player.getUniqueID(),quest.id));
+        assertFalse(service.collect(player,quest,"item",stacks->true,received::add));
+        service.claim(player,quest,Collections.singletonList(0)); verify(player).addExperience(7); assertTrue(service.claimed(player.getUniqueID(),quest)); assertEquals(1,received.size());
+    }
+    @Test public void fullCollectorDoesNotClaimOrRollRandomBonus() {
+        task("check",null,1,false); QuestCore.Reward item=new QuestCore.Reward(); item.id="item"; item.item="minecraft:iron_ingot"; item.count=2; item.randomBonus=3; quest.rewards.add(item); service.finish(player,quest);
+        try { service.collect(player,quest,"item",stacks->{ assertEquals(5,stacks.get(0).stackSize); return false; },stack->{fail();}); fail(); } catch(IllegalArgumentException expected) {}
+        assertFalse(data.rewardClaimed(player.getUniqueID(),quest.id,"item",false)); assertFalse(service.claimed(player.getUniqueID(),quest));
+        List<ItemStack> received=new ArrayList<ItemStack>(); assertTrue(service.collect(player,quest,"",stacks->true,received::add)); assertTrue(received.get(0).stackSize>=2); assertTrue(service.claimed(player.getUniqueID(),quest));
+    }
+    @Test public void collectorBufferPreservesNbtAndRejectsOverflowAtomically() {
+        ItemStack[] buffer=new ItemStack[2]; ItemStack iron=new ItemStack(Items.iron_ingot,64); iron.setTagCompound(QuestService.tag("{quality:1}"));
+        assertTrue(QuestRewardBuffer.add(buffer,iron)); ItemStack other=iron.copy(); other.setTagCompound(QuestService.tag("{quality:2}")); assertTrue(QuestRewardBuffer.add(buffer,other));
+        assertFalse(QuestRewardBuffer.add(buffer,new ItemStack(Items.gold_ingot,1))); assertEquals(64,buffer[0].stackSize); assertEquals(64,buffer[1].stackSize);
+        assertFalse(QuestRewardBuffer.fits(buffer,Collections.singletonList(iron))); assertEquals(64,iron.stackSize);
+    }
+    @Test public void collectorInventoryPersistsAndDescriptionCannotEraseContainerContents() {
+        QuestDevice tile=new QuestDevice(); tile.setWorldObj(player.worldObj); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(3,"collector_nbt"));
+        tile.setInventorySlotContents(8,new ItemStack(Items.iron_ingot,12)); assertEquals(9,tile.getSizeInventory()); assertTrue(tile.canExtractItem(8,tile.getStackInSlot(8),0)); assertFalse(tile.canInsertItem(8,new ItemStack(Items.iron_ingot),0));
+        NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved); QuestDevice restored=new QuestDevice(); restored.setWorldObj(player.worldObj); restored.readFromNBT(saved); assertEquals(12,restored.getStackInSlot(8).stackSize);
+        net.minecraft.network.play.server.S35PacketUpdateTileEntity description=(net.minecraft.network.play.server.S35PacketUpdateTileEntity)tile.getDescriptionPacket(); assertFalse(description.func_148857_g().hasKey("collectorItems")); restored.onDataPacket(null,description); assertEquals(12,restored.getStackInSlot(8).stackSize);
+        assertEquals(5,restored.decrStackSize(8,5).stackSize); assertEquals(7,restored.getStackInSlot(8).stackSize);
+    }
     @Test public void customCountersCanBeSavedAndRemainIncompleteUntilCredited() throws Exception {
         QuestCore.Task counter=task("custom","",3,false); QuestCore.Book book=new QuestCore.Book(); book.quests.add(quest);
         java.nio.file.Path folder=java.nio.file.Files.createTempDirectory("quests-counter-test");

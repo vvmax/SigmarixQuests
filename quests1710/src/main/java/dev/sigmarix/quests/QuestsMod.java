@@ -176,6 +176,7 @@ public final class QuestsMod {
                             service.validateProgressReference(action.id); if(!editor(player) && !service.bindable(player.getUniqueID(),action.id)) throw new IllegalArgumentException("Progress object is not visible"); device.quest=action.id; device.task=""; device.bindingChanged(); message="Device binding updated"; break;
                         }
                         if(quest==null || !editor(player) && !service.visible(player.getUniqueID(),quest)) throw new IllegalArgumentException("Unknown quest");
+                        if(mode==3) { service.validateCollectorReward(quest,action.text); device.quest=quest.id; device.task=action.text; device.bindingChanged(); message="Device binding updated"; break; }
                         if(action.text==null || !action.text.isEmpty() && !quest.tasks.stream().anyMatch(t->t.id.equals(action.text))) throw new IllegalArgumentException("Unknown task");
                         device.quest=quest.id; device.task=action.text;
                     }

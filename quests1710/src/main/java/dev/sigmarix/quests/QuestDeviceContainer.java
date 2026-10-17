@@ -8,11 +8,12 @@ public final class QuestDeviceContainer extends Container {
     public int percent,signal;
     public QuestDeviceContainer(EntityPlayer player,QuestDevice tile) {
         this.tile=tile;
-        addSlotToContainer(new Slot(tile,0,14,72) {
-            @Override public boolean isItemValid(ItemStack stack) { return tile.getWorldObj().isRemote || tile.isItemValidForSlot(0,stack); }
+        int deviceSlots=tile.getSizeInventory(),inventoryY=deviceSlots==9?142:106,hotbarY=deviceSlots==9?200:164;
+        for(int index=0;index<deviceSlots;index++) addSlotToContainer(new Slot(tile,index,14+(index%3)*18,72+(index/3)*18) {
+            @Override public boolean isItemValid(ItemStack stack) { return !tile.collector() && (tile.getWorldObj().isRemote || tile.isItemValidForSlot(0,stack)); }
         });
-        for(int row=0;row<3;row++) for(int col=0;col<9;col++) addSlotToContainer(new Slot(player.inventory,col+row*9+9,14+col*18,106+row*18));
-        for(int col=0;col<9;col++) addSlotToContainer(new Slot(player.inventory,col,14+col*18,164));
+        for(int row=0;row<3;row++) for(int col=0;col<9;col++) addSlotToContainer(new Slot(player.inventory,col+row*9+9,14+col*18,inventoryY+row*18));
+        for(int col=0;col<9;col++) addSlotToContainer(new Slot(player.inventory,col,14+col*18,hotbarY));
     }
     @Override public boolean canInteractWith(EntityPlayer player) { return tile.isUseableByPlayer(player); }
     @Override public void detectAndSendChanges() {
@@ -26,8 +27,9 @@ public final class QuestDeviceContainer extends Container {
         if(!canInteractWith(player) || index<0 || index>=inventorySlots.size()) return null;
         Slot slot=(Slot)inventorySlots.get(index); if(!slot.getHasStack()) return null;
         ItemStack stack=slot.getStack(),copy=stack.copy();
-        if(index==0) { if(!mergeItemStack(stack,1,37,true)) return null; }
-        else if(!((Slot)inventorySlots.get(0)).isItemValid(stack) || !mergeItemStack(stack,0,1,false)) return null;
+        int deviceSlots=tile.getSizeInventory();
+        if(index<deviceSlots) { if(!mergeItemStack(stack,deviceSlots,deviceSlots+36,true)) return null; }
+        else if(!((Slot)inventorySlots.get(0)).isItemValid(stack) || !mergeItemStack(stack,0,deviceSlots,false)) return null;
         if(stack.stackSize==0) slot.putStack(null); else slot.onSlotChanged();
         if(stack.stackSize==copy.stackSize) return null; slot.onPickupFromSlot(player,stack); return copy;
     }

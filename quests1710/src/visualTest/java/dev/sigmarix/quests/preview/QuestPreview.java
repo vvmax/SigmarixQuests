@@ -23,7 +23,7 @@ public final class QuestPreview {
     private long oldRevision,lastSmokeStep,lastBookAttempt;
     private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
-    private volatile boolean detectorRequested;
+    private volatile boolean detectorRequested,openCollectorRequested;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
@@ -58,6 +58,10 @@ public final class QuestPreview {
         if(QuestsMod.service!=null && net.minecraft.server.MinecraftServer.getServer()!=null && !net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.isEmpty()) {
             net.minecraft.entity.player.EntityPlayerMP actor=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
             if(QuestsMod.service.progress().stage(actor.getUniqueID(),"native-click")) commandVerified=true;
+        }
+        if(openCollectorRequested) {
+            openCollectorRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            int[] position=NativeQuestSmoke.collectorPosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]);
         }
         if(openStorageRequested) {
             net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
@@ -488,6 +492,12 @@ public final class QuestPreview {
                 QuestDevice configuredDetector=((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile;
                 if(configuredDetector.detectorRadius!=2.5 || configuredDetector.detectorOffsetY!=-1 || configuredDetector.detectorHeight!=5 || configuredDetector.detectorPower!=12) throw new IllegalStateException("Server detector settings did not synchronize");
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-detector-settings.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.thePlayer.closeScreen(); openCollectorRequested=true; stage=62; waiting=0; break;
+            case 62:
+                if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
+                QuestDeviceContainer collectorContainer=(QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots;
+                if(!collectorContainer.tile.collector() || collectorContainer.inventorySlots.size()!=45 || collectorContainer.tile.getStackInSlot(0)==null) throw new IllegalStateException("Nine-slot collector inventory did not synchronize");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-reward-collector.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=8; waiting=0; break;
             case 8:
                 if(waiting<30) return;
