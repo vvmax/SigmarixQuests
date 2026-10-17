@@ -465,4 +465,41 @@ public class QuestSystemsTest {
             quest.tasks.get(0).type="botania_mana"; doReturn(null).when(tile).player(); assertTrue(tile.isFull()); tile.recieveMana(10); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
         } finally { QuestsMod.service=null; }
     }
+    private double[] wallet(double amount) {
+        final double[] value={amount}; doAnswer(call->value[0]).when(service).emcBalance(player);
+        doAnswer(call->{ value[0]=(Double)call.getArguments()[1]; return null; }).when(service).setEmc(eq(player),anyDouble()); return value;
+    }
+    @Test public void incompleteQuestDoesNotConsumeEmcOrInventory() {
+        double[] value=wallet(100); player.inventory.mainInventory[0]=new ItemStack(Items.iron_ingot,3);
+        task("emc",null,64,true); task("item","minecraft:iron_ingot",2,true); task("dimension",null,1,false).dimension=-1;
+        assertFalse(service.check(player,quest,true)); assertEquals(100,value[0],0); assertEquals(3,player.inventory.mainInventory[0].stackSize);
+    }
+    @Test public void emcAndItemsCommitTogetherOnce() {
+        double[] value=wallet(100); player.inventory.mainInventory[0]=new ItemStack(Items.iron_ingot,3);
+        task("emc",null,64,true); task("item","minecraft:iron_ingot",2,true);
+        assertTrue(service.check(player,quest,true)); assertEquals(36,value[0],0); assertEquals(1,player.inventory.mainInventory[0].stackSize);
+        assertFalse(service.check(player,quest,true)); assertEquals(36,value[0],0);
+    }
+    @Test public void partialEmcSubmissionRetainsFractionsAndAvoidsDoubleSpending() {
+        double[] value=wallet(12.5); QuestCore.Task t=task("emc",null,20,true);
+        assertEquals(12,service.submit(player,quest,t.id)); assertEquals(.5,value[0],0); assertEquals(12,data.value(player.getUniqueID(),quest.id,t.id));
+        assertFalse(service.check(player,quest,true)); assertEquals(.5,value[0],0);
+        value[0]=10.5; assertTrue(service.check(player,quest,true)); assertEquals(2.5,value[0],0);
+    }
+    @Test public void emcRequirementsCannotReuseReservedFunds() {
+        double[] value=wallet(10); task("emc",null,8,false); task("emc",null,3,true);
+        assertFalse(service.check(player,quest,true)); assertEquals(10,value[0],0);
+    }
+    @Test public void emcPrecisionFailureDoesNotSpendOtherResources() {
+        double[] value=wallet(Math.pow(2,60)); task("emc",null,1,true);
+        try { service.check(player,quest,true); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(Math.pow(2,60),value[0],0); assertFalse(data.completed(player.getUniqueID()).contains(quest.id));
+    }
+    @Test public void sharedQuestDoesNotChargeAnotherMembersWalletAfterCompletion() {
+        EntityPlayerMP other=teammate(); double[] value=wallet(100); task("emc",null,64,true);
+        assertTrue(service.check(player,quest,true)); assertFalse(service.check(other,quest,true)); assertEquals(36,value[0],0); verify(service,never()).setEmc(eq(other),anyDouble());
+    }
+    @Test public void readOnlyEmcTaskDoesNotDebitWallet() {
+        double[] value=wallet(100); task("emc",null,64,false); assertTrue(service.check(player,quest,true)); assertEquals(100,value[0],0); verify(service,never()).setEmc(eq(player),anyDouble());
+    }
 }

@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.5.0", acceptableRemoteVersions="[0.5.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.6.0", acceptableRemoteVersions="[0.6.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -127,6 +127,7 @@ public final class QuestsMod {
                     device.bindingChanged(); message="Device binding updated"; break;
                 case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
                 case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message="Task confirmed"; break;
+                case "submit": if(quest==null) throw new IllegalArgumentException("Unknown quest"); message="Submitted: "+service.submit(player,quest,action.text); break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
                 case "claim": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.claim(player,quest,choices); message="Rewards claimed"; break;
                 case "repeat": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.repeat(player,quest); message="Quest reset"; break;

@@ -19,7 +19,7 @@ import net.minecraftforge.fluids.*;
 
 /** All mutations, inventory checks and rewards run on the server thread. */
 public class QuestService {
-    public static final Gson JSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson JSON = QuestJson.create();
     public QuestCore.Book book = new QuestCore.Book();
     public Map<String, QuestCore.Quest> quests = Collections.emptyMap();
     public long revision;
@@ -63,6 +63,7 @@ public class QuestService {
                         if(t.target!=null && !t.target.isEmpty()) validateItemTarget(t.target);
                         for(String target:t.targets) validateItemTarget(target);
                         tag(t.nbt); if(t.filter!=null) t.filter.validate(true); break;
+                    case "emc": QuestProjectE.validateAPI(); break;
                     case "botania_mana": if(!cpw.mods.fml.common.Loader.isModLoaded("Botania")) throw new IllegalArgumentException("Mana tasks require Botania"); break;
                     case "ic2_energy": if(!cpw.mods.fml.common.Loader.isModLoaded("IC2")) throw new IllegalArgumentException("IC2 EU tasks require IndustrialCraft 2"); break;
                     case "kill": if (!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: " + t.target); break;
@@ -113,6 +114,8 @@ public class QuestService {
         return QuestSnbt.parse(value);
     }
 
+    public double emcBalance(EntityPlayerMP player) { return QuestProjectE.balance(player); }
+    public void setEmc(EntityPlayerMP player,double value) { QuestProjectE.set(player,value); }
     public QuestProgress progress() {
         WorldServer world = MinecraftServer.getServer().worldServerForDimension(0);
         QuestProgress data = (QuestProgress) world.mapStorage.loadData(QuestProgress.class, "sigmarixquests");
@@ -265,7 +268,7 @@ public class QuestService {
         for(QuestCore.Quest q:quests.values()) if(active(p,q)) for(QuestCore.Task t:q.tasks) {
             if(!t.sticky || progress().taskDone(p.getUniqueID(),q.id,t.id)) continue;
             boolean persistent=counter(p,q,t)>=t.count;
-            boolean readOnly=!t.type.equals("check") && (!t.type.equals("item") && !t.type.equals("xp") && !t.type.equals("fluid") || !t.consume);
+            boolean readOnly=!t.type.equals("check") && (!t.type.equals("item") && !t.type.equals("xp") && !t.type.equals("fluid") && !t.type.equals("emc") || !t.consume);
             if(!persistent && readOnly) {
                 QuestCore.Quest one=JSON.fromJson(JSON.toJson(q),QuestCore.Quest.class); one.anyTask=false; one.tasks=Collections.singletonList(t);
                 persistent=check(p,one,false);
@@ -287,6 +290,7 @@ public class QuestService {
         ItemStack[] reserved = copy(p.inventory.mainInventory), result = copy(p.inventory.mainInventory);
         List<ItemStack> containers = new ArrayList<ItemStack>();
         int xp = XP.total(p.experienceLevel, p.experience), xpResult = xp, xpOriginal = xp;
+        boolean emcLoaded=false; double emcOriginal=0,emcReserved=0,emcResult=0;
         for (QuestCore.Task t : q.tasks) {
             if(t.sticky && progress().taskDone(p.getUniqueID(),q.id,t.id)) continue;
             if (t.type.equals("item")) {
@@ -299,6 +303,12 @@ public class QuestService {
                 if (remaining != 0) return false;
             } else if (t.type.equals("fluid")) {
                 if(!QuestFluids.reserve(t,Math.max(0,t.count-counter(p,q,t)),reserved,result,containers)) return false;
+            } else if(t.type.equals("emc")) {
+                long needed=Math.max(0,t.count-(t.consume?counter(p,q,t):0)); if(needed==0) continue;
+                if(!emcLoaded) { emcOriginal=emcReserved=emcResult=emcBalance(p); QuestProjectE.checkBalance(emcOriginal); emcLoaded=true; }
+                if(emcReserved<needed) return false;
+                emcReserved=QuestProjectE.subtract(emcReserved,needed);
+                if(t.consume) emcResult=QuestProjectE.subtract(emcResult,needed);
             } else if (t.type.equals("xp")) {
                 long needed=Math.max(0,t.count-counter(p,q,t));
                 int cost;
@@ -308,6 +318,7 @@ public class QuestService {
             } else if (!ordinary(p,q,t)) return false;
         }
         if (commit) {
+            if(emcLoaded && emcResult!=emcOriginal) setEmc(p,emcResult);
             System.arraycopy(result,0,p.inventory.mainInventory,0,result.length);
             if(xpResult != xpOriginal) XP.set(p,xpResult);
             for (ItemStack empty : containers) give(p,empty);
@@ -330,7 +341,14 @@ public class QuestService {
     public long submit(EntityPlayerMP p,QuestCore.Quest q,String task) {
         if(!active(p,q)) throw new IllegalArgumentException("Quest is not active");
         for(QuestCore.Task t:q.tasks) if(t.id.equals(task)) {
-            if(!t.type.equals("item") || !t.consume) throw new IllegalArgumentException("Use submit for consuming item tasks; fluids/RF use a terminal");
+            if(t.type.equals("emc") && t.consume) {
+                long remaining=Math.max(0,t.count-counter(p,q,t)); if(remaining==0) return 0;
+                double balance=emcBalance(p); QuestProjectE.checkBalance(balance);
+                long take=(long)Math.min(remaining,Math.floor(balance));
+                if(take>0) { double result=QuestProjectE.subtract(balance,take); setEmc(p,result); progress().add(p.getUniqueID(),q.id,t.id,take,t.count); }
+                return take;
+            }
+            if(!t.type.equals("item") || !t.consume) throw new IllegalArgumentException("Use submit for consuming item/EMC tasks; fluids and energy use a terminal");
             long total=0;
             for(int i=0;i<p.inventory.mainInventory.length;i++) {
                 ItemStack stack=p.inventory.mainInventory[i]; total+=acceptItems(p,q.id,task,stack,false);

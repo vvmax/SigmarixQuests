@@ -21,11 +21,18 @@ public final class QuestPreview {
     private QuestCore.Book original;
     private long oldRevision;
     private boolean restarted;
-    private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed;
+    private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
+    private boolean emcRunning;
     private boolean manaRunning;
     private boolean euRunning;
     private int deviceDelay,deviceX,deviceY,deviceZ;
     @Mod.EventHandler public void init(FMLInitializationEvent event) throws Exception {
+        java.util.List<String> expected=java.nio.file.Files.readAllLines(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/expected-mods.txt").toPath(),StandardCharsets.UTF_8);
+        String[][] optional={{"IC2","ic2.api.energy.tile.IEnergySink"},{"Botania","vazkii.botania.api.mana.IManaReceiver"},{"ProjectE","moze_intel.projecte.playerData.Transmutation"}};
+        for(String[] mod:optional) {
+            boolean loaded=cpw.mods.fml.common.Loader.isModLoaded(mod[0]); if(loaded!=expected.contains(mod[0])) throw new IllegalStateException("Unexpected optional mod state: "+mod[0]+"="+loaded);
+            if(!loaded) try { Class.forName(mod[1],false,getClass().getClassLoader()); throw new IllegalStateException("Compile-only API leaked into game runtime: "+mod[0]); } catch(ClassNotFoundException correct) {}
+        }
         fixture=new QuestNetwork.Snapshot();
         try(Reader reader=new InputStreamReader(getClass().getResourceAsStream("/example-quests.json"),StandardCharsets.UTF_8)) {
             fixture.book=QuestService.JSON.fromJson(reader,QuestCore.Book.class);
@@ -58,6 +65,17 @@ public final class QuestPreview {
                 }
                 if((Boolean)bridge.getMethod("tick").invoke(null)) { manaPassed=true; manaRunning=false; }
             } catch(Exception ex) { throw new IllegalStateException("Botania smoke failed",ex); }
+        }
+        if(emcRequested || emcRunning) {
+            try {
+                Class<?> bridge=Class.forName("dev.sigmarix.quests.preview.ProjectEQuestSmoke");
+                if(emcRequested) {
+                    emcRequested=false; emcRunning=true;
+                    net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+                    bridge.getMethod("start",net.minecraft.entity.player.EntityPlayerMP.class).invoke(null,owner); emcReady=true;
+                }
+                if((Boolean)bridge.getMethod("tick").invoke(null)) { emcPassed=true; emcRunning=false; }
+            } catch(Exception ex) { throw new IllegalStateException("ProjectE smoke failed",ex); }
         }
         if(!placeDevice && deviceDelay==0) return;
         net.minecraft.server.MinecraftServer server=net.minecraft.server.MinecraftServer.getServer();
@@ -109,8 +127,9 @@ public final class QuestPreview {
                 if(snap==null || snap.book==null) return;
                 if(!snap.canEdit) throw new IllegalStateException("Integrated host lost edit permissions");
                 if(restarted) {
+                    if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding".concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding".concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
                     mc.shutdown(); return;
                 }
                 original=QuestService.JSON.fromJson(QuestService.JSON.toJson(snap.book),QuestCore.Book.class);
@@ -131,6 +150,11 @@ public final class QuestPreview {
                     QuestCore.Quest mana=new QuestCore.Quest(); mana.id="smoke-mana"; mana.title="Botania mana";
                     QuestCore.Task charge=new QuestCore.Task(); charge.id="charge"; charge.type="botania_mana"; charge.count=16; mana.tasks.add(charge); edit.book.quests.add(mana);
                 }
+                if(cpw.mods.fml.common.Loader.isModLoaded("ProjectE")) {
+                    QuestCore.Quest emc=new QuestCore.Quest(); emc.id="smoke-emc"; emc.title="ProjectE EMC";
+                    QuestCore.Task wallet=new QuestCore.Task(); wallet.id="wallet"; wallet.type="emc"; wallet.count=64; wallet.consume=true; emc.tasks.add(wallet);
+                    QuestCore.Task other=new QuestCore.Task(); other.id="other"; other.type="dimension"; other.dimension=-1; emc.tasks.add(other); edit.book.quests.add(emc);
+                }
                 QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.Style style=new QuestPresentation.Style(); style.selector=".important state:available"; style.color="FF9B59B6"; edit.book.styles.add(style);
                 QuestCore.Reward toast=new QuestCore.Reward(); toast.type="toast"; toast.target="Graphical reward"; toast.text="Native quest notification"; manual.rewards.add(toast);
@@ -147,14 +171,29 @@ public final class QuestPreview {
                 if(snap==null || !snap.message.startsWith("Error: Book changed")) return;
                 if(cpw.mods.fml.common.Loader.isModLoaded("IC2")) { euRequested=true; stage=20; break; }
                 if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { manaRequested=true; stage=21; break; }
+                if(cpw.mods.fml.common.Loader.isModLoaded("ProjectE")) { emcRequested=true; stage=22; break; }
                 QuestNetwork.Action begin=new QuestNetwork.Action(); begin.action="start"; begin.id="smoke-manual"; ClientProxy.send(begin); stage=9; break;
             case 20:
                 if(!euPassed) return;
                 if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { manaRequested=true; stage=21; break; }
+                if(cpw.mods.fml.common.Loader.isModLoaded("ProjectE")) { emcRequested=true; stage=22; break; }
                 QuestNetwork.Action afterEU=new QuestNetwork.Action(); afterEU.action="start"; afterEU.id="smoke-manual"; ClientProxy.send(afterEU); stage=9; break;
             case 21:
                 if(!manaPassed) return;
+                if(cpw.mods.fml.common.Loader.isModLoaded("ProjectE")) { emcRequested=true; stage=22; break; }
                 QuestNetwork.Action afterMana=new QuestNetwork.Action(); afterMana.action="start"; afterMana.id="smoke-manual"; ClientProxy.send(afterMana); stage=9; break;
+            case 22:
+                if(!emcReady || snap==null) return;
+                QuestCore.Quest walletQuest=null; for(QuestCore.Quest q:snap.book.quests) if(q.id.equals("smoke-emc")) walletQuest=q;
+                if(walletQuest==null) throw new IllegalStateException("EMC quest missing from snapshot");
+                mc.displayGuiScreen(new QuestTaskScreen(null,walletQuest)); stage=23; waiting=0; break;
+            case 23:
+                if(waiting<15) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-emc.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                java.lang.reflect.Method submit=QuestTaskScreen.class.getDeclaredMethod("actionPerformed",net.minecraft.client.gui.GuiButton.class); submit.setAccessible(true); submit.invoke(mc.currentScreen,new net.minecraft.client.gui.GuiButton(100,0,0,"submit")); stage=24; break;
+            case 24:
+                if(!emcPassed || snap==null || !snap.message.startsWith("Submitted: 64") || QuestProjectE.balance(mc.thePlayer)!=36) return;
+                QuestNetwork.Action afterEMC=new QuestNetwork.Action(); afterEMC.action="start"; afterEMC.id="smoke-manual"; ClientProxy.send(afterEMC); stage=9; break;
             case 9:
                 if(snap==null || !snap.message.equals("Quest started")) return;
                 QuestNetwork.Action premature=new QuestNetwork.Action(); premature.action="check"; premature.id="smoke-manual"; ClientProxy.send(premature); stage=10; break;

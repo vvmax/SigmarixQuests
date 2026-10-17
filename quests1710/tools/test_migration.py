@@ -101,5 +101,9 @@ class MigrationTests(unittest.TestCase):
             task = convert_task({'type': kind, 'value': 12345}, 0)
             self.assertEqual(task['type'], kind); self.assertEqual(task['count'], 12345)
 
+    def test_emc_import_keeps_resource_consumption(self):
+        task = convert_task({'type': 'emc', 'value': 8192}, 0)
+        self.assertEqual(task['type'], 'emc'); self.assertEqual(task['count'], 8192); self.assertTrue(task['consume'])
+
 if __name__ == '__main__':
     unittest.main()

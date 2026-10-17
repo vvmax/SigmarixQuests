@@ -3,7 +3,7 @@ plugins {
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.6'
 }
 group = 'dev.sigmarix'
-version = '0.5.0'
+version = '0.6.0'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }
@@ -13,27 +13,34 @@ minecraft {
 }
 repositories {
     mavenCentral()
+    ivy {
+        url = uri('https://edge.forgecdn.net/files/2340/786')
+        patternLayout { artifact 'ProjectE-1.7.10-PE1.10.1.jar' }
+        metadataSources { artifact() }
+        content { includeModule 'testMods', 'ProjectE' }
+    }
     maven { url = uri('https://maven.ic2.player.to/'); metadataSources { artifact() }; content { includeGroup 'net.industrial-craft' } }
     ivy {
-        url = uri('https://github.com/GTNewHorizons/Botania/releases/download')
-        patternLayout { artifact '[revision]/Botania-1.7.10-[revision](-[classifier]).[ext]' }
+        url = uri('https://edge.forgecdn.net/files/2283/837')
+        patternLayout { artifact 'Botania r1.8-249.jar' }
         metadataSources { artifact() }
-        content { includeModule 'GTNewHorizons', 'Botania' }
+        content { includeModule 'classicMods', 'Botania' }
     }
     ivy {
-        url = uri('https://github.com/GTNH-Museum/Baubles/releases/download')
-        patternLayout { artifact '[revision]/Baubles-1.7.10-[revision](-[classifier]).[ext]' }
+        url = uri('https://edge.forgecdn.net/files/2224/857')
+        patternLayout { artifact 'Baubles-1.7.10-1.0.1.10.jar' }
         metadataSources { artifact() }
-        content { includeModule 'GTNH-Museum', 'Baubles' }
+        content { includeModule 'classicMods', 'Baubles' }
     }
 }
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+    compileOnly rfg.deobf('testMods:ProjectE:1.7.10-PE1.10.1')
     compileOnly 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:api@jar'
     testImplementation 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:api@jar'
-    compileOnly 'GTNewHorizons:Botania:1.9.0-GTNH:api@jar'
-    testImplementation 'GTNewHorizons:Botania:1.9.0-GTNH:api@jar'
+    compileOnly rfg.deobf('classicMods:Botania:r1.8-249')
+    testImplementation rfg.deobf('classicMods:Botania:r1.8-249')
 }
 configurations { ic2Preview }
 dependencies { ic2Preview 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:dev@jar' }
@@ -82,6 +89,11 @@ if (providers.gradleProperty('questPreview').isPresent()) {
         dependsOn 'previewJar'
         doFirst {
             copy { from tasks.named('previewJar'); into 'run/mods' }
+            def expected = []
+            if (providers.gradleProperty('questIC2').isPresent()) expected.add('IC2')
+            if (providers.gradleProperty('questBotania').isPresent()) expected.add('Botania')
+            if (providers.gradleProperty('questProjectE').isPresent()) expected.add('ProjectE')
+            file('build/preview/expected-mods.txt').text = expected.join('\n')
         }
         finalizedBy 'cleanPreviewFixture'
     }
@@ -89,22 +101,33 @@ if (providers.gradleProperty('questPreview').isPresent()) {
 
 tasks.register('cleanPreviewFixture', Delete) { delete 'run/mods/quests-preview-fixture.jar' }
 
-configurations { botaniaPreview }
 dependencies {
-    visualTestCompileOnly 'GTNewHorizons:Botania:1.9.0-GTNH:dev@jar'
-    botaniaPreview 'GTNewHorizons:Botania:1.9.0-GTNH:dev@jar'
-    botaniaPreview 'GTNH-Museum:Baubles:1.0.1.13:dev@jar'
+    compileOnly rfg.deobf('classicMods:Baubles:1.0.1.10')
 }
 if (providers.gradleProperty('questBotania').isPresent()) {
     tasks.register('cleanBotaniaPreview', Delete) { delete 'run/mods/quests-test-botania.jar', 'run/mods/quests-test-baubles.jar' }
     tasks.named('runClient') {
         doFirst {
             copy {
-                from configurations.botaniaPreview
+                from configurations.compileClasspath.filter { it.name.toLowerCase().contains('botania') || it.name.toLowerCase().contains('baubles') }
                 into 'run/mods'
-                rename { String name -> name.startsWith('Botania') ? 'quests-test-botania.jar' : 'quests-test-baubles.jar' }
+                rename { String name -> name.toLowerCase().contains('botania') ? 'quests-test-botania.jar' : 'quests-test-baubles.jar' }
             }
         }
         finalizedBy 'cleanBotaniaPreview'
+    }
+}
+
+if (providers.gradleProperty('questProjectE').isPresent()) {
+    tasks.register('cleanProjectEPreview', Delete) { delete 'run/mods/quests-test-projecte.jar' }
+    tasks.named('runClient') {
+        doFirst {
+            copy {
+                from configurations.compileClasspath.filter { it.name.toLowerCase().contains('projecte') }
+                into 'run/mods'
+                rename { 'quests-test-projecte.jar' }
+            }
+        }
+        finalizedBy 'cleanProjectEPreview'
     }
 }

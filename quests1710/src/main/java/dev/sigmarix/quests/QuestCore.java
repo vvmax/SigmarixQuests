@@ -5,7 +5,7 @@ import java.util.*;
 /** Independent, versioned quest schema. No upstream source or assets. */
 public final class QuestCore {
     public static final Set<String> TASK_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-        "check", "item", "kill", "dimension", "biome", "location", "xp", "stat", "achievement", "observation", "interaction", "fluid", "energy", "ic2_energy", "botania_mana", "custom")));
+        "check", "item", "kill", "dimension", "biome", "location", "xp", "stat", "achievement", "observation", "interaction", "fluid", "energy", "ic2_energy", "botania_mana", "emc", "custom")));
     public static final Set<String> REWARD_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
         "item", "xp", "xp_levels", "command", "choice", "random", "loot", "achievement", "toast", "custom")));
     public static final class Book {
@@ -36,7 +36,7 @@ public final class QuestCore {
                 Set<String> taskIds = new HashSet<String>();
                 for (int i = 0; i < q.tasks.size(); i++) {
                     Task t = q.tasks.get(i);
-                    if (t == null || t.type == null || !TASK_TYPES.contains(t.type) || t.count < 1 || t.energyTier<1 || t.energyTier>8 || t.type.equals("xp") && t.count > Integer.MAX_VALUE || t.meta < 0 || t.radius < 0 || t.radius > 4096 || !Double.isFinite(t.radius) || !Double.isFinite(t.x) || !Double.isFinite(t.y) || !Double.isFinite(t.z))
+                    if (t == null || t.type == null || !TASK_TYPES.contains(t.type) || t.count < 1 || t.type.equals("emc") && t.count>QuestProjectE.MAX_EXACT || t.energyTier<1 || t.energyTier>8 || t.type.equals("xp") && t.count > Integer.MAX_VALUE || t.meta < 0 || t.radius < 0 || t.radius > 4096 || !Double.isFinite(t.radius) || !Double.isFinite(t.x) || !Double.isFinite(t.y) || !Double.isFinite(t.z))
                         throw new IllegalArgumentException("Invalid task: " + q.id);
                     if (t.id == null) t.id = "t" + i;
                     if (!validId(t.id) || !taskIds.add(t.id)) throw new IllegalArgumentException("Invalid task id: " + q.id);

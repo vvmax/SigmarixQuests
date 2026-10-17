@@ -12,7 +12,8 @@
 | item | item | Предметы, отдельные metadata/NBT альтернатив, OreDictionary, составные И/ИЛИ/НЕ фильтры, mod/food/block/damage/count/custom, крафт, расход и частичная сдача; нет исполнения формата аддона Item Filters 1.12 |
 | fluid | fluid | Приём через трубы, fluid-NBT exact/subset/ignore, полные зарегистрированные контейнеры и частичный слив IFluidContainerItem (стопка 1) |
 | forge_energy | energy | Аналог на RF/CoFH; Forge Energy API в 1.7.10 отсутствует |
-| botania_mana (интеграция) | botania_mana | IManaReceiver, настоящий mana burst и его поглощение; проверены Botania 1.7.10-1.9.0-GTNH / Baubles 1.0.1.13 |
+| botania_mana (интеграция) | botania_mana | IManaReceiver, настоящий mana burst и его поглощение; проверены официальные Botania r1.8-249 / Baubles 1.0.1.10 |
+| emc (интеграция) | emc | Официальная ProjectE PE1.10.1: баланс, расход, частичная сдача, синхронизация и сохранение |
 | ic2_energy (интеграция) | ic2_energy | Прямой IEnergySink, приём EU, tier, дробный остаток и EnergyNet load/unload; IC2 Experimental 2.2.828 |
 | custom | custom | Java predicates и накопительные счётчики; нет совместимости событий/скриптов FTB |
 | xp | xp | Очки и уровни, проверка и расход; проверено на границах формулы XP 1.7 |
@@ -68,12 +69,14 @@ reward collector, redstone detector, player detector, loot crate opener.
 входной слот, инвентарь и процент прогресса; владельцы и операторы управляют привязкой. Отдельные оригинальные custom
 icons, декоративные/служебные предметы и режимы экранов ещё не перенесены.
 
-Прямые интеграции оригинала с BuildCraft, ProjectE EMC,
+Прямые интеграции оригинала с BuildCraft,
 GameStages, Reskillable, CustomNPCs, KubeJS, JEI, Baubles, PackMode и FTB Utilities
 не реализованы. Java hooks дают возможность написать адаптеры под реально
 существующие версии этих модов на 1.7.10; сами адаптеры не заменяются наличием hooks.
 IC2 EU реализован и проверен с установленной IC2 Experimental 2.2.828: настоящая
 EnergyNet передаёт 16 EU между BasicSource и терминалом, списывая их с источника.
+ProjectE EMC реализован через кошелёк PE1.10.1: частичная сдача, проверка до списания,
+синхронизация клиенту и сохранение при перезапуске мира.
 Botania mana реализована и проверена настоящей сущностью EntityManaBurst.
 Проверены совместный запуск IC2/Botania и отдельный запуск без обоих модов,
 также привязка EU-терминала уже после его установки.

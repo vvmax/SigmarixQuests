@@ -231,6 +231,8 @@ def convert_task(raw, index, defaults=None, repeat=False):
             result.update(target=raw.get('fluid', 'water'), consume=True)
             if raw.get('nbt'):
                 result['nbt'] = snbt(raw['nbt']) if isinstance(raw['nbt'], dict) else raw['nbt']
+    elif kind == 'emc':
+        result.update(type='emc', count=int(raw.get('value', 8192)), consume=True)
     elif kind == 'stat':
         result.update(type='stat', target=raw.get('stat', ''), count=int(raw.get('value', 1)))
     elif kind == 'kill':
