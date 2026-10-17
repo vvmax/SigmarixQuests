@@ -492,6 +492,14 @@ public class QuestSystemsTest {
     private QuestCore.Reward xpReward(int amount,String mode) {
         QuestCore.Reward r=new QuestCore.Reward(); r.type="xp"; r.count=amount; r.mode=mode; r.id="r"+quest.rewards.size(); quest.rewards.add(r); return r;
     }
+    @Test public void teamPaletteSurvivesReloadAndCannotBeChangedByMembers() {
+        EntityPlayerMP other=teammate();UUID owner=player.getUniqueID(),member=other.getUniqueID();
+        data.teamColor(owner,0xB342FF);assertEquals(0xB342FF,data.teamColor(member));
+        try{data.teamColor(member,0xEA4B4B);fail();}catch(IllegalArgumentException expected){}
+        try{data.teamColor(owner,0x1000000);fail();}catch(IllegalArgumentException expected){}
+        NBTTagCompound saved=new NBTTagCompound();data.writeToNBT(saved);QuestProgress restored=new QuestProgress();restored.readFromNBT(saved);
+        assertEquals(0xB342FF,restored.teamColor(owner));assertEquals(0xB342FF,restored.teamColor(member));
+    }
     @Test public void mixedRewardsPaySharedOnceAndIndividualForEachMember() {
         EntityPlayerMP other=teammate(); task("check",null,1,false); xpReward(3,"team"); xpReward(7,"individual");
         assertTrue(service.check(player,quest,true)); service.claim(player,quest,Collections.<Integer>emptyList());

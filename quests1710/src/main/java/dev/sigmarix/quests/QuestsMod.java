@@ -221,7 +221,10 @@ public final class QuestsMod {
                     device.bindingChanged(); message="Device binding updated"; break;
                 case "team_create": case "team_invite": case "team_join": case "team_kick": case "team_leave": case "team_disband":
                     if(action.text==null || action.text.length()>32) throw new IllegalArgumentException("Invalid team input");
-                    new QuestCommand().team(player,player,new String[]{"team",action.action.substring(5),action.text}); message="Team updated"; break;
+                    if(action.action.equals("team_create") && (action.x<0 || action.x>0xFFFFFF))throw new IllegalArgumentException("Invalid team color");
+                    new QuestCommand().team(player,player,new String[]{"team",action.action.substring(5),action.text});
+                    if(action.action.equals("team_create"))service.progress().teamColor(player.getUniqueID(),action.x==0?0x0094FF:action.x);
+                    message="Team updated"; break;
                 case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
                 case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message=quest.tasks.stream().anyMatch(t->t.id.equals(action.text) && t.type.equals("custom"))?"Task action sent":"Task confirmed"; break;
                 case "submit": if(quest==null) throw new IllegalArgumentException("Unknown quest"); message="Submitted: "+service.submit(player,quest,action.text); break;
@@ -244,7 +247,7 @@ public final class QuestsMod {
         if(message==null) message=LAST_MESSAGE.getOrDefault(player.getUniqueID(),""); else LAST_MESSAGE.put(player.getUniqueID(),message);
         QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot(); snapshot.profile=service.progress().profile(); snapshot.revision=service.revision; snapshot.canEdit=editor(player); snapshot.message=message;
         QuestProgress data=service.progress(); UUID id=player.getUniqueID(); Set<String> done=data.completed(id);
-        snapshot.emergencyWait=service.emergencyWait(player); snapshot.team=data.teamName(id); snapshot.teamLeader=data.leader(id);
+        snapshot.emergencyWait=service.emergencyWait(player); snapshot.team=data.teamName(id); snapshot.teamLeader=data.leader(id); snapshot.teamColor=data.teamColor(id);
         for(UUID member:data.members(id)) snapshot.teamMembers.add(playerName(member));
         for(UUID leader:data.invitations(id)) snapshot.teamInvites.add(playerName(leader));
         snapshot.leaderboard=data.leaderboard(service.quests.keySet());
@@ -281,7 +284,7 @@ public final class QuestsMod {
         for(QuestCore.Reward r:rewards) { if(r.type.equals("command") || r.type.equals("custom")) r.target="Server reward"; redact(r.options); }
     }
     public static final class QuestBookItem extends Item {
-        public QuestBookItem() { setUnlocalizedName("sigmarixquests.book"); setTextureName("minecraft:book_normal"); setMaxStackSize(1); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
+        public QuestBookItem() { setUnlocalizedName("sigmarixquests.book"); setTextureName("ftbquests:book"); setMaxStackSize(1); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
         @Override public ItemStack onItemRightClick(ItemStack stack,World world,EntityPlayer player) { if(world.isRemote) proxy.open(); return stack; }
     }
     private static final class QuestCommand extends CommandBase {

@@ -147,3 +147,5 @@ quests.ui.search=Поиск
 quests.ui.collect_rewards=Неполученные награды
 quests.ui.claimed=Получено
 quests.ui.optional=Необязательное задание
+
+quests.ui.accept=Принять

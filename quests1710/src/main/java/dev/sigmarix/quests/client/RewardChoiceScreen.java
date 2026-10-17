@@ -32,10 +32,11 @@ public final class RewardChoiceScreen extends GuiScreen {
     @Override public void initGui() { rebuild(); }
     private void rebuild() {
         if(single!=null) {
-            buttonList.clear(); boxWidth=Math.min(width-12,280); int rows=Math.max(1,(height-64)/20); scroll=Math.max(0,Math.min(scroll,Math.max(0,current.options.size()-rows))); boxHeight=26+Math.min(rows,current.options.size())*20;
-            boxX=(width-boxWidth)/2; boxY=(height-boxHeight)/2;
-            for(int i=scroll;i<current.options.size() && i<scroll+rows;i++) buttonList.add(new QuestFlatButton(100+i,boxX+2,boxY+22+(i-scroll)*20,boxWidth-4,18,QuestTaskLabels.reward(current.options.get(i))).left(22));
-            buttonList.add(new QuestFlatButton(1,boxX+boxWidth-14,boxY+2,12,12,QuestText.tr("Back")).glyph("close",true)); return;
+            buttonList.clear();int panel=100;for(QuestCore.Reward option:current.options)panel=Math.max(panel,fontRendererObj.getStringWidth(QuestTaskLabels.reward(option))+28);
+            panel=Math.min(panel,width-51);boxWidth=panel+39;boxHeight=158;boxX=(width-boxWidth)/2;boxY=(height-boxHeight)/2;
+            int rows=6;scroll=Math.max(0,Math.min(scroll,Math.max(0,current.options.size()-rows)));
+            for(int i=scroll;i<current.options.size() && i<scroll+rows;i++)buttonList.add(new QuestFlatButton(100+i,boxX+10,boxY+10+(i-scroll)*21,panel-2,20,QuestTaskLabels.reward(current.options.get(i))).left(22));
+            return;
         }
         entries.clear(); for(int i=0;i<quest.rewards.size();i++) if(pending(quest,quest.rewards.get(i))) collect(quest.rewards.get(i),Integer.toString(i));
         buttonList.clear(); int rows=Math.max(1,(height-94)/26); scroll=Math.max(0,Math.min(scroll,Math.max(0,entries.size()-rows)));
@@ -67,8 +68,12 @@ public final class RewardChoiceScreen extends GuiScreen {
     }
     @Override public void drawScreen(int x,int y,float partial) {
         if(single!=null) {
-            QuestClassicUi.background(mc,width,height); QuestClassicUi.panel(mc,boxX,boxY,boxWidth,boxHeight); fontRendererObj.drawString(QuestText.tr("Choose a reward"),boxX+5,boxY+6,0xFFFFFFFF); super.drawScreen(x,y,partial);
-            for(Object raw:buttonList) { GuiButton b=(GuiButton)raw; if(b.id>=100) { QuestCore.Reward option=current.options.get(b.id-100); QuestClassicUi.item(mc,QuestClassicUi.rewardItem(option),option.icon.isEmpty()?option.meta:option.iconMeta,option.icon.isEmpty()?option.nbt:option.iconNbt,b.xPosition+2,b.yPosition+1,16); if(x>=b.xPosition && x<b.xPosition+b.width && y>=b.yPosition && y<b.yPosition+b.height) drawHoveringText(Collections.singletonList(QuestTaskLabels.reward(option)),x,y,fontRendererObj); } } return;
+            drawDefaultBackground();QuestClassicUi.background(mc,boxX,boxY,boxWidth,boxHeight);drawCenteredString(fontRendererObj,QuestText.tr("Choose a reward"),width/2,boxY-11,0xFFFFFFFF);
+            QuestClassicUi.frame(boxX+8,boxY+8,boxWidth-37,142,QuestClassicUi.BORDER);
+            drawRect(boxX+boxWidth-24,boxY+8,boxX+boxWidth-8,boxY+150,0x44000000);
+            int thumb=Math.max(12,142*6/Math.max(6,current.options.size())),sy=boxY+8+(current.options.size()<=6?0:scroll*(142-thumb)/(current.options.size()-6));
+            QuestClassicUi.frame(boxX+boxWidth-24,sy,16,thumb,QuestClassicUi.BORDER);drawRect(boxX+boxWidth-23,sy+1,boxX+boxWidth-9,sy+thumb-1,0x44000000);super.drawScreen(x,y,partial);
+            for(Object raw:buttonList) { GuiButton b=(GuiButton)raw; if(b.id>=100) { QuestCore.Reward option=current.options.get(b.id-100); QuestClassicUi.reward(mc,option,b.xPosition+2,b.yPosition+2,16); if(x>=b.xPosition && x<b.xPosition+b.width && y>=b.yPosition && y<b.yPosition+b.height) drawHoveringText(Collections.singletonList(QuestTaskLabels.reward(option)),x,y,fontRendererObj); } } return;
         }
         QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,"Select rewards: "+quest.title,width/2,14,0xFFFFFF);
         drawCenteredString(fontRendererObj,QuestText.tr("Click each row to cycle its options"),width/2,28,0xBBBBBB); super.drawScreen(x,y,partial);

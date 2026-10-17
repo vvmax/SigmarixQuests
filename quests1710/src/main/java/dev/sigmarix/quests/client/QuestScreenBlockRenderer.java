@@ -19,7 +19,11 @@ final class QuestScreenBlockRenderer implements ISimpleBlockRenderingHandler {
     @Override public boolean renderWorldBlock(IBlockAccess world,int x,int y,int z,Block block,int modelId,RenderBlocks renderer) {
         TileEntity raw=world.getTileEntity(x,y,z); Block skin=raw instanceof QuestDevice?QuestScreenSettings.skin((QuestDevice)raw):null;
         int pass=MinecraftForgeClient.getRenderPass();
-        if(skin==null) return pass==0 && renderer.renderStandardBlock(block,x,y,z);
+        if(skin==null) {
+            if(pass!=(block==QuestBlocks.devices[2]?1:0))return false;
+            if(block==QuestBlocks.devices[7])renderer.setRenderBounds(1/16D,0,1/16D,15/16D,14/16D,15/16D);
+            try {return renderer.renderStandardBlock(block,x,y,z);} finally {renderer.setRenderBounds(0,0,0,1,1,1);}
+        }
         if(skin==Blocks.air || !skin.canRenderInPass(pass) || skin.getRenderType()<0) return false;
         return new RenderBlocks(new QuestSkinAccess(world)).renderBlockByRenderType(skin,x,y,z);
     }

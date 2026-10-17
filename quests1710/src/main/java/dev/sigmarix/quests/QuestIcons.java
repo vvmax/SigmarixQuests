@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 /** Cosmetic icon editing never accepts arbitrary item NBT from the client. */
 public final class QuestIcons {
-    public static final String DEFAULT="minecraft:textures/items/paper.png";
+    public static final String DEFAULT="ftblib:textures/icons/support.png";
     public static String resource(ItemStack stack) {
         String icon=stack!=null && stack.hasTagCompound()?stack.getTagCompound().getString("icon"):"";
         return icon.length()<=1024 && !icon.isEmpty() && QuestPresentation.image(icon)?icon:DEFAULT;

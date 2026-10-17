@@ -249,12 +249,15 @@ public final class QuestPreview {
             case 25: if(npcPassed) stage=0; break;
             case 27:
                 if(!"Fixture team".equals(snap.team)) return;
+                if(snap.teamColor!=0xB342FF)throw new IllegalStateException("Team palette color did not synchronize");QuestToasts.clear();mc.ingameGUI.getChatGUI().clearChatMessages();
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-teams.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 press(mc.currentScreen,1); stage=28; break;
             case 28:
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-leaderboard.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
-                press(mc.currentScreen,1); press(mc.currentScreen,15); stage=29; break;
-            case 29: if(snap.team.isEmpty()) { teamPassed=true; mc.displayGuiScreen(null); stage=1; } break;
+                press(mc.currentScreen,1); press(mc.currentScreen,15); press(mc.currentScreen,0); stage=29; break;
+            case 29: if(snap.team.isEmpty()) { teamPassed=true;QuestToasts.clear();mc.ingameGUI.getChatGUI().clearChatMessages();mc.displayGuiScreen(new QuestVisualCatalog());stage=101;waiting=0; } break;
+            case 102: if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-create-team.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());press(mc.currentScreen,20);stage=27;break;
+            case 101: if(waiting<15)return;ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-reference-items.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());mc.displayGuiScreen(null);stage=1;break;
             case 1:
                 if(snap==null || snap.book==null) return;
                 if(!snap.canEdit) throw new IllegalStateException("Integrated host lost edit permissions");
@@ -270,9 +273,12 @@ public final class QuestPreview {
                     PreviewImageServer.stop(); mc.shutdown(); return;
                 }
                 if(!teamPassed) {
+                    QuestToasts.clear();mc.ingameGUI.getChatGUI().clearChatMessages();
                     QuestTeamScreen teams=new QuestTeamScreen(new QuestBookScreen()); mc.displayGuiScreen(teams);
+                    press(teams,10);
                     java.lang.reflect.Field input=QuestTeamScreen.class.getDeclaredField("input"); input.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)input.get(teams)).setText("Fixture team");
-                    press(teams,10); stage=27; return;
+                    java.lang.reflect.Method palette=QuestTeamScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class);palette.setAccessible(true);palette.invoke(teams,(teams.width-162)/2+110,(teams.height-118)/2+74,0);
+                    stage=102;waiting=0;return;
                 }
                 if(!iconPassed) { iconRequested=true; stage=39; return; }
                 if(!bookPrepared) {

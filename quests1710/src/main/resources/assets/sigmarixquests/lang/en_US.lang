@@ -147,3 +147,5 @@ quests.ui.search=Search
 quests.ui.collect_rewards=Collect rewards
 quests.ui.claimed=Claimed
 quests.ui.optional=Optional
+
+quests.ui.accept=Accept

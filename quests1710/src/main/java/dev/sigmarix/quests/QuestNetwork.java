@@ -112,6 +112,7 @@ public final class QuestNetwork {
         public long revision;
         public long emergencyWait;
         public boolean canEdit,teamLeader;
+        public int teamColor=0x0094FF;
         public java.util.List<String> pinned=new java.util.ArrayList<String>();
         public java.util.Map<String,Integer> percentages=new java.util.LinkedHashMap<String,Integer>();
         public java.util.List<String> teamMembers=new java.util.ArrayList<String>(),teamInvites=new java.util.ArrayList<String>();

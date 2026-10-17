@@ -129,6 +129,8 @@ public final class QuestProgress extends WorldSavedData {
     }
     public String team(UUID id) { return membership.getString(id.toString()); }
     public String teamName(UUID id) { return teams.getCompoundTag(team(id)).getString("name"); }
+    public int teamColor(UUID id) {NBTTagCompound entry=teams.getCompoundTag(team(id));return entry.hasKey("color")?entry.getInteger("color"):0x0094FF;}
+    public void teamColor(UUID id,int color) {if(!leader(id) || color<0 || color>0xFFFFFF)throw new IllegalArgumentException("Only team leader can set a valid team color");teams.getCompoundTag(team(id)).setInteger("color",color);markDirty();}
     public boolean leader(UUID id) { return teams.getCompoundTag(team(id)).getString("leader").equals(id.toString()); }
     public void createTeam(UUID id, String name) {
         if (!team(id).isEmpty() || name == null || name.length() < 1 || name.length() > 32) throw new IllegalArgumentException("Already in team or invalid name");

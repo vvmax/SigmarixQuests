@@ -44,16 +44,39 @@ public final class QuestBlocks {
         public final int mode;
         DeviceBlock(int mode,String id) {
             super(Material.iron); this.mode=mode; setBlockName("sigmarixquests."+id); setBlockTextureName(mode==2?"minecraft:iron_block":mode==4?"minecraft:redstone_block":"minecraft:lapis_block");
+            if(mode==7)setBlockBounds(1/16F,0,1/16F,15/16F,14/16F,15/16F);
             setHardness(3); setResistance(10); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc);
         }
+        @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+        private net.minecraft.util.IIcon[] textures;
+        @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+        public void registerBlockIcons(net.minecraft.client.renderer.texture.IIconRegister registry) {
+            String[] names=mode<=1?new String[]{"screen_side","screen_front","screen_front_input"}:mode==2?new String[]{"barrier","barrier_completed"}:mode==7?new String[]{"chest_side","chest_top","chest_front"}:new String[]{new String[]{"","","","reward_collector","redstone_detector","player_detector","loot_crate_opener","","loot_crate_storage","progress_detector"}[mode]};
+            textures=new net.minecraft.util.IIcon[names.length];for(int i=0;i<names.length;i++)textures[i]=registry.registerIcon("ftbquests:"+names[i]);blockIcon=textures[0];
+        }
+        @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+        public net.minecraft.util.IIcon getIcon(int side,int meta) {
+            if(textures==null)return blockIcon;
+            return textures[mode<=1?(side==2?1:0):mode==7?(side<2?1:side==2?2:0):0];
+        }
+        @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+        public net.minecraft.util.IIcon getIcon(IBlockAccess world,int x,int y,int z,int side) {
+            TileEntity raw=world.getTileEntity(x,y,z);QuestDevice tile=raw instanceof QuestDevice?(QuestDevice)raw:null;
+            if(mode==2 && tile!=null && tile.signal)return textures[1];
+            if(mode<=1)return textures[side==(tile==null?2:tile.facing)?1:0];
+            if(mode==7)return textures[side<2?1:side==(tile==null?2:tile.facing)?2:0];
+            return getIcon(side,world.getBlockMetadata(x,y,z));
+        }
         @Override public TileEntity createNewTileEntity(World world,int metadata) { return mode==7 || mode==8?new QuestStorage(mode==8):new QuestDevice(); }
-        @Override public int getRenderType() { return mode<=1 && QuestsMod.proxy!=null?QuestsMod.proxy.screenRenderType():0; }
-        @Override public boolean isOpaqueCube() { return mode>1; }
-        @Override public boolean renderAsNormalBlock() { return mode>1; }
+        @Override public int getRenderType() { return QuestsMod.proxy!=null?QuestsMod.proxy.screenRenderType():0; }
+        @Override public boolean isOpaqueCube() { return mode>2 && mode!=7; }
+        @Override public boolean renderAsNormalBlock() { return mode>2 && mode!=7; }
         @Override public boolean isNormalCube() { return mode<=1?!canProvidePower():super.isNormalCube(); }
         @Override public boolean isNormalCube(IBlockAccess world,int x,int y,int z) { return mode<=1?!canProvidePower():super.isNormalCube(world,x,y,z); }
-        @Override public boolean canRenderInPass(int pass) { return mode<=1?pass==0 || pass==1:super.canRenderInPass(pass); }
+        @Override public boolean canRenderInPass(int pass) { return mode==2?pass==1:mode<=1?pass==0 || pass==1:super.canRenderInPass(pass); }
         @Override public boolean isSideSolid(IBlockAccess world,int x,int y,int z,net.minecraftforge.common.util.ForgeDirection side) { return mode<=1 || super.isSideSolid(world,x,y,z,side); }
+        @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+        public int getRenderBlockPass(){return mode==2?1:0;}
         private boolean protectedScreen(IBlockAccess world,int x,int y,int z) {
             if(mode>1) return false; TileEntity raw=world.getTileEntity(x,y,z); if(!(raw instanceof QuestDevice)) return false;
             QuestDevice tile=(QuestDevice)raw,core=QuestScreens.core(tile); return (core==null?tile:core).indestructible;
@@ -97,12 +120,12 @@ public final class QuestBlocks {
         }
     }
     public static final class CustomIconItem extends Item {
-        CustomIconItem() { setUnlocalizedName("sigmarixquests.custom_icon"); setTextureName("minecraft:paper"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
+        CustomIconItem() { setMaxStackSize(1); setUnlocalizedName("sigmarixquests.custom_icon"); setTextureName("minecraft:paper"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
         @Override public String getItemStackDisplayName(ItemStack stack) { return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
         @Override public ItemStack onItemRightClick(ItemStack stack,World world,EntityPlayer player) { if(world.isRemote) QuestsMod.proxy.openIcon(); return stack; }
     }
     public static final class LootCrateItem extends Item {
-        LootCrateItem() { setUnlocalizedName("sigmarixquests.loot_crate"); setTextureName("minecraft:minecart_chest"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
+        LootCrateItem() { setUnlocalizedName("sigmarixquests.loot_crate"); setTextureName("ftbquests:lootcrate/front_outline"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
         @Override public String getItemStackDisplayName(ItemStack stack) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null && !settings.name.isEmpty()) return settings.name; return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
         @Override public int getColorFromItemStack(ItemStack stack,int pass) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null) return QuestPresentation.color(settings.color); return stack.hasTagCompound() && stack.getTagCompound().hasKey("color")?stack.getTagCompound().getInteger("color"):0xFFFFFF; }
         @Override public boolean hasEffect(ItemStack stack,int pass) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null) return settings.glow; return stack.hasTagCompound() && stack.getTagCompound().getBoolean("glow"); }

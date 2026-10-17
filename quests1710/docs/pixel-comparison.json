@@ -1,0 +1,28 @@
+{
+  "reference": "FTB Quests 1202.9.0.15 + FTBLib 5.4.7.2 on Minecraft 1.12.2 / Forge 14.23.5.2860",
+  "port": "Sigmarix Quests 0.24.0 on Minecraft 1.7.10 / Forge 10.13.4.1614",
+  "resolution": [
+    854,
+    480
+  ],
+  "gui_scale": 2,
+  "checks": [
+    {
+      "dialog": "value editor",
+      "compared_pixels": 23780,
+      "different_pixels": 0,
+      "mask": "panel interior (202,190)-(652,290), excluding input text (214,204)-(640,234) and button labels (220,252)-(642,272)"
+    },
+    {
+      "dialog": "create team",
+      "compared_pixels": 57336,
+      "different_pixels": 0,
+      "mask": "panel interior (270,126)-(582,350), excluding input text (282,142)-(570,166) and button labels (288,314)-(570,334)"
+    }
+  ],
+  "limitations": [
+    "The complete frames differ: the reference was opened from the title screen; the port was opened in a test world.",
+    "Text, cursor and outside backgrounds are excluded from these two comparisons.",
+    "Other dialogs, interaction states, GUI scales and item transforms are not covered by these pixel masks."
+  ]
+}

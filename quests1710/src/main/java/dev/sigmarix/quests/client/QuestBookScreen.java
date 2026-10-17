@@ -39,13 +39,13 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         if(find(selected)==null) selected="";
         buttonList.clear();
         int top=1;
-        if(QuestClicks.available("","custom:ftbmoney:open_gui")) button(15,0,top,20,18,"Shop","reward",true);
+        if(QuestClicks.available("","custom:ftbmoney:open_gui")) button(15,0,top,20,18,"Shop","shop",true);
         int right=width-20;
         if(ClientProxy.snapshot.states.containsValue("complete")) { button(20,right,top,20,18,"Collect rewards","reward",true).tint=0xFFF8E71C; top+=18; }
         if(QuestGuides.available("")) { button(12,right,top,20,18,"Guides","book",true).tint=0xFFEF9E1A; top+=18; }
-        if(!book().emergencyItems.isEmpty()) { button(10,right,top,20,18,"Help items","alert",true).enabled=ClientProxy.snapshot.emergencyWait==0; top+=18; }
+        if(!book().emergencyItems.isEmpty()) { button(10,right,top,20,18,"Help items","emergency_items",true).enabled=ClientProxy.snapshot.emergencyWait==0; top+=18; }
         button(14,right,height-55,20,18,"Pinned","pin",true);
-        button(21,right,height-37,20,18,"More options","book",true);
+        button(21,right,height-37,20,18,"More options","support",true);
         if(ClientProxy.snapshot.canEdit) button(3,right,height-19,20,18,"Edit book","settings",true);
         if(menu) {
             button(2,width-114,height-152,92,18,"All chapters","",false);
@@ -94,12 +94,12 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(QuestCore.Quest q:list) {
             int x=sx(q),y=sy(q),r=radius(q); String state=ClientProxy.snapshot.states.get(q.id); String[] style=QuestPresentation.resolve(book(),q,state);
             boolean over=Math.abs(mx-x)<=r && Math.abs(my-y)<=r;
-            int outline="complete".equals(state) || "claimed".equals(state)?0xC856FF56:"locked".equals(state)?0xFF808080:0x96FFFFFF;
+            int outline="complete".equals(state) || "claimed".equals(state)?0xC856FF56:"locked".equals(state)?0xFF808080:ClientProxy.snapshot.percentages.getOrDefault(q.id,0)>0?0xC800FFFF:0x96FFFFFF;
             if(!style[0].equals(defaultColor(state))) outline=QuestPresentation.color(style[0]);
-            QuestNodeRenderer.draw(mc,x,y,r,style[2],outline); QuestNodeRenderer.draw(mc,x,y,Math.max(1,r-1),style[2],0xFF333333); QuestNodeRenderer.draw(mc,x,y,Math.max(1,r-2),style[2],0xFF909090);
+            QuestNodeRenderer.node(mc,x,y,r,style[2],outline);
             int size=Math.max(2,r*4/3); QuestClassicUi.item(mc,q.icon,q.iconMeta,q.iconNbt,x-size/2,y-size/2,size);
             if("locked".equals(state)) nodeOverlay(x,y,r,style[2],0x64000000);
-            if(q.id.equals(selected)) nodeOverlay(x,y,r,style[2],((int)(190+Math.sin(System.currentTimeMillis()*.003)*50)<<24)|0xFFFFFF);
+            if(q.id.equals(selected)){GL11.glPushMatrix();GL11.glTranslated(0,0,150);QuestNodeRenderer.highlight(mc,x,y,r,style[2],((int)(190+Math.sin(System.currentTimeMillis()*.003)*50)<<24)|0xFFFFFF);GL11.glPopMatrix();}
             if(over && card==null) { hover=q; nodeOverlay(x,y,r,style[2],0x64FFFFFF); }
             if("claimed".equals(state)) QuestClassicUi.icon("check",x,y-r,r,0xFF65D529); else if("complete".equals(state)) QuestClassicUi.icon("alert",x,y-r,r,0xFFFFDD55);
         }
@@ -181,14 +181,14 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(int i=0;i<q.tasks.size();i++) {
             QuestCore.Task t=q.tasks.get(i); int x=card.cellX(false,i,q.tasks.size()),y=card.cellY(i)-contentOffset; boolean done=Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(q.id+":"+t.id));
             cell(x,y,mx,my,!done && "available".equals(ClientProxy.snapshot.states.get(q.id))); String item=QuestClassicUi.taskItem(t);
-            if(item.isEmpty()) QuestClassicUi.icon(t.type.equals("check")?"check":"settings",x+1,y+1,16,done?0xFF65D529:0xFFFFFFFF); else QuestClassicUi.item(mc,item,t.icon.isEmpty()?t.meta:t.iconMeta,t.icon.isEmpty()?t.nbt:t.iconNbt,x+1,y+1,16);
-            if(done) QuestClassicUi.icon("check",x+10,y-2,9,0xFF65D529);
+            QuestClassicUi.task(mc,t,done,x+1,y+1,16);
+            if(done) QuestClassicUi.icon("check",x+9,y+1,8,0xFFFFFFFF);
             if(overCell(x,y,mx,my)) { tip=new ArrayList<String>(); tip.add(QuestTaskLabels.title(t)); Long value=ClientProxy.snapshot.counters.get(q.id+":"+t.id); tip.add("\u00a77"+(done?t.count:value==null?0:value)+" / "+t.count); if(!t.description.isEmpty()) tip.addAll(fontRendererObj.listFormattedStringToWidth(t.description,220)); }
         }
         for(int i=0;i<rewards.size();i++) {
             QuestCore.Reward r=rewards.get(i); int x=card.cellX(true,i,rewards.size()),y=card.cellY(i)-contentOffset; boolean done=Boolean.TRUE.equals(ClientProxy.snapshot.rewardStates.get(q.id+":"+r.id));
-            cell(x,y,mx,my,!done && "complete".equals(ClientProxy.snapshot.states.get(q.id))); QuestClassicUi.item(mc,QuestClassicUi.rewardItem(r),r.icon.isEmpty()?r.meta:r.iconMeta,r.icon.isEmpty()?r.nbt:r.iconNbt,x+1,y+1,16);
-            if(done) { drawRect(x+1,y+1,x+17,y+17,0x66000000); QuestClassicUi.icon("check",x+10,y-2,9,0xFF65D529); }
+            cell(x,y,mx,my,!done && "complete".equals(ClientProxy.snapshot.states.get(q.id))); QuestClassicUi.reward(mc,r,x+1,y+1,16);
+            if(done) { drawRect(x+1,y+1,x+17,y+17,0x66000000); QuestClassicUi.icon("check",x+9,y+1,8,0xFFFFFFFF); }
             if(r.type.equals("item") && r.count>1) { String amount=Integer.toString(r.count); fontRendererObj.drawStringWithShadow(amount,x+18-fontRendererObj.getStringWidth(amount),y+11,0xFFFFFFFF); }
             if(overCell(x,y,mx,my)) { tip=new ArrayList<String>(); tip.add(QuestTaskLabels.reward(r)); if(done) tip.add("\u00a77"+QuestText.tr("Claimed")); if(!r.description.isEmpty()) tip.addAll(fontRendererObj.listFormattedStringToWidth(r.description,220)); }
         }

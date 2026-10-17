@@ -28,6 +28,9 @@ public final class ClientProxy extends CommonProxy {
         if(cpw.mods.fml.common.Loader.isModLoaded("NotEnoughItems")) try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("register").invoke(null); }
         catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI integration registration failed",ex); }
         net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon"),new QuestIconRenderer());
+        net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","loot_crate"),new QuestModelItemRenderer(-1));
+        net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(QuestBlocks.crateParcel,new QuestModelItemRenderer(-1));
+        for(int i=0;i<QuestBlocks.devices.length;i++) net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(net.minecraft.item.Item.getItemFromBlock(QuestBlocks.devices[i]),new QuestModelItemRenderer(i));
         ClientRegistry.bindTileEntitySpecialRenderer(QuestDevice.class,new QuestScreenRenderer());
         FMLCommonHandler.instance().bus().register(new QuestToasts());
         FMLCommonHandler.instance().bus().register(new QuestPins());

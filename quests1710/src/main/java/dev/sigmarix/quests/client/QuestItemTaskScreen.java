@@ -30,7 +30,7 @@ public final class QuestItemTaskScreen extends GuiScreen {
     }
     @Override protected void actionPerformed(GuiButton button) { if(button.id==1 && ClientProxy.snapshot.revision==revision) { QuestNetwork.Action action=new QuestNetwork.Action(); action.action="click_task"; action.id=questId; action.text=taskId; ClientProxy.send(action); } mc.displayGuiScreen(parent); }
     @Override public void drawScreen(int mx,int my,float partial) {
-        QuestClassicUi.background(mc,width,height); QuestClassicUi.panel(mc,x,y,w,h); String title=fontRendererObj.trimStringToWidth(QuestText.tr("Valid items for")+" "+QuestTaskLabels.title(task),w-12); fontRendererObj.drawString(title,x+(w-fontRendererObj.getStringWidth(title))/2,y+6,0xFFFFFFFF);
+        drawDefaultBackground();QuestClassicUi.background(mc,x,y,w,h); String title=fontRendererObj.trimStringToWidth(QuestText.tr("Valid items for")+" "+QuestTaskLabels.title(task),w-12); fontRendererObj.drawString(title,x+(w-fontRendererObj.getStringWidth(title))/2,y+6,0xFFFFFFFF);
         QuestClassicUi.frame(gridX-1,y+21,146,gridHeight+2,QuestClassicUi.BORDER);
         net.minecraft.client.gui.ScaledResolution resolution=new net.minecraft.client.gui.ScaledResolution(mc,mc.displayWidth,mc.displayHeight); int f=resolution.getScaleFactor(); org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_SCISSOR_TEST); org.lwjgl.opengl.GL11.glScissor(gridX*f,(resolution.getScaledHeight()-y-22-gridHeight)*f,144*f,gridHeight*f);
         ItemStack hover=null;
