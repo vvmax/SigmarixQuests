@@ -42,6 +42,8 @@ public final class QuestBlocks {
     }
     public static final class DeviceBlock extends BlockContainer {
         public final int mode;
+        private int chunkRenderPass;
+        public int chunkRenderPass(){return chunkRenderPass;}
         DeviceBlock(int mode,String id) {
             super(Material.iron); this.mode=mode; setBlockName("sigmarixquests."+id); setBlockTextureName(mode==2?"minecraft:iron_block":mode==4?"minecraft:redstone_block":"minecraft:lapis_block");
             if(mode==7)setBlockBounds(1/16F,0,1/16F,15/16F,14/16F,15/16F);
@@ -73,7 +75,7 @@ public final class QuestBlocks {
         @Override public boolean renderAsNormalBlock() { return mode>2 && mode!=7; }
         @Override public boolean isNormalCube() { return mode<=1?!canProvidePower():super.isNormalCube(); }
         @Override public boolean isNormalCube(IBlockAccess world,int x,int y,int z) { return mode<=1?!canProvidePower():super.isNormalCube(world,x,y,z); }
-        @Override public boolean canRenderInPass(int pass) { return mode==2?pass==1:mode<=1?pass==0 || pass==1:super.canRenderInPass(pass); }
+        @Override public boolean canRenderInPass(int pass) { chunkRenderPass=pass;return mode==2?pass==1:mode<=1?pass==0 || pass==1:super.canRenderInPass(pass); }
         @Override public boolean isSideSolid(IBlockAccess world,int x,int y,int z,net.minecraftforge.common.util.ForgeDirection side) { return mode<=1 || super.isSideSolid(world,x,y,z,side); }
         @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
         public int getRenderBlockPass(){return mode==2?1:0;}
@@ -95,6 +97,10 @@ public final class QuestBlocks {
                     try { QuestCrateParcel.deposit(p.getHeldItem(),storage); if(p.getHeldItem().stackSize<=0) p.inventory.setInventorySlotContents(p.inventory.currentItem,null); p.inventory.markDirty(); } catch(RuntimeException ex) { QuestService.say(p,ex.getMessage()); }
                 } }
                 return true;
+            }
+            if(mode==0 || mode==1){QuestDevice clicked=(QuestDevice)world.getTileEntity(x,y,z);QuestDevice core=clicked==null?null:QuestScreens.core(clicked);if(core==null)return false;if((mode==1 || !p.isSneaking()) && side!=core.facing)return false;
+                if(mode==1 && !p.isSneaking()){if(!world.isRemote && !core.indestructible && QuestsMod.service!=null && core.owner!=null){java.util.List<QuestCore.Chapter> chapters=new java.util.ArrayList<QuestCore.Chapter>();for(QuestCore.Chapter chapter:QuestsMod.service.book.chapters)if(QuestPresentation.visibleChapter(QuestsMod.service.book,chapter.id))chapters.add(chapter);if(!chapters.isEmpty()){int current=-1;for(int i=0;i<chapters.size();i++)if(core.quest.equals("chapter:"+chapters.get(i).id))current=i;core.quest="chapter:"+chapters.get((current+1)%chapters.size()).id;core.task="";core.bindingChanged();}}return true;}
+                if(!world.isRemote && core.isUseableByPlayer(p)){world.markBlockForUpdate(core.xCoord,core.yCoord,core.zCoord);p.openGui(QuestsMod.instance,0,world,core.xCoord,core.yCoord,core.zCoord);}return true;
             }
             if(p.isSneaking()) return false;
             if(mode==6 && p.getHeldItem()!=null && p.getHeldItem().getItem() instanceof LootCrateItem) { if(!world.isRemote) LootCrateItem.open(p,p.getHeldItem()); return true; }

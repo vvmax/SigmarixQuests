@@ -29,6 +29,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     public String screenSkin="";
     public int screenSkinMeta;
     public String screenTitle="Quest screen";
+    public long screenTaskProgress;
     private int ticks;
     private boolean euRegistered;
     private int euTier=-1;
@@ -90,6 +91,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         QuestCore.Quest q=bindingProfile.equals(s.progress().profile())?s.quests.get(quest):null; boolean next=false;
         int mode=((QuestBlocks.DeviceBlock)getBlockType()).mode;
         String title=bindingProfile.equals(s.progress().profile())?s.objectTitle(quest):"Quest screen"; int percent=percent();
+        if(mode==0 && q!=null && owner!=null){QuestCore.Task selected=null;for(QuestCore.Task candidate:q.tasks)if(candidate.id.equals(task)){selected=candidate;break;}if(selected!=null){long value=s.progress().value(owner,q.id,selected.id);if(s.progress().taskDone(owner,q.id,selected.id) || s.progress().completed(owner).contains(q.id))value=selected.count;if(screenTaskProgress!=value){screenTaskProgress=value;markDirty();worldObj.markBlockForUpdate(xCoord,yCoord,zCoord);}}}
         if(!screenTitle.equals(title) || screenPercent!=percent) { screenTitle=title; screenPercent=percent; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); }
         if(owner!=null && bindingProfile.equals(s.progress().profile())) next=s.objectComplete(owner,quest);
         if(mode==9) {
@@ -187,6 +189,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         screenFullscreen=nbt.getBoolean("screenFullscreen"); screenHideIcons=nbt.getBoolean("screenHideIcons"); screenInputOnly=nbt.getBoolean("screenInputOnly"); screenInputIcon=nbt.hasKey("screenInputIcon")?net.minecraft.item.ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("screenInputIcon")):null;
         screenLinked=nbt.getBoolean("screenLinked"); coreX=nbt.getInteger("coreX"); coreY=nbt.getInteger("coreY"); coreZ=nbt.getInteger("coreZ");
         facing=nbt.hasKey("facing")?nbt.getInteger("facing"):2; if(facing<2 || facing>5) facing=2;
+        screenTaskProgress=Math.max(0,nbt.getLong("screenTaskProgress"));
         screenPercent=Math.max(0,Math.min(100,nbt.getInteger("screenPercent"))); screenTitle=nbt.hasKey("screenTitle")?nbt.getString("screenTitle"):"Quest screen";
         bindingProfile=nbt.hasKey("bindingProfile")?nbt.getString("bindingProfile"):"default";
         quest=nbt.getString("quest"); task=nbt.getString("task"); signal=nbt.getBoolean("signal");
@@ -198,7 +201,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         nbt.setBoolean("detectorNotifications",detectorNotifications); nbt.setDouble("detectorRadius",detectorRadius); nbt.setDouble("detectorOffsetY",detectorOffsetY); nbt.setDouble("detectorHeight",detectorHeight); nbt.setInteger("detectorPower",detectorPower);
         nbt.setBoolean("indestructible",indestructible); nbt.setString("screenSkin",screenSkin); nbt.setInteger("screenSkinMeta",screenSkinMeta);
         nbt.setBoolean("screenFullscreen",screenFullscreen); nbt.setBoolean("screenHideIcons",screenHideIcons); nbt.setBoolean("screenInputOnly",screenInputOnly); if(screenInputIcon!=null) { NBTTagCompound icon=new NBTTagCompound(); screenInputIcon.writeToNBT(icon); nbt.setTag("screenInputIcon",icon); }
-        super.writeToNBT(nbt); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
+        super.writeToNBT(nbt); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent);nbt.setLong("screenTaskProgress",screenTaskProgress); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
     }
     @Override public AxisAlignedBB getRenderBoundingBox() { return AxisAlignedBB.getBoundingBox(xCoord-8,yCoord,zCoord-8,xCoord+9,yCoord+9,zCoord+9); }
     @Override public Packet getDescriptionPacket() { NBTTagCompound nbt=new NBTTagCompound(); writeToNBT(nbt); nbt.removeTag("collectorItems"); nbt.removeTag("input"); nbt.removeTag("pendingLoot"); return new S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,nbt); }

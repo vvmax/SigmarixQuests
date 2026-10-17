@@ -99,10 +99,11 @@ public final class QuestNetwork {
         toast.icon=task.icon.isEmpty()?quest.icon:task.icon; toast.iconMeta=task.icon.isEmpty()?quest.iconMeta:task.iconMeta; toast.iconNbt=task.icon.isEmpty()?quest.iconNbt:task.iconNbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
-    public static void rewardToast(EntityPlayerMP player,QuestCore.Reward source){
+    public static void rewardToast(EntityPlayerMP player,QuestCore.Reward source){rewardToast(player,source,source.count);}
+    public static void rewardToast(EntityPlayerMP player,QuestCore.Reward source,int deliveredCount){
         if(channel==null || QuestEvents.notificationsMuted() || source.type.equals("toast"))return;
         Toast toast=new Toast();toast.text="Reward collected";toast.reward=new QuestCore.Reward();QuestCore.Reward r=toast.reward;
-        r.type=source.type;r.title=source.title;r.item=source.item;r.meta=source.meta;r.nbt=source.nbt;r.count=source.count;r.randomBonus=source.randomBonus;r.icon=source.icon;r.iconMeta=source.iconMeta;r.iconNbt=source.iconNbt;
+        r.type=source.type;r.title=source.title;r.item=source.item;r.meta=source.meta;r.nbt=source.nbt;r.count=deliveredCount;r.randomBonus=0;r.icon=source.icon;r.iconMeta=source.iconMeta;r.iconNbt=source.iconNbt;
         toast.icon=source.icon.isEmpty()?(source.type.equals("item")?source.item:source.type.startsWith("xp")?"minecraft:experience_bottle":"minecraft:paper"):source.icon;toast.iconMeta=source.icon.isEmpty()?source.meta:source.iconMeta;toast.iconNbt=source.icon.isEmpty()?source.nbt:source.iconNbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
@@ -113,6 +114,7 @@ public final class QuestNetwork {
         public int x,y,z;
         public QuestCore.Book book;
         public TeamSettings teamSettings;
+        public QuestDeviceConfig deviceSettings;
     }
     public static final class Rank { public String name; public int completed,total; }
     public static final class TeamSettings {

@@ -38,6 +38,7 @@ public final class QuestPresentation {
         try { URI uri=new URI(value); return value.length()<=2048 && ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) && uri.getHost()!=null && uri.getUserInfo()==null; }
         catch(Exception e) { return false; }
     }
+    public static void tags(List<String> tags){if(tags==null || tags.size()>64)throw new IllegalArgumentException("Invalid tags");for(String tag:tags)if(!QuestCore.validId(tag))throw new IllegalArgumentException("Invalid tag");}
     public static void metadata(String title,String description,String icon,int meta,String nbt) {
         if(title==null || title.length()>256 || description==null || description.length()>16384 || icon==null || icon.length()>256 || meta<0 || nbt==null || nbt.length()>65536) throw new IllegalArgumentException("Invalid task/reward presentation");
     }
@@ -57,7 +58,7 @@ public final class QuestPresentation {
             if(!style.color.isEmpty()) color(style.color); if(!style.textColor.isEmpty()) color(style.textColor);
         }
         for(QuestCore.Chapter chapter:book.chapters) {
-            metadata(chapter.title,chapter.description,chapter.icon,chapter.iconMeta,chapter.iconNbt);
+            metadata(chapter.title,chapter.description,chapter.icon,chapter.iconMeta,chapter.iconNbt);tags(chapter.tags);
             if(chapter.image==null || !chapter.image.isEmpty() && !image(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !shape(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
             for(MapImage image:chapter.images) {
                 if(image==null || !image(image.resource) || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");

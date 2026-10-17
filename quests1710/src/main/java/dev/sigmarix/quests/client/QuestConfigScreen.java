@@ -12,10 +12,11 @@ abstract class QuestConfigScreen extends GuiScreen {
     }
     private final GuiScreen parent;private List<Entry> all=new ArrayList<Entry>();private final Set<String> collapsed=new HashSet<String>();private final List<Object> displayed=new ArrayList<Object>();private int scroll;private String error="";private boolean dragging;
     QuestConfigScreen(GuiScreen parent){this.parent=parent;}
+    protected void closed(boolean applied){}
     protected abstract String title();protected abstract List<Entry> entries();protected abstract void save();
     @Override public void initGui(){all=entries();rebuild();}
     private void rebuild(){Set<String> groups=new LinkedHashSet<String>();for(Entry entry:all)groups.add(entry.group);displayed.clear();String group=null;for(Entry entry:all){if(!entry.group.equals(group)){group=entry.group;if(groups.size()>1)displayed.add(group);}if(!collapsed.contains(group))displayed.add(entry);}scroll=Math.max(0,Math.min(scroll,Math.max(0,displayed.size()*12-height+20)));buttonList.clear();buttonList.add(new QuestLibraryUi.Button(0,width-18,2,16,16,"","accept"));buttonList.add(new QuestLibraryUi.Button(1,width-38,2,16,16,"","cancel"));if(groups.size()>1){buttonList.add(new QuestLibraryUi.Button(2,width-58,2,16,16,"","add"));buttonList.add(new QuestLibraryUi.Button(3,width-78,2,16,16,"","remove"));}}
-    private void close(boolean apply){if(apply)try{save();}catch(RuntimeException ex){error=ex.getMessage();return;}mc.displayGuiScreen(parent);}
+    private void close(boolean apply){if(apply)try{save();}catch(RuntimeException ex){error=ex.getMessage();return;}closed(apply);mc.displayGuiScreen(parent);}
     @Override protected void actionPerformed(GuiButton button){if(button.id<=1){close(button.id==0);return;}if(button.id==2)collapsed.clear();else{for(Entry entry:all)collapsed.add(entry.group);}rebuild();}
     @Override public void drawScreen(int mx,int my,float partial){
         drawDefaultBackground();drawRect(0,0,width,20,0x99333333);fontRendererObj.drawStringWithShadow("\u00a7l"+title(),6,6,0xFFFFFF);

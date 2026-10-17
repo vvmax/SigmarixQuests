@@ -7,6 +7,8 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 public final class QuestDeviceScreen extends GuiContainer {
     private final QuestDeviceContainer container;
+    private QuestDeviceConfigScreen properties;private boolean advanced;
+    void showAdvanced(){advanced=true;properties=null;}
     private GuiTextField quest,task,owner;
     private GuiTextField[] detectorFields=new GuiTextField[0];
     public QuestDeviceScreen(EntityPlayer player,QuestDevice tile) { super(new QuestDeviceContainer(player,tile)); container=(QuestDeviceContainer)inventorySlots; xSize=280; ySize=192; }
@@ -40,6 +42,7 @@ public final class QuestDeviceScreen extends GuiContainer {
         if(mode==0 || mode==1) { buttonList.add(new QuestFlatButton(3,guiLeft+184,guiTop+150,40,20,"W+")); buttonList.add(new QuestFlatButton(4,guiLeft+226,guiTop+150,40,20,"H+")); }
         if(mode==3) buttonList.add(new QuestFlatButton(8,guiLeft+184,guiTop+150,82,20,"Reward >"));
         buttonList.add(new QuestFlatButton(2,guiLeft+184,guiTop+124,82,20,QuestText.tr("Quest book")));
+        if(!advanced && mode!=6){properties=new QuestDeviceConfigScreen(this,container.tile);properties.setWorldAndResolution(mc,width,height);}
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==2) { mc.thePlayer.closeScreen(); QuestsMod.proxy.open(); return; }
@@ -80,14 +83,18 @@ public final class QuestDeviceScreen extends GuiContainer {
         if(!container.tile.collector() && !container.tile.opener()) fontRendererObj.drawString(container.tile.screenWidth+" x "+container.tile.screenHeight,184,174,0xB8CDD9);
         if(ClientProxy.snapshot!=null) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(ClientProxy.snapshot.message,260),12,ySize-8,0xFFDD77);
     }
-    @Override public void drawScreen(int x,int y,float partial) { super.drawScreen(x,y,partial); if(!container.tile.opener()) { quest.drawTextBox(); task.drawTextBox(); } for(GuiTextField field:detectorFields) field.drawTextBox(); if(owner!=null) owner.drawTextBox(); }
+    @Override public void drawScreen(int x,int y,float partial) { if(properties!=null){properties.drawScreen(x,y,partial);return;}super.drawScreen(x,y,partial); if(!container.tile.opener()) { quest.drawTextBox(); task.drawTextBox(); } for(GuiTextField field:detectorFields) field.drawTextBox(); if(owner!=null) owner.drawTextBox(); }
     @Override protected void keyTyped(char ch,int key) {
+        if(properties!=null){properties.keyTyped(ch,key);return;}
         if(key==Keyboard.KEY_ESCAPE) { mc.thePlayer.closeScreen(); return; }
         if(owner!=null && owner.textboxKeyTyped(ch,key)) return;
         for(GuiTextField field:detectorFields) if(field.textboxKeyTyped(ch,key)) return;
         if(container.tile.opener() || !quest.textboxKeyTyped(ch,key) && !task.textboxKeyTyped(ch,key)) super.keyTyped(ch,key);
     }
-    @Override protected void mouseClicked(int x,int y,int button) { super.mouseClicked(x,y,button); if(!container.tile.opener()) { quest.mouseClicked(x,y,button); task.mouseClicked(x,y,button); } for(GuiTextField field:detectorFields) field.mouseClicked(x,y,button); if(owner!=null) owner.mouseClicked(x,y,button); }
-    @Override public void updateScreen() { super.updateScreen(); quest.updateCursorCounter(); task.updateCursorCounter(); for(GuiTextField field:detectorFields) field.updateCursorCounter(); if(owner!=null) owner.updateCursorCounter(); }
+    @Override protected void mouseClicked(int x,int y,int button) { if(properties!=null){properties.mouseClicked(x,y,button);return;}super.mouseClicked(x,y,button); if(!container.tile.opener()) { quest.mouseClicked(x,y,button); task.mouseClicked(x,y,button); } for(GuiTextField field:detectorFields) field.mouseClicked(x,y,button); if(owner!=null) owner.mouseClicked(x,y,button); }
+    @Override public void updateScreen() { if(properties!=null)properties.updateScreen();super.updateScreen(); quest.updateCursorCounter(); task.updateCursorCounter(); for(GuiTextField field:detectorFields) field.updateCursorCounter(); if(owner!=null) owner.updateCursorCounter(); }
+    @Override public void handleMouseInput(){if(properties!=null)properties.handleMouseInput();else super.handleMouseInput();}
+    @Override protected void mouseClickMove(int x,int y,int button,long time){if(properties!=null)properties.mouseClickMove(x,y,button,time);else super.mouseClickMove(x,y,button,time);}
+    @Override protected void mouseMovedOrUp(int x,int y,int button){if(properties!=null)properties.mouseMovedOrUp(x,y,button);else super.mouseMovedOrUp(x,y,button);}
     @Override public void onGuiClosed() { super.onGuiClosed(); Keyboard.enableRepeatEvents(false); }
 }

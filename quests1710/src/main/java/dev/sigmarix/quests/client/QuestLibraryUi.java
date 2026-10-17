@@ -24,6 +24,7 @@ final class QuestLibraryUi extends Gui {
             } t.draw();
         } finally {GL11.glPopAttrib();}
     }
+    static void ghost(String text,int x,int y){GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);try{GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);Minecraft.getMinecraft().fontRenderer.drawString("\u00a7o"+text,x,y,0x78FFFFFF);}finally{GL11.glPopAttrib();}}
     static void window(int x,int y,int w,int h) {patch("recipe_book",82,208,32,32,8,x,y,w,h);}
     static void slot(int x,int y,int w,int h) {patch("container_beacon",35,136,18,18,3,x-1,y-1,w+2,h+2);}
     static void textBox(int x,int y,int w,int h) {patch("container_enchanting_table",0,185,108,19,6,x,y,w,h);}

@@ -161,6 +161,11 @@ public final class QuestsMod {
                     String command=service.clickCommand(player.getUniqueID(),action.id);
                     MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
+                case "device_config":
+                    if(action.deviceSettings==null || player.getDistanceSq(action.x+.5,action.y+.5,action.z+.5)>64 || !player.worldObj.blockExists(action.x,action.y,action.z))throw new IllegalArgumentException("Device unavailable");
+                    net.minecraft.tileentity.TileEntity configured=player.worldObj.getTileEntity(action.x,action.y,action.z);
+                    if(!(configured instanceof QuestDevice))throw new IllegalArgumentException("Device unavailable");
+                    action.deviceSettings.apply(service,(QuestDevice)configured,player);message="Device settings saved";break;
                 case "bind_device": case "unbind_device": case "screen_size": case "detector_mode": case "detector_settings": case "screen_options": case "screen_skin": case "screen_lock": case "screen_owner":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
                     QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
@@ -240,12 +245,7 @@ public final class QuestsMod {
                 case "claim": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.claim(player,quest,choices); message="Rewards claimed"; break;
                 case "repeat": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.repeat(player,quest); message="Quest reset"; break;
                 case "progress_reset": case "progress_complete":
-                    if(!editor(player))throw new IllegalArgumentException("Operator permission required");
-                    for(QuestCore.Quest target:service.book.quests)if(action.id==null || action.id.isEmpty() || action.id.equals(target.id)) {
-                        if(action.action.equals("progress_reset")) service.progress().reset(player.getUniqueID(),target.id);
-                        else {for(QuestCore.Task task:target.tasks){service.progress().add(player.getUniqueID(),target.id,task.id,task.count,task.count);service.progress().markTask(player.getUniqueID(),target.id,task.id);}service.progress().complete(player.getUniqueID(),target.id);service.progress().timestamp(player.getUniqueID(),target.id,player.worldObj.getTotalWorldTime());}
-                    }
-                    message="Progress updated";break;
+                    QuestProgressActions.apply(service,player,action.id,action.action.equals("progress_complete"),action.text.equals("dependencies"));message="Progress updated";break;
                 case "save": if(!editor(player)) throw new IllegalArgumentException("Operator permission required"); service.save(action.book,action.revision); message="Book saved (backup written)"; break;
                 default: throw new IllegalArgumentException("Unknown action");
             }
@@ -278,7 +278,7 @@ public final class QuestsMod {
             snapshot.chapterStates.keySet().retainAll(snapshot.book.chapters.stream().map(chapter->chapter.id).collect(java.util.stream.Collectors.toSet()));
             // Command and custom implementation details are server-only for non-editors.
             for(List<QuestCore.Reward> table:snapshot.book.lootTables.values()) redact(table);
-            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.subtitle=""; q.guidePage=""; q.customClick=""; q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
+            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.guidePage=""; q.customClick=""; q.description=""; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
         }
         Set<String> exposed=new HashSet<String>(); for(QuestCore.Quest q:snapshot.book.quests) exposed.add(q.id);
         for(String pin:data.pins(id)) if(exposed.contains(pin) && service.visible(id,service.quests.get(pin))) { snapshot.pinned.add(pin); snapshot.percentages.put(pin,(int)Math.round(service.objectProgress(id,pin)*100)); }

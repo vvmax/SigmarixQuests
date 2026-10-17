@@ -20,7 +20,7 @@ final class QuestSelectObjectScreen extends QuestListScreen {
     private void append(Selection selection){if((selection.type&types)!=0 && filter.test(selection))objects.add(selection);}
     @Override protected List<Row> rows(){
         objects=new ArrayList<Selection>();QuestCore.Book book=ClientProxy.snapshot.book;
-        append(new Selection(FILE,"book",book.title));
+        append(new Selection(FILE,"book:",book.title));
         for(QuestCore.Chapter chapter:book.chapters){Selection s=new Selection(CHAPTER,"chapter:"+chapter.id,chapter.title);s.chapter=chapter;append(s);}
         for(QuestCore.Quest quest:book.quests){Selection s=new Selection(QUEST,quest.id,quest.title);s.quest=quest;append(s);
             for(QuestCore.Task task:quest.tasks){s=new Selection(TASK,"task:"+quest.id+"/"+task.id,QuestTaskLabels.title(task));s.quest=quest;s.task=task;append(s);}

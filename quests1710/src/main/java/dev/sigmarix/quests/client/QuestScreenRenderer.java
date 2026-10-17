@@ -1,44 +1,36 @@
 package dev.sigmarix.quests.client;
-import dev.sigmarix.quests.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
-import org.lwjgl.opengl.GL11;
-/** Independent in-world quest display using server-synchronized title and progress. */
+import dev.sigmarix.quests.*;import net.minecraft.client.Minecraft;import net.minecraft.client.gui.FontRenderer;import net.minecraft.client.renderer.*;import net.minecraft.client.renderer.entity.RenderItem;import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;import net.minecraft.item.*;import net.minecraft.tileentity.TileEntity;import net.minecraft.util.*;import net.minecraftforge.fluids.*;import org.lwjgl.opengl.GL11;
+/** Reference task/progress presentation on the front face of owned screen assemblies. */
 public final class QuestScreenRenderer extends TileEntitySpecialRenderer {
-    private final net.minecraft.client.renderer.entity.RenderItem itemRenderer=new net.minecraft.client.renderer.entity.RenderItem();
-    @Override public void renderTileEntityAt(TileEntity raw,double x,double y,double z,float partial) {
-        QuestDevice tile=(QuestDevice)raw;
-        if(tile.screenLinked) return;
-        if(!(tile.getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)tile.getBlockType()).mode>1) return;
-        float lightX=net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX,lightY=net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY;
-        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glPushMatrix();
-        try {
-            GL11.glTranslated(x+.5,y+.5,z+.5);
-            GL11.glRotatef(tile.facing==2?180:tile.facing==4?270:tile.facing==5?90:0,0,1,0);
-            double unit=Math.min(tile.screenWidth-.08,tile.screenHeight-.08)/128D; int canvasWidth=(int)Math.round((tile.screenWidth-.08)/unit),canvasHeight=(int)Math.round((tile.screenHeight-.08)/unit);
-            GL11.glTranslated(-.46,tile.screenHeight-.54,.502); GL11.glScaled(unit,-unit,.92/128);
-            net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit,240,240);
-            GL11.glColor4f(1,1,1,1);
-            GL11.glDepthMask(false);
-            GL11.glDisable(GL11.GL_LIGHTING); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
-            Gui.drawRect(0,0,canvasWidth,canvasHeight,0xFF152332); if(!tile.screenFullscreen) Gui.drawRect(0,0,canvasWidth,3,0xFF62B5D6);
-            if(((QuestBlocks.DeviceBlock)tile.getBlockType()).mode==1 && QuestWorldMapRenderer.draw(tile,canvasWidth,canvasHeight)) return;
-            GL11.glTranslated((canvasWidth-128)/2D,(canvasHeight-128)/2D,0);
-            FontRenderer font=Minecraft.getMinecraft().fontRenderer;
-            if(((QuestBlocks.DeviceBlock)tile.getBlockType()).mode==0 && tile.screenInputOnly) {
-                net.minecraft.item.ItemStack icon=tile.screenInputIcon==null?new net.minecraft.item.ItemStack(net.minecraft.init.Blocks.hopper):tile.screenInputIcon;
-                GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glPushMatrix();
-                try { GL11.glTranslatef(32,32,0); GL11.glScalef(4,4,.001f); net.minecraft.client.renderer.RenderHelper.enableGUIStandardItemLighting(); itemRenderer.renderItemAndEffectIntoGUI(font,Minecraft.getMinecraft().getTextureManager(),icon,0,0); }
-                finally { GL11.glPopMatrix(); GL11.glPopAttrib(); }
-                return;
-            }
-            font.drawSplitString(font.trimStringToWidth(tile.screenTitle,112),8,12,112,0xFFFFFF);
-            font.drawString(QuestText.tr(((QuestBlocks.DeviceBlock)tile.getBlockType()).mode==0?"Task":"Progress"),8,42,0xB8CDD9);
-            GL11.glPushMatrix(); GL11.glTranslatef(8,62,0); GL11.glScalef(2,2,1); font.drawString(tile.screenPercent+"%",0,0,0xFFFFFF); GL11.glPopMatrix();
-            Gui.drawRect(8,96,120,108,0xFF0A131F); Gui.drawRect(9,97,9+tile.screenPercent*110/100,107,0xFF60B978);
-            font.drawString(tile.signal?"✓":"...",8,114,0xB8CDD9);
-        } finally { GL11.glPopMatrix(); GL11.glPopAttrib(); net.minecraft.client.renderer.OpenGlHelper.setLightmapTextureCoords(net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit,lightX,lightY); }
+    private static final RenderItem ITEMS=new RenderItem();
+    @Override public void renderTileEntityAt(TileEntity raw,double x,double y,double z,float partial){
+        QuestDevice tile=(QuestDevice)raw;if(tile.screenLinked || !(tile.getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)tile.getBlockType()).mode>1 || ClientProxy.snapshot==null)return;
+        int mode=((QuestBlocks.DeviceBlock)tile.getBlockType()).mode;Minecraft mc=Minecraft.getMinecraft();float lightX=OpenGlHelper.lastBrightnessX,lightY=OpenGlHelper.lastBrightnessY;boolean unicode=mc.fontRenderer.getUnicodeFlag();
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glPushMatrix();
+        try{
+            GL11.glTranslated(x+.5,y+.5,z+.5);GL11.glRotatef(tile.facing==2?180:tile.facing==4?270:tile.facing==5?90:0,0,1,0);GL11.glTranslated(-.5,tile.screenHeight-.5,.501);GL11.glScaled(tile.screenWidth/128D,-tile.screenHeight/128D,1);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,240,240);GL11.glDisable(GL11.GL_LIGHTING);GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);GL11.glDepthMask(true);GL11.glEnable(GL11.GL_ALPHA_TEST);GL11.glColor4f(1,1,1,1);mc.fontRenderer.setUnicodeFlag(true);
+            if(mode==1){QuestWorldMapRenderer.draw(tile,128,128);return;}
+            QuestCore.Quest quest=null;for(QuestCore.Quest candidate:ClientProxy.snapshot.book.quests)if(candidate.id.equals(tile.quest)){quest=candidate;break;}if(quest==null)return;
+            QuestCore.Task task=null;for(QuestCore.Task candidate:quest.tasks)if(candidate.id.equals(tile.task)){task=candidate;break;}if(task==null && tile.task.isEmpty() && !quest.tasks.isEmpty())task=quest.tasks.get(0);if(task==null)return;
+            GL11.glScaled(128,128,1);String top=tile.screenInputOnly?"":net.minecraft.util.EnumChatFormatting.getTextWithoutFormattingCodes(quest.title),second=tile.screenInputOnly?"":net.minecraft.util.EnumChatFormatting.getTextWithoutFormattingCodes(QuestTaskLabels.title(task));if(top.isEmpty() || top.equals(second)){top=second;second="";}
+            worldString(top,.02,.15);double iconY=.5;if(!second.isEmpty()){worldString(second,.17,.07);iconY=.54;}
+            if(!tile.screenInputOnly && (!task.type.equals("botania_mana") || task.showNumbers) && tile.screenTaskProgress>=task.count)worldString("\u00a7a"+QuestTaskLabels.fancy(tile.screenTaskProgress)+" / "+QuestTaskLabels.fancy(task.count),.83,.15);
+            if(tile.screenInputOnly)texture("ftbquests:textures/blocks/screen_front_input.png",0,0,1,1,0,0,1,1,0,0xFFFFFFFF);
+            GL11.glPushMatrix();try{GL11.glTranslated(.5,iconY,.001);GL11.glScaled(tile.screenInputOnly?.5:.45,tile.screenInputOnly?.5:.45,1);if(tile.screenInputOnly && tile.screenInputIcon!=null)worldItem(tile.screenInputIcon);else worldTask(task,tile.screenTaskProgress);}finally{GL11.glPopMatrix();}
+        }finally{mc.fontRenderer.setUnicodeFlag(unicode);GL11.glPopMatrix();GL11.glPopAttrib();OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit,lightX,lightY);}
     }
+    static void worldString(String text,double y,double height){if(text.isEmpty())return;FontRenderer font=Minecraft.getMinecraft().fontRenderer;int length=font.getStringWidth(text);double scale=height/9,w=length*scale;if(w>1){scale/=w;w=1;}if(w>.9)scale*=.9;GL11.glPushMatrix();try{GL11.glTranslated(.5,y,.0001);GL11.glScaled(scale,scale,1);font.drawString(text,-length/2,0,0xFFD8D8D8);}finally{GL11.glPopMatrix();}}
+    static void worldQuest(QuestCore.Quest quest){if(!quest.icon.isEmpty()){worldItem(stack(quest.icon,quest.iconMeta,quest.iconNbt));return;}if(!quest.tasks.isEmpty()){QuestCore.Task task=quest.tasks.get((int)(System.currentTimeMillis()/1000%quest.tasks.size()));GL11.glPushMatrix();try{GL11.glTranslated(-.5,-.5,0);GL11.glScaled(1/16D,1/16D,.000001);QuestClassicUi.task(Minecraft.getMinecraft(),task,false,0,0,16);}finally{GL11.glPopMatrix();}}}
+    private static ItemStack stack(String id,int meta,String nbt){Item item=id==null?null:(Item)Item.itemRegistry.getObject(id);if(item==null)return null;ItemStack stack=new ItemStack(item,1,meta);stack.setTagCompound(QuestService.tag(nbt));return stack;}
+    private static void worldItem(ItemStack stack){if(stack==null)return;Minecraft mc=Minecraft.getMinecraft();if(stack.getItem() instanceof QuestBlocks.CustomIconItem){texture(QuestIcons.resource(stack),-.5,-.5,1,1,0,0,1,1,0,0xFF000000|QuestIcons.color(stack));return;}GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);GL11.glPushMatrix();try{GL11.glTranslated(-.5,-.5,0);GL11.glScaled(1/16D,1/16D,.02/16D);RenderHelper.enableGUIStandardItemLighting();if(stack.getItem()==net.minecraft.init.Items.experience_bottle && !stack.isItemEnchanted())ITEMS.renderItemIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0);else ITEMS.renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0);}finally{GL11.glPopMatrix();GL11.glPopAttrib();}}
+    private static void worldTask(QuestCore.Task task,long progress){
+        double ratio=Math.max(0,Math.min(1,progress/(double)task.count));String energy=task.type.equals("botania_mana")?"botania_mana":task.type.equals("ic2_energy")?"ic2":task.type.equals("energy") || task.type.equals("buildcraft_mj")?"fe":"";
+        if(!energy.isEmpty()){texture("ftbquests:textures/tasks/"+energy+"_empty.png",-.5,-.5,1,1,0,0,1,1,0,0xFFFFFFFF);if(ratio>0){double inset=energy.equals("fe")?1/32D:3/32D,span=energy.equals("fe")?30/32D:26/32D,v=inset+(1-ratio)*span;texture("ftbquests:textures/tasks/"+energy+"_full.png",-.5-1/128D,v-.5-1/128D,1+1/64D,ratio*span+1/64D,0,v,1,1-inset,.003,0xFFFFFFFF);}return;}
+        if(task.type.equals("fluid")){texture("ftbquests:textures/tasks/tank.png",-.5,-.5,1,1,0,0,1,1,0,0xFFFFFFFF);Fluid fluid=FluidRegistry.getFluid(task.target);if(ratio>0 && fluid!=null && fluid.getStillIcon()!=null){IIcon sprite=fluid.getStillIcon();double v=1/32D+(1-ratio)*30/32D;int color=fluid.getColor(new FluidStack(fluid,1000));if((color>>>24)==0)color|=0xFF000000;Minecraft.getMinecraft().getTextureManager().bindTexture(net.minecraft.client.renderer.texture.TextureMap.locationBlocksTexture);quad(-.5+1/128D,v-.5-1/128D,1-1/64D,ratio*30/32D+1/64D,sprite.getMinU(),sprite.getMinV()+(sprite.getMaxV()-sprite.getMinV())*(1-ratio),sprite.getMaxU(),sprite.getMaxV(),.003,color);}return;}
+        String item=task.icon.isEmpty()?QuestClassicUi.taskItem(task):task.icon;if(!item.isEmpty() && !task.type.equals("check")){worldItem(stack(item,task.icon.isEmpty()?task.meta:task.iconMeta,task.icon.isEmpty()?task.nbt:task.iconNbt));return;}
+        GL11.glPushMatrix();try{GL11.glTranslated(-.5,-.5,0);GL11.glScaled(1/16D,1/16D,.000001);if(task.type.equals("check"))QuestClassicUi.libraryIcon(progress>=task.count?"accept":"accept_gray",0,0,16,0xFFFFFFFF);else QuestClassicUi.task(Minecraft.getMinecraft(),task,progress>=task.count,0,0,16);}finally{GL11.glPopMatrix();}
+    }
+    private static void texture(String resource,double x,double y,double w,double h,double u,double v,double u2,double v2,double z,int color){Minecraft.getMinecraft().getTextureManager().bindTexture(QuestImages.texture(resource));quad(x,y,w,h,u,v,u2,v2,z,color);}
+    private static void quad(double x,double y,double w,double h,double u,double v,double u2,double v2,double z,int color){net.minecraft.client.renderer.Tessellator t=net.minecraft.client.renderer.Tessellator.instance;t.startDrawingQuads();t.setColorRGBA(color>>16&255,color>>8&255,color&255,color>>>24);t.addVertexWithUV(x,y+h,z,u,v2);t.addVertexWithUV(x+w,y+h,z,u2,v2);t.addVertexWithUV(x+w,y,z,u2,v);t.addVertexWithUV(x,y,z,u,v);t.draw();}
 }

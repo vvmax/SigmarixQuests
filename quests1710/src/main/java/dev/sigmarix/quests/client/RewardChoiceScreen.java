@@ -1,84 +1,18 @@
 package dev.sigmarix.quests.client;
-
-import dev.sigmarix.quests.*;
-import java.util.*;
-import net.minecraft.client.gui.*;
-import org.lwjgl.input.Mouse;
-
-/** Independent selections for each choice reward, including choices nested inside a selected option. */
-public final class RewardChoiceScreen extends GuiScreen {
-    private final GuiScreen parent;
-    private final QuestCore.Quest quest;
-    private final long revision;
-    private final Map<String,Integer> selections=new HashMap<String,Integer>();
-    private final List<Entry> entries=new ArrayList<Entry>();
-    private int scroll;
-    private QuestCore.Reward single,current; private final List<Integer> trail=new ArrayList<Integer>();
-    private int boxX,boxY,boxWidth,boxHeight;
-    RewardChoiceScreen(GuiScreen parent,QuestCore.Quest quest,QuestCore.Reward reward) { this(parent,quest); single=reward; current=reward; }
-    private static final class Entry {
-        String path; QuestCore.Reward reward;
-        Entry(String path,QuestCore.Reward reward) { this.path=path; this.reward=reward; }
-    }
-    RewardChoiceScreen(GuiScreen parent,QuestCore.Quest quest) { this.parent=parent; this.quest=quest; revision=ClientProxy.snapshot.revision; }
-    private static boolean pending(QuestCore.Quest q,QuestCore.Reward r) { return !Boolean.TRUE.equals(ClientProxy.snapshot.rewardStates.get(q.id+":"+r.id)); }
-    public static boolean needed(QuestCore.Quest q) { for(QuestCore.Reward r:q.rewards) if(pending(q,r) && r.type.equals("choice")) return true; return false; }
-    private int selected(Entry e) { Integer value=selections.get(e.path); return value==null?0:Math.max(0,Math.min(value,e.reward.options.size()-1)); }
-    private void collect(QuestCore.Reward reward,String path) {
-        if(!reward.type.equals("choice")) return;
-        Entry entry=new Entry(path,reward); entries.add(entry);
-        int choice=selected(entry); collect(reward.options.get(choice),path+"."+choice);
-    }
-    @Override public void initGui() { rebuild(); }
-    private void rebuild() {
-        if(single!=null) {
-            buttonList.clear();int panel=100;for(QuestCore.Reward option:current.options)panel=Math.max(panel,fontRendererObj.getStringWidth(QuestTaskLabels.reward(option))+28);
-            panel=Math.min(panel,width-51);boxWidth=panel+39;boxHeight=158;boxX=(width-boxWidth)/2;boxY=(height-boxHeight)/2;
-            int rows=6;scroll=Math.max(0,Math.min(scroll,Math.max(0,current.options.size()-rows)));
-            for(int i=scroll;i<current.options.size() && i<scroll+rows;i++)buttonList.add(new QuestFlatButton(100+i,boxX+10,boxY+10+(i-scroll)*21,panel-2,20,QuestTaskLabels.reward(current.options.get(i))).left(22));
-            return;
-        }
-        entries.clear(); for(int i=0;i<quest.rewards.size();i++) if(pending(quest,quest.rewards.get(i))) collect(quest.rewards.get(i),Integer.toString(i));
-        buttonList.clear(); int rows=Math.max(1,(height-94)/26); scroll=Math.max(0,Math.min(scroll,Math.max(0,entries.size()-rows)));
-        for(int i=scroll;i<entries.size() && i<scroll+rows;i++) {
-            Entry entry=entries.get(i); int pick=selected(entry); QuestCore.Reward option=entry.reward.options.get(pick);
-            String label="Choice "+(i+1)+": "+pick+" / "+(entry.reward.options.size()-1)+" - "+QuestTaskLabels.reward(option);
-            buttonList.add(new QuestFlatButton(100+i,16,42+(i-scroll)*26,width-32,22,fontRendererObj.trimStringToWidth(label,width-48)));
-        }
-        buttonList.add(new QuestFlatButton(0,16,height-36,130,22,QuestText.tr("Claim selected")));
-        buttonList.add(new QuestFlatButton(1,width-96,height-36,80,22,QuestText.tr("Back")));
-    }
-    @Override protected void actionPerformed(GuiButton b) {
-        if(single!=null) {
-            if(revision!=ClientProxy.snapshot.revision) { mc.displayGuiScreen(parent); return; }
-            if(b.id==1) { if(trail.isEmpty()) { mc.displayGuiScreen(parent); return; } trail.remove(trail.size()-1); current=single; for(int index:trail) current=current.options.get(index); scroll=0; rebuild(); return; }
-            if(b.id<100 || b.id-100>=current.options.size()) return;
-            int index=b.id-100; trail.add(index); QuestCore.Reward chosen=current.options.get(index);
-            if(chosen.type.equals("choice")) { current=chosen; scroll=0; rebuild(); return; }
-            QuestNetwork.Action a=new QuestNetwork.Action(); a.action="claim_reward"; a.id=quest.id; a.text=single.id; a.choices=new int[trail.size()]; for(int i=0;i<trail.size();i++) a.choices[i]=trail.get(i); ClientProxy.send(a); mc.displayGuiScreen(parent); return;
-        }
-        if(b.id==1) { mc.displayGuiScreen(parent); return; }
-        if(b.id>=100) { Entry e=entries.get(b.id-100); selections.put(e.path,(selected(e)+1)%e.reward.options.size()); rebuild(); return; }
-        if(b.id==0) {
-            if(revision!=ClientProxy.snapshot.revision) { mc.displayGuiScreen(parent); return; }
-            QuestNetwork.Action action=new QuestNetwork.Action(); action.action="claim"; action.id=quest.id; action.choices=new int[entries.size()];
-            for(int i=0;i<entries.size();i++) action.choices[i]=selected(entries.get(i));
-            ClientProxy.send(action); mc.displayGuiScreen(parent);
-        }
-    }
-    @Override public void drawScreen(int x,int y,float partial) {
-        if(single!=null) {
-            drawDefaultBackground();QuestClassicUi.background(mc,boxX,boxY,boxWidth,boxHeight);drawCenteredString(fontRendererObj,QuestText.tr("Choose a reward"),width/2,boxY-11,0xFFFFFFFF);
-            QuestClassicUi.frame(boxX+8,boxY+8,boxWidth-37,142,QuestClassicUi.BORDER);
-            drawRect(boxX+boxWidth-24,boxY+8,boxX+boxWidth-8,boxY+150,0x44000000);
-            int thumb=Math.max(12,142*6/Math.max(6,current.options.size())),sy=boxY+8+(current.options.size()<=6?0:scroll*(142-thumb)/(current.options.size()-6));
-            QuestClassicUi.frame(boxX+boxWidth-24,sy,16,thumb,QuestClassicUi.BORDER);drawRect(boxX+boxWidth-23,sy+1,boxX+boxWidth-9,sy+thumb-1,0x44000000);super.drawScreen(x,y,partial);
-            for(Object raw:buttonList) { GuiButton b=(GuiButton)raw; if(b.id>=100) { QuestCore.Reward option=current.options.get(b.id-100); QuestClassicUi.reward(mc,option,b.xPosition+2,b.yPosition+2,16); if(x>=b.xPosition && x<b.xPosition+b.width && y>=b.yPosition && y<b.yPosition+b.height) drawHoveringText(Collections.singletonList(QuestTaskLabels.reward(option)),x,y,fontRendererObj); } } return;
-        }
-        QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,"Select rewards: "+quest.title,width/2,14,0xFFFFFF);
-        drawCenteredString(fontRendererObj,QuestText.tr("Click each row to cycle its options"),width/2,28,0xBBBBBB); super.drawScreen(x,y,partial);
-    }
-    @Override public void handleMouseInput() { super.handleMouseInput(); int wheel=Mouse.getEventDWheel(); if(wheel!=0) { scroll+=wheel>0?-1:1; rebuild(); } }
-    @Override protected void keyTyped(char c,int key) { if(key==org.lwjgl.input.Keyboard.KEY_ESCAPE) mc.displayGuiScreen(parent); else super.keyTyped(c,key); }
-    @Override public boolean doesGuiPauseGame() { return false; }
+import dev.sigmarix.quests.*;import java.util.*;import net.minecraft.client.gui.GuiScreen;import net.minecraft.util.StatCollector;
+/** Original choice list; nested choices retain their server-validated selection trail. */
+public final class RewardChoiceScreen extends QuestListScreen {
+    private final QuestCore.Quest quest;private final QuestCore.Reward root;private QuestCore.Reward current;private final long revision;private final List<Integer> trail=new ArrayList<Integer>();
+    RewardChoiceScreen(GuiScreen parent,QuestCore.Quest quest,QuestCore.Reward reward){super(parent,false,true,1,1,1);this.quest=quest;root=current=reward;revision=ClientProxy.snapshot.revision;}
+    RewardChoiceScreen(GuiScreen parent,QuestCore.Quest quest){this(parent,quest,first(quest));}
+    private static QuestCore.Reward first(QuestCore.Quest quest){for(QuestCore.Reward reward:quest.rewards)if(reward.type.equals("choice") && !Boolean.TRUE.equals(ClientProxy.snapshot.rewardStates.get(quest.id+":"+reward.id)))return reward;throw new IllegalArgumentException("No pending choice reward");}
+    public static boolean needed(QuestCore.Quest quest){for(QuestCore.Reward reward:quest.rewards)if(reward.type.equals("choice") && !Boolean.TRUE.equals(ClientProxy.snapshot.rewardStates.get(quest.id+":"+reward.id)))return true;return false;}
+    @Override protected String title(){return StatCollector.translateToLocal("ftbquests.reward.ftbquests.choice");}
+    @Override protected List<Row> rows(){List<Row> rows=new ArrayList<Row>();for(int i=0;i<current.options.size();i++){QuestCore.Reward option=current.options.get(i);Row row=new Row(100+i,QuestTaskLabels.reward(option),"reward");if(!option.description.isEmpty())row.tooltip.addAll(Arrays.asList(option.description.split("\n")));rows.add(row);}return rows;}
+    @Override protected Object revision(){return current;}
+    @Override protected void drawRowIcon(Row row,int x,int y,int size){QuestClassicUi.reward(mc,current.options.get(row.id-100),x,y,size);}
+    @Override protected void click(Row row,int button){if(revision!=ClientProxy.snapshot.revision){mc.displayGuiScreen(parent);return;}int index=row.id-100;trail.add(index);QuestCore.Reward chosen=current.options.get(index);if(chosen.type.equals("choice")){current=chosen;scroll=0;rebuild();return;}QuestNetwork.Action action=new QuestNetwork.Action();action.action="claim_reward";action.id=quest.id;action.text=root.id;action.choices=new int[trail.size()];for(int i=0;i<trail.size();i++)action.choices[i]=trail.get(i);ClientProxy.send(action);mc.displayGuiScreen(parent);}
+    @Override protected void actionPerformed(net.minecraft.client.gui.GuiButton button){if(button.id==1){back();return;}super.actionPerformed(button);}
+    private void back(){if(trail.isEmpty()){mc.displayGuiScreen(parent);return;}trail.remove(trail.size()-1);current=root;for(int i:trail)current=current.options.get(i);scroll=0;rebuild();}
+    @Override protected void keyTyped(char ch,int key){if(key==1){back();return;}super.keyTyped(ch,key);}
 }

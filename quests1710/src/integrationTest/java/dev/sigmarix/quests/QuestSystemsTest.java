@@ -91,6 +91,32 @@ public class QuestSystemsTest {
         when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true); QuestScreenSettings.appearance(tile,player,null,true); assertEquals(Blocks.air,QuestScreenSettings.skin(tile)); QuestScreenSettings.appearance(tile,player,null,false); assertNull(QuestScreenSettings.skin(tile));
         try { QuestScreenSettings.appearance(tile,player,new ItemStack(Blocks.chest),false); fail(); } catch(IllegalArgumentException expected) {} assertEquals("",tile.screenSkin);
     }
+    private QuestDevice configuredDevice(int mode){QuestDevice tile=spy(new QuestDevice());tile.setWorldObj(player.worldObj);tile.owner=player.getUniqueID();doReturn(new QuestBlocks.DeviceBlock(mode,"config_test")).when(tile).getBlockType();doReturn(true).when(tile).isUseableByPlayer(player);return tile;}
+    @Test public void deviceConfigRejectsInvalidFieldsWithoutPartialChanges() throws Exception {
+        task("check",null,1,false);QuestDevice tile=configuredDevice(0);QuestDeviceConfig edit=QuestDeviceConfig.read(tile);edit.quest=quest.id;edit.task=quest.tasks.get(0).id;edit.skin="minecraft:stone";edit.inputOnly=true;edit.radius=Double.NaN;
+        try{edit.apply(service,tile,player);fail();}catch(IllegalArgumentException expected){}assertEquals("",tile.quest);assertEquals("",tile.screenSkin);assertFalse(tile.screenInputOnly);
+        edit.radius=1;edit.apply(service,tile,player);assertEquals(quest.id,tile.quest);assertEquals("minecraft:stone",tile.screenSkin);assertTrue(tile.screenInputOnly);
+    }
+    @Test public void deviceConfigCannotEscalateProtectionOwnershipOrDetectorAccess() throws Exception {
+        QuestDevice tile=configuredDevice(0);QuestDeviceConfig edit=QuestDeviceConfig.read(tile);edit.indestructible=true;
+        try{edit.apply(service,tile,player);fail();}catch(IllegalArgumentException expected){}assertFalse(tile.indestructible);
+        edit.indestructible=false;edit.owner=UUID.randomUUID().toString();try{edit.apply(service,tile,player);fail();}catch(IllegalArgumentException expected){}assertEquals(player.getUniqueID(),tile.owner);
+        QuestDevice detector=configuredDevice(5);try{QuestDeviceConfig.read(detector).apply(service,detector,player);fail();}catch(IllegalArgumentException expected){}
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true);QuestDeviceConfig allowed=QuestDeviceConfig.read(detector);allowed.radius=4;allowed.notifications=false;allowed.apply(service,detector,player);assertEquals(4,detector.detectorRadius,0);assertFalse(detector.detectorNotifications);
+    }
+    @Test public void operatorTaskProgressActionsPreserveOtherTasksAndNeverGrantRewards() {
+        QuestCore.Task first=task("check",null,1,false),second=task("check",null,1,false);first.manual=second.manual=true;xpReward(9,"team");
+        try{QuestProgressActions.apply(service,player,"task:"+quest.id+"/"+first.id,true,false);fail();}catch(IllegalArgumentException expected){}assertEquals(0,data.value(player.getUniqueID(),quest.id,first.id));
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true);
+        QuestProgressActions.apply(service,player,"task:"+quest.id+"/"+first.id,true,false);assertEquals(1,data.value(player.getUniqueID(),quest.id,first.id));assertEquals(0,data.value(player.getUniqueID(),quest.id,second.id));assertFalse(data.completed(player.getUniqueID()).contains(quest.id));
+        QuestProgressActions.apply(service,player,"task:"+quest.id+"/"+second.id,true,false);assertTrue(data.completed(player.getUniqueID()).contains(quest.id));verify(player,never()).addExperience(anyInt());
+        QuestProgressActions.apply(service,player,"task:"+quest.id+"/"+first.id,false,false);assertEquals(0,data.value(player.getUniqueID(),quest.id,first.id));assertEquals(1,data.value(player.getUniqueID(),quest.id,second.id));assertFalse(data.completed(player.getUniqueID()).contains(quest.id));
+    }
+    @Test public void nativeBookDefaultsRespectExplicitRewardAndConsumptionOverrides() {
+        service.book.quests.clear();service.book.quests.add(quest);QuestCore.Task inherited=task("item","minecraft:stone",2,false);inherited.consumeMode="inherit";QuestCore.Task explicit=task("item","minecraft:dirt",1,false);explicit.consumeMode="disabled";
+        quest.rewardMode="inherit";xpReward(3,"inherit");QuestCore.Reward reward=quest.rewards.get(0);service.book.defaultConsumeItems=true;service.book.validate();assertTrue(inherited.consume);assertFalse(explicit.consume);assertTrue(service.individual(quest,reward));
+        service.book.defaultRewardTeam=true;assertFalse(service.individual(quest,reward));reward.mode="individual";assertTrue(service.individual(quest,reward));quest.repeatable=true;service.book.validate();assertTrue(explicit.consume);
+    }
     @Test public void protectedScreensRejectBreakExplosionsAndEntityGrief() {
         QuestBlocks.DeviceBlock block=new QuestBlocks.DeviceBlock(1,"protected_screen"); QuestDevice tile=new QuestDevice(); tile.indestructible=true; tile.setWorldObj(player.worldObj); when(player.worldObj.getBlock(0,0,0)).thenReturn(block); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(tile);
         assertEquals(-1,block.getBlockHardness(player.worldObj,0,0,0),0); assertFalse(block.removedByPlayer(player.worldObj,player,0,0,0,false)); assertFalse(block.canEntityDestroy(player.worldObj,0,0,0,null));

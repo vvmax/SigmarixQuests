@@ -3,7 +3,7 @@ import dev.sigmarix.quests.*;import net.minecraft.client.gui.*;import org.lwjgl.
 /** Original fullscreen emergency-item countdown and centered item strip. */
 final class QuestEmergencyScreen extends GuiScreen {
     private final GuiScreen parent;private final long end;private boolean sent;
-    QuestEmergencyScreen(GuiScreen parent){this.parent=parent;end=System.currentTimeMillis()+Math.max(ClientProxy.snapshot.book.emergencyCooldownSeconds,ClientProxy.snapshot.emergencyWait)*1000L;}
+    QuestEmergencyScreen(GuiScreen parent){this.parent=parent;end=System.currentTimeMillis()+Math.max(QuestTimer.emergency(ClientProxy.snapshot.book)*50L,ClientProxy.snapshot.emergencyWait*1000L);}
     @Override public void initGui(){String label=QuestText.tr(sent?"Close":"Cancel");int w=fontRendererObj.getStringWidth(label)+8;buttonList.clear();buttonList.add(new QuestFlatButton(0,(width-w)/2,height*2/3+16,w,20,label).left(4));}
     @Override public void drawScreen(int mx,int my,float partial){long millis=Math.max(0,end-System.currentTimeMillis());if(millis==0 && !sent){sent=true;QuestNetwork.Action action=new QuestNetwork.Action();action.action="emergency";ClientProxy.send(action);initGui();}
         GL11.glPushMatrix();GL11.glTranslated(width/2,height/5,0);GL11.glScaled(2,2,1);String title=net.minecraft.util.StatCollector.translateToLocal("ftbquests.file.emergency_items");fontRendererObj.drawString(title,-fontRendererObj.getStringWidth(title)/2,0,0xFFFFFF);GL11.glPopMatrix();

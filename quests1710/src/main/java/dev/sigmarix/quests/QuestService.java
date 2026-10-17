@@ -240,7 +240,7 @@ public class QuestService {
         }
         throw new IllegalArgumentException("Not a confirmation task");
     }
-    public boolean individual(QuestCore.Quest q,QuestCore.Reward r) { return (r.mode.equals("inherit")?q.rewardMode:r.mode).equals("individual"); }
+    public boolean individual(QuestCore.Quest q,QuestCore.Reward r) { String mode=r.mode.equals("inherit")?q.rewardMode:r.mode;return mode.equals("inherit")?!book.defaultRewardTeam:mode.equals("individual"); }
     private String rewardId(QuestCore.Reward r,int index) { return r.id==null?"r"+index:r.id; }
     public boolean claimed(UUID id,QuestCore.Quest q) {
         QuestProgress data=progress();
@@ -647,7 +647,7 @@ public class QuestService {
             QuestCore.Reward r=q.rewards.get(i); boolean personal=individual(q,r); allShared&=!personal;
             if(rootId!=null && !rootId.equals(rewardId(r,i))) continue;
             if(data.rewardClaimed(id,q.id,rewardId(r,i),personal)) continue;
-            if(automatic && (!(r.auto.equals("enabled") || r.auto.equals("invisible") || r.auto.equals("inherit") && q.autoClaim) || hasChoice(r))) continue;
+            if(automatic && (!(r.auto.equals("enabled") || r.auto.equals("invisible") || r.auto.equals("inherit") && (q.autoClaim || !book.defaultAutoClaim.equals("disabled"))) || hasChoice(r))) continue;
             List<QuestCore.Reward> expanded=new ArrayList<QuestCore.Reward>(); flatten(r,selected,p.getRNG(),expanded,budget,0);
             pending.add(i); leaves.addAll(expanded);
         }
@@ -671,7 +671,7 @@ public class QuestService {
         for(int index:pending) QuestEvents.fire("reward_claimed",id,q.id,rewardId(q.rewards.get(index),index));
         if(q.autoRepeat) repeatAutomated(id,q,p.worldObj.getTotalWorldTime());
     }
-    public long emergencyWait(EntityPlayerMP player) { return (progress().emergencyWait(player.getUniqueID(),player.worldObj.getTotalWorldTime(),book.emergencyCooldownSeconds*20L)+19)/20; }
+    public long emergencyWait(EntityPlayerMP player) { return (progress().emergencyWait(player.getUniqueID(),player.worldObj.getTotalWorldTime(),QuestTimer.emergency(book))+19)/20; }
     public void emergency(EntityPlayerMP player) {
         if(book.emergencyItems.isEmpty()) throw new IllegalArgumentException("Emergency items are not configured");
         long wait=emergencyWait(player); if(wait>0) throw new IllegalArgumentException("Emergency items available in "+wait+" seconds");
@@ -715,12 +715,12 @@ public class QuestService {
     }
     private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink) {
         UUID id=p.getUniqueID();
-        for(QuestCore.Reward r:leaves) { boolean delivered=true;switch(r.type) {
+        for(QuestCore.Reward r:leaves) { boolean delivered=true;int deliveredCount=r.count;switch(r.type) {
             case "item":
                 Item reward=item(r.item); ItemStack prototype=new ItemStack(reward,1,r.meta); prototype.setTagCompound(tag(r.nbt));
                 boolean exists=false; for(ItemStack stack:p.inventory.mainInventory) if(stack!=null && stack.isItemEqual(prototype) && ItemStack.areItemStackTagsEqual(stack,prototype)) exists=true;
                 if(r.onlyOne && exists){delivered=false;break;}
-                int remaining=r.count+(r.randomBonus>0?p.getRNG().nextInt(r.randomBonus+1):0);
+                int remaining=r.count+(r.randomBonus>0?p.getRNG().nextInt(r.randomBonus+1):0);deliveredCount=remaining;
                 while(remaining>0) { int count=Math.min(remaining,Math.min(64,prototype.getMaxStackSize())); ItemStack stack=new ItemStack(reward,count,r.meta); stack.setTagCompound(tag(r.nbt)); if(itemSink==null) give(p,stack); else itemSink.accept(stack); remaining-=count; } break;
             case "gamestage": progress().stage(id,r.target,!r.remove); break;
             case "skill": progress().skill(id,r.target,r.add?Math.addExact(progress().skill(id,r.target),r.points):r.points); break;
@@ -735,7 +735,7 @@ public class QuestService {
             case "custom": QuestHooks.REWARDS.get(r.target).grant(p,r); break;
             default: throw new IllegalStateException("Unexpected flattened reward");
         }
-        if(delivered && itemSink==null)QuestNetwork.rewardToast(p,r);
+        if(delivered && itemSink==null)QuestNetwork.rewardToast(p,r,deliveredCount);
         }
         p.inventoryContainer.detectAndSendChanges();
     }

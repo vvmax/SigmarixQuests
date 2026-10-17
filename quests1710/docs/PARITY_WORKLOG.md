@@ -12,6 +12,9 @@ official Botania r1.8-249. This ledger is not a claim of complete parity.
   original runtime in the preceding comparison; see pixel-comparison.json.
 - Original quest card with two tasks, two rewards and editor add buttons:
   logical bounds (113,69), 201×101; text block height 33, text top 64.
+- Item selector frame, buttons and scrollbar: 49,032 pixels, zero differences.
+- Fluid selector controls: 92,432 pixels, zero differences. Animated vanilla
+  fluids excluded. See selector-pixel-comparison.json and paired screenshots.
 
 ## Implemented, require further visual coverage
 
@@ -22,13 +25,30 @@ official Botania r1.8-249. This ledger is not a claim of complete parity.
 - Settings context menu, progress reset/complete, exports, reward table directory.
 - Reward toasts, collection notification screen, emergency item timer, pinned HUD.
 - Barrier interpolation and atlas-backed inventory animation.
+- Typed book/chapter/quest/task/reward property forms, transactional list editors,
+  original type menus, item stack and fluid selectors, weighted reward editor.
+- Atomic device configuration after closing the GUI, native object selectors,
+  source task/progress screen layout, world screen body render-pass correction.
+- Operator task/reward scoped progress actions and inherited book defaults.
+- Actual item quantities in reward notifications, grouping and descending sort.
+- Original timer notation with tick precision and legacy seconds compatibility.
+
+## Runtime verification (current checkpoint)
+
+- Build: 54 JUnit and 136 Forge integration tests, plus 39 Python migration tests.
+- Full vanilla client/integrated-world fixture passed with native property form
+  save, native device accept/close/save and restart persistence.
+- Combined optional-mod fixture passed with official Botania r1.8-249, IC2,
+  ProjectE, CustomNPCs, BuildCraft 7.1.23 and NEI. The final render-pass fix was
+  subsequently checked in a vanilla world; repeat optional-mod verification
+  after the remaining changes. No claim of complete window/state coverage.
 
 ## Remaining work before declaring the requested full copy complete
 
 - Finish and measure object editing and all object context actions, type creation,
   item/fluid/NBT selectors, reward-table editor, and choice dialog.
-- Replace primary device configuration with original config/selectors and check
-  task/progress screens, crate storage/opener and chest windows in the game.
+- Measure device config/task/progress screens against the reference world; finish
+  crate storage/opener and chest windows. Primary device config has been replaced.
 - Compare main-map chapter panels, hover, search, scrolling, backgrounds, tooltip,
   pinned HUD, toasts, support confirmation and all editor state combinations.
 - Run the complete optional-mod game suite after the final UI changes.

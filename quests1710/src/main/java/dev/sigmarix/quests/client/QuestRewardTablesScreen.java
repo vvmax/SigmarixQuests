@@ -16,7 +16,7 @@ final class QuestRewardTablesScreen extends QuestListScreen {
     @Override protected void click(Row row,int button){
         if(row.id==0){mc.displayGuiScreen(new QuestValueScreen(this,"",0xFFAA49,128,value->{if(!QuestCore.validId(value) || ClientProxy.snapshot.book.lootTables.containsKey(value))throw new IllegalArgumentException("Invalid or existing table ID");QuestCore.Book draft=QuestService.JSON.fromJson(QuestService.JSON.toJson(ClientProxy.snapshot.book),QuestCore.Book.class);draft.lootTables.put(value,new ArrayList<QuestCore.Reward>());QuestCore.LootSettings settings=new QuestCore.LootSettings();settings.emptyWeight=1;draft.lootSettings.put(value,settings);QuestNetwork.Action action=new QuestNetwork.Action();action.action="save";action.book=draft;action.revision=ClientProxy.snapshot.revision;ClientProxy.send(action);}));return;}
         final String id=ids.get(row.id-1);List<QuestContextScreen.Entry> menu=new ArrayList<QuestContextScreen.Entry>();
-        menu.add(new QuestContextScreen.Entry(StatCollector.translateToLocal("gui.edit"),"settings",()->mc.displayGuiScreen(new QuestObjectScreen(this,"","lootTables",id))));
+        menu.add(new QuestContextScreen.Entry(StatCollector.translateToLocal("gui.edit"),"settings",()->{QuestCore.Book draft=QuestService.JSON.fromJson(QuestService.JSON.toJson(ClientProxy.snapshot.book),QuestCore.Book.class);long revision=ClientProxy.snapshot.revision;mc.displayGuiScreen(new QuestRewardTableEditScreen(this,draft,draft.lootTables.get(id),id,()->QuestObjectConfigScreen.send(draft,revision)));}));
         mc.displayGuiScreen(new QuestContextScreen(this,left+12,top+panelY+(row.id)*(rowHeight()+gap)-scroll,menu));
     }
 }

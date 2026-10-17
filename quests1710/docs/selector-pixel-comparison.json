@@ -1,0 +1,65 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 / FTBLib 5.4.7.2 / Minecraft 1.12.2",
+  "resolution": [
+    854,
+    480
+  ],
+  "gui_scale": 2,
+  "item_picker": {
+    "include": [
+      216,
+      90,
+      422,
+      300
+    ],
+    "exclude": [
+      [
+        232,
+        136,
+        348,
+        196
+      ],
+      [
+        232,
+        104,
+        390,
+        24
+      ]
+    ],
+    "pixels_compared": 49032,
+    "different_pixels": 0,
+    "notes": [
+      "Grid contents differ between Minecraft versions.",
+      "Search field excluded to avoid caret phase.",
+      "Tabs excluded: vanilla item renderers differ."
+    ]
+  },
+  "fluid_picker": {
+    "include": [
+      288,
+      68,
+      278,
+      344
+    ],
+    "exclude": [
+      [
+        306,
+        114,
+        40,
+        40
+      ],
+      [
+        306,
+        154,
+        40,
+        40
+      ]
+    ],
+    "pixels_compared": 92432,
+    "different_pixels": 0,
+    "notes": [
+      "Animated vanilla fluids excluded, including their slot gutters.",
+      "Title outside the comparison bounds also matched."
+    ]
+  }
+}

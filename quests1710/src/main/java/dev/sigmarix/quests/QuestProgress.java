@@ -255,6 +255,15 @@ public final class QuestProgress extends WorldSavedData {
         }
         markDirty();
     }
+    public void resetTask(UUID id,String quest,String task){
+        NBTTagCompound p=player(id);NBTTagList previous=p.getTagList("completed",8),next=new NBTTagList();for(int i=0;i<previous.tagCount();i++)if(!quest.equals(previous.getStringTagAt(i)))next.appendTag(new NBTTagString(previous.getStringTagAt(i)));p.setTag("completed",next);
+        for(String tag:new String[]{"tasks","kills","taskDone","taskStarted"})p.getCompoundTag(tag).removeTag(quest+":"+task);p.getCompoundTag("times").removeTag(quest);
+        boolean anyStarted=false;for(Object key:p.getCompoundTag("taskStarted").func_150296_c())if(key.toString().startsWith(quest+":")){anyStarted=true;break;}if(!anyStarted)p.getCompoundTag("started").removeTag(quest);markDirty();
+    }
+    public void resetReward(UUID id,String quest,String reward){
+        NBTTagCompound p=player(id);p.getCompoundTag("claimed").removeTag(quest);p.getCompoundTag("claimEpochs").removeTag(quest);p.getCompoundTag("rewardClaims").removeTag(quest+":"+reward);
+        for(UUID member:members(id))personal(member).removeTag(quest+":"+reward);markDirty();
+    }
     private void mergePersonal(UUID id) { allProfiles(()->mergePersonalProfile(id)); }
     private void mergePersonalProfile(UUID id) {
         NBTTagCompound shared=player(id),solo=players.getCompoundTag(id.toString());
