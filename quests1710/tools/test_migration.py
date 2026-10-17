@@ -3,10 +3,16 @@ import unittest
 import uuid
 from pathlib import Path
 from nbt_codec import IntTag, FloatTag, TypedArray, read_nbt, write_nbt
-from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights, convert_map_image, item
+from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights, convert_map_image, item, click_action
 from migrate_progress import migrate
 
 class MigrationTests(unittest.TestCase):
+    def test_custom_click_protocols_survive_import_and_reject_malformed_targets(self):
+        for value in ('command:/help', 'custom:pack:open_panel', 'guide:botania:lexicon', 'guide:', 'https://example.org/page', 'curseforgepages:pack:guide', 'othermod:panel'):
+            self.assertEqual(value, click_action(value))
+        for value in ('command:', 'command:/help\n/op player', 'https://user:pass@example.org', 'custom:bad', 'curseforgepages:../secret'):
+            with self.assertRaises(ValueError): click_action(value)
+
     def test_external_guide_reference_is_preserved_without_fetching_guide_content(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder); chapter = root / 'chapters' / '01'; chapter.mkdir(parents=True)
@@ -110,8 +116,8 @@ class MigrationTests(unittest.TestCase):
     def test_unknown_semantics_fail_with_source_path(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder); chapter = root / 'chapters' / '01'; chapter.mkdir(parents=True)
-            (chapter / 'chapter.snbt').write_text('{}'); (chapter / '02.snbt').write_text('{custom_click:"unsupported:action" tasks:[{type:"checkmark"}]}')
-            with self.assertRaisesRegex(ValueError, '02.snbt.*custom click'):
+            (chapter / 'chapter.snbt').write_text('{}'); (chapter / '02.snbt').write_text('{tasks:[{type:"unknown_mod_task"}]}')
+            with self.assertRaisesRegex(ValueError, '02.snbt.*unknown_mod_task'):
                 convert(root)
     def book(self):
         return {'quests': [{'id': 'ftb_00000002', 'rewardMode': 'individual', 'tasks': [{'id': 'ftb_00000003', 'type': 'item', 'count': 4}], 'rewards': [{'id': 'ftb_00000004', 'type': 'xp', 'mode': 'individual'}]}]}

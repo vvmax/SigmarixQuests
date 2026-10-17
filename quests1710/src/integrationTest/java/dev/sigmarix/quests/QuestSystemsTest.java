@@ -737,4 +737,12 @@ public class QuestSystemsTest {
         assertTrue(last); assertEquals(6000,total); storage.nextPage(); assertEquals("variant_00",storage.getStackInSlot(0).getTagCompound().getString("table"));
     }
 
+    @Test public void clickCommandsAreReadFromVisibleServerDefinitions() {
+        quest.customClick="command:/help"; assertEquals("/help",service.clickCommand(player.getUniqueID(),quest.id));
+        try { service.clickCommand(player.getUniqueID(),"missing"); fail(); } catch(IllegalArgumentException expected) {}
+        quest.hidden=true; quest.dependencies.add("earlier"); try { service.clickCommand(player.getUniqueID(),quest.id); fail(); } catch(IllegalArgumentException expected) {}
+        data.complete(player.getUniqueID(),"earlier"); assertEquals("/help",service.clickCommand(player.getUniqueID(),quest.id));
+        quest.customClick="custom:pack:action"; try { service.clickCommand(player.getUniqueID(),quest.id); fail(); } catch(IllegalArgumentException expected) {}
+    }
+
 }

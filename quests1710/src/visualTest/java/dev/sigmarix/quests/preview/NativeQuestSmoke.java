@@ -73,6 +73,17 @@ public final class NativeQuestSmoke {
             pig.attackEntityFrom(net.minecraft.util.DamageSource.causePlayerDamage(player),1000);
             if(!observer.seen) throw new IllegalStateException("Actual creature death did not drop its configured crate");
         } finally { main.book=previous; main.quests=previousQuests; net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(observer); }
+        final java.util.List<String> denied=new java.util.ArrayList<String>();
+        net.minecraft.command.ICommandSender unprivileged=new net.minecraft.command.ICommandSender() {
+            public String getCommandSenderName() { return "QuestNoOp"; }
+            public net.minecraft.util.IChatComponent func_145748_c_() { return new net.minecraft.util.ChatComponentText("QuestNoOp"); }
+            public void addChatMessage(net.minecraft.util.IChatComponent message) { denied.add(message.getUnformattedText()); }
+            public boolean canCommandSenderUseCommand(int level,String command) { return level==0; }
+            public net.minecraft.util.ChunkCoordinates getPlayerCoordinates() { return player.getPlayerCoordinates(); }
+            public net.minecraft.world.World getEntityWorld() { return player.worldObj; }
+        };
+        net.minecraft.server.MinecraftServer.getServer().getCommandManager().executeCommand(unprivileged,"/quests stage "+player.getCommandSenderName()+" native-click add");
+        if(denied.isEmpty() || main.progress().stage(id,"native-click")) throw new IllegalStateException("Player command permissions were bypassed");
         System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, virtual crate storage beyond 32-bit counts, actual hopper extraction, sealed break drops and analog detector");
     }
     public static final class DropObserver {

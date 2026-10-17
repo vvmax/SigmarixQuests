@@ -28,7 +28,7 @@ public final class QuestPreview {
     private volatile boolean bcRequested,bcPassed;
     private volatile boolean iconRequested,iconReady;
     private boolean iconPassed;
-    private volatile boolean openStorageRequested;
+    private volatile boolean openStorageRequested,commandVerified;
     private boolean bcRunning;
     private boolean emcRunning;
     private boolean manaRunning;
@@ -53,6 +53,10 @@ public final class QuestPreview {
     }
     @SubscribeEvent public void server(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
+        if(QuestsMod.service!=null && net.minecraft.server.MinecraftServer.getServer()!=null && !net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.isEmpty()) {
+            net.minecraft.entity.player.EntityPlayerMP actor=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            if(QuestsMod.service.progress().stage(actor.getUniqueID(),"native-click")) commandVerified=true;
+        }
         if(openStorageRequested) {
             net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
             int[] position=NativeQuestSmoke.storagePosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]); openStorageRequested=false;
@@ -214,7 +218,7 @@ public final class QuestPreview {
                     if(npcPassed && !npcVerified) { npcVerify=true; return; }
                     if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, custom click callback, confirmed file action, permission-checked network command, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
                     PreviewImageServer.stop(); mc.shutdown(); return;
                 }
                 if(!teamPassed) {
@@ -264,7 +268,8 @@ public final class QuestPreview {
                 for(QuestCore.Quest entry:edit.book.quests) if(entry.chapter.equals("start")) entry.shape="";
                 QuestPresentation.MapImage illustration=new QuestPresentation.MapImage(); illustration.x=1.5; illustration.y=.5; illustration.width=1.5; illustration.height=1.5; illustration.rotation=15; illustration.resource=remoteImage; illustration.uri="https://example.org/map-guide"; illustration.hover.add("Map illustration"); start.images.add(illustration);
                 QuestCore.Quest empty=new QuestCore.Quest(); empty.id="smoke-empty"; empty.title="Dependency-only"; empty.subtitle="Empty quests still require their dependencies"; empty.minWidth=240; empty.chapter="start"; empty.x=6; empty.y=3; empty.dependencies.add("welcome"); edit.book.quests.add(empty);
-                QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.guidePage="preview:event"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
+                QuestCore.Quest commandQuest=new QuestCore.Quest(); commandQuest.id="smoke-command-click"; commandQuest.title="Command action"; commandQuest.customClick="command:/quests stage "+mc.thePlayer.getCommandSenderName()+" native-click add"; edit.book.quests.add(commandQuest);
+                QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.guidePage="preview:event"; manual.customClick="custom:preview:click"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.GuidePage rich=new QuestPresentation.GuidePage(); rich.title="Rich guide page";
                 QuestPresentation.GuideElement text=new QuestPresentation.GuideElement(); text.text="Formatted text, resource images, item illustrations and confirmed links."; rich.elements.add(text);
                 QuestPresentation.GuideElement image=new QuestPresentation.GuideElement(); image.type="image"; image.resource=remoteImage; image.width=64; image.height=64; rich.elements.add(image);
@@ -390,10 +395,22 @@ public final class QuestPreview {
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-external-guide.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 GuideSmoke.registry(mc.currentScreen); QuestBookScreen guideBook=new QuestBookScreen(); mc.displayGuiScreen(guideBook); press(guideBook,12); if(GuideSmoke.indexOpens!=1) throw new IllegalStateException("Global guide index did not open");
                 if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { Class.forName("dev.sigmarix.quests.preview.BotaniaGuideSmoke").getMethod("open").invoke(null); stage=46; waiting=0; break; }
-                mc.displayGuiScreen(new QuestObjectScreen(null)); stage=16; waiting=0; break;
+                stage=47; waiting=0; break;
             case 46:
                 if(waiting<15) return;
-                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-botania-guide.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-botania-guide.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer()); stage=47; waiting=0; break;
+            case 47:
+                QuestCore.Quest actionQuest=snap.book.quests.stream().filter(q->q.id.equals("smoke-manual")).findFirst().get(); QuestGuideScreen actionGuide=new QuestGuideScreen(null,actionQuest); mc.displayGuiScreen(actionGuide);
+                java.lang.reflect.Field actionPage=QuestGuideScreen.class.getDeclaredField("page"); actionPage.setAccessible(true); actionPage.setInt(actionGuide,4); stage=48; waiting=0; break;
+            case 48:
+                if(waiting<10) return; press(mc.currentScreen,6); if(GuideSmoke.clickOpens!=1) throw new IllegalStateException("Custom quest click event did not fire");
+                java.io.File local=java.io.File.createTempFile("quest-click-",".txt",mc.mcDataDir); java.nio.file.Files.write(local.toPath(),"Native click fixture".getBytes(StandardCharsets.UTF_8));
+                if(!QuestClicks.open("smoke-manual","file:"+local.getCanonicalPath(),mc.currentScreen) || !(mc.currentScreen instanceof net.minecraft.client.gui.GuiYesNo)) throw new IllegalStateException("Local file action skipped confirmation");
+                press(mc.currentScreen,1); java.nio.file.Files.delete(local.toPath());
+                try { QuestClicks.file("../README.md"); throw new IllegalStateException("File action escaped Minecraft directory"); } catch(IllegalArgumentException correct) {}
+                QuestCore.Quest commandDefinition=snap.book.quests.stream().filter(q->q.id.equals("smoke-command-click")).findFirst().get(); QuestClicks.open(commandDefinition.id,commandDefinition.customClick,mc.currentScreen); stage=49; waiting=0; break;
+            case 49:
+                if(!commandVerified || !"Command sent".equals(snap.message)) return;
                 mc.displayGuiScreen(new QuestObjectScreen(null)); stage=16; waiting=0; break;
             case 16:
                 if(waiting<15) return;

@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.11.0", acceptableRemoteVersions="[0.11.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.12.0", acceptableRemoteVersions="[0.12.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -147,6 +147,9 @@ public final class QuestsMod {
                     QuestStorage storage=((QuestStorageContainer)player.openContainer).storage;
                     if(!storage.isUseableByPlayer(player) || storage.xCoord!=action.x || storage.yCoord!=action.y || storage.zCoord!=action.z) throw new IllegalArgumentException("Storage unavailable");
                     storage.nextPage(); message="Storage page changed"; break;
+                case "click_command":
+                    String command=service.clickCommand(player.getUniqueID(),action.id);
+                    MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
                 case "bind_device": case "unbind_device": case "screen_size": case "detector_mode":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
@@ -207,7 +210,7 @@ public final class QuestsMod {
             snapshot.chapterStates.keySet().retainAll(snapshot.book.chapters.stream().map(chapter->chapter.id).collect(java.util.stream.Collectors.toSet()));
             // Command and custom implementation details are server-only for non-editors.
             for(List<QuestCore.Reward> table:snapshot.book.lootTables.values()) redact(table);
-            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.subtitle=""; q.guidePage=""; q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
+            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.subtitle=""; q.guidePage=""; q.customClick=""; q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
         }
         for(QuestCore.Quest q:snapshot.book.quests) {
             snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");

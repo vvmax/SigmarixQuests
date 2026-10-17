@@ -54,6 +54,7 @@ public final class QuestCore {
                     q.chapter == null || (!q.chapter.isEmpty() && !chapterIds.contains(q.chapter)) ||
                     !Double.isFinite(q.x) || !Double.isFinite(q.y) || Math.abs(q.x) > 100000 || Math.abs(q.y) > 100000 || q.cooldownSeconds < 0 || q.minDependencies<0 || q.minDependencies>q.dependencies.size())
                     throw new IllegalArgumentException("Incomplete or invalid quest: " + q.id);
+                new QuestClick(q.customClick);
                 Set<String> taskIds = new HashSet<String>();
                 for (int i = 0; i < q.tasks.size(); i++) {
                     Task t = q.tasks.get(i);
@@ -146,7 +147,7 @@ public final class QuestCore {
         public List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
     }
     public static final class Quest {
-        public String id, title, description = "", subtitle="", guidePage="", chapter = "", icon = "minecraft:book";
+        public String id, title, description = "", subtitle="", guidePage="", customClick="", chapter = "", icon = "minecraft:book";
         public String dependencyState="completed", rewardMode="team", shape="", uri="",itemBrowser="inherit";
         public List<QuestPresentation.GuidePage> richPages=new ArrayList<QuestPresentation.GuidePage>();
         public List<String> tags=new ArrayList<String>(),pages=new ArrayList<String>();
@@ -193,6 +194,7 @@ public final class QuestCore {
         public List<MailItem> attachments=new ArrayList<MailItem>();
         public List<Reward> options = new ArrayList<Reward>();
     }
+    public static boolean required(Quest quest) { return !quest.optional && !quest.repeatable && quest.customClick.isEmpty(); }
     public static boolean unlocked(Quest q, Set<String> completed) {
         if (q.dependencies.isEmpty()) return true;
         if(q.minDependencies>0) { int count=0; for(String dep:q.dependencies) if(completed.contains(dep)) count++; return count>=q.minDependencies; }

@@ -47,7 +47,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
             if(b.id==11) { QuestCore.Chapter definition=QuestPresentation.chapter(ClientProxy.snapshot.book,group); b.displayString=fontRendererObj.trimStringToWidth(definition==null?QuestText.tr("All groups"):definition.title,86); b.enabled=!groups().isEmpty(); }
             String state=ClientProxy.snapshot.states.get(selected);
             if(b.id==10) b.enabled=!ClientProxy.snapshot.book.emergencyItems.isEmpty() && ClientProxy.snapshot.emergencyWait==0;
-            if(b.id==8) { QuestCore.Quest q=find(selected); b.enabled=q!=null && (!q.pages.isEmpty() || !q.richPages.isEmpty() || !q.uri.isEmpty()); }
+            if(b.id==8) { QuestCore.Quest q=find(selected); b.enabled=q!=null && (!q.pages.isEmpty() || !q.richPages.isEmpty() || !q.uri.isEmpty() || !q.guidePage.isEmpty() || !q.customClick.isEmpty()); }
             if(b.id==4) b.enabled="available".equals(state);
             if(b.id==5) b.enabled="complete".equals(state);
             if(b.id==6) { QuestCore.Quest q=find(selected); b.enabled="claimed".equals(state) && q!=null && q.repeatable; }
@@ -174,6 +174,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(QuestCore.Quest q:visible()) if(Math.abs(x-sx(q)-12)<=13*q.size+2 && Math.abs(y-sy(q)-12)<=13*q.size+2) {
             selected=q.id; detailsScroll=0; refresh();
             if(ClientProxy.snapshot.canEdit && isShiftKeyDown()) { moving=true; movingId=q.id; }
+            if(!moving && !q.customClick.isEmpty()) QuestClicks.open(q.id,q.customClick,this);
             lastX=x; lastY=y; return;
         }
         List<QuestPresentation.MapImage> illustrations=images();

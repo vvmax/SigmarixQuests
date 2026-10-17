@@ -87,3 +87,6 @@ quests.ui.crates=Crates
 quests.ui.open_in_guide=Open in guide
 quests.ui.guide_is_not_available=Guide is not available
 quests.ui.guides=Guides
+
+quests.ui.open_action=Open action
+quests.ui.open_local_file=Open local file?

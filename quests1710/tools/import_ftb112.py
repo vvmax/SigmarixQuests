@@ -432,6 +432,19 @@ def http_uri(value):
         return False
 
 
+def click_action(value):
+    if not isinstance(value, str) or len(value) > 8192 or any(c in value for c in '\x00\r\n'): raise ValueError('Invalid custom_click')
+    if not value: return value
+    kind, separator, target = value.partition(':')
+    if not separator: kind, target = '', value
+    if not target and kind != 'guide' or kind and not re.fullmatch(r'[a-z][a-z0-9_.-]{0,63}', kind): raise ValueError('Invalid custom_click protocol')
+    if kind in ('http', 'https') and not http_uri(value): raise ValueError('Invalid custom_click URL')
+    if kind == 'guide' and len(target) > 512: raise ValueError('Invalid guide click')
+    if kind == 'custom' and (not re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', target) or '..' in target or '://' in target): raise ValueError('Invalid custom click ID')
+    if kind == 'curseforgepages' and not re.fullmatch(r'[a-zA-Z0-9_-]+[:/][a-zA-Z0-9_/-]+', target): raise ValueError('Invalid CurseForge page click')
+    return value
+
+
 def convert_map_image(raw):
     resource = raw.get('image', '')
     if not isinstance(resource, str) or not ((re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', resource) and '..' not in resource and '://' not in resource) or http_uri(resource)):
@@ -482,14 +495,14 @@ def convert(folder):
             try:
                 raw = read_document(path)
 
-                if raw.get('custom_click') and not re.match(r'https?://', raw['custom_click']): raise ValueError('Quest custom click needs a supported http/https URI')
+
                 requirement = raw.get('dependency_requirement', 'all_completed')
                 if requirement not in ('all_completed', 'one_completed', 'all_started', 'one_started'):
                     raise ValueError('Unknown dependency requirement: ' + str(requirement))
                 repeat = bool(raw.get('can_repeat', False))
                 title = raw.get('title') or path.stem
                 quest = {'id': code(path.stem), 'chapter': chapter_id, 'title': title,
-                         'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'guidePage': raw.get('guide_page', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': raw.get('custom_click', ''),
+                         'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'guidePage': raw.get('guide_page', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': '', 'customClick': click_action(raw.get('custom_click', '')),
                          'itemBrowser': 'inherit' if raw.get('disable_jei') in (None, 'default') else 'disabled' if tristate(raw['disable_jei']) else 'enabled',
                          'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)), 'tags': raw.get('tags', []),
                          'shape': raw.get('shape') or '', 'size': float(raw.get('size', 1)),

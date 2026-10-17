@@ -192,7 +192,7 @@ public class QuestService {
         try { validateProgressReference(reference); } catch(IllegalArgumentException missing) { return 0; }
         if(reference.equals("book:") || reference.startsWith("chapter:")) {
             String chapter=reference.startsWith("chapter:")?reference.substring(8):""; double sum=0; int count=0;
-            for(QuestCore.Quest quest:quests.values()) if(!quest.optional && (chapter.isEmpty() || QuestPresentation.within(book,quest.chapter,chapter))) { sum+=questProgress(owner,quest); count++; }
+            for(QuestCore.Quest quest:quests.values()) if(QuestCore.required(quest) && (chapter.isEmpty() || QuestPresentation.within(book,quest.chapter,chapter))) { sum+=questProgress(owner,quest); count++; }
             return count==0?1:sum/count;
         }
         if(reference.startsWith("task:")) {
@@ -216,7 +216,7 @@ public class QuestService {
     public boolean objectComplete(UUID owner,String reference) {
         try { validateProgressReference(reference); } catch(IllegalArgumentException missing) { return false; }
         if(!reference.equals("book:")) return dependencies(owner).satisfied(reference,false);
-        for(QuestCore.Quest quest:quests.values()) if(!quest.optional && !progress().completed(owner).contains(quest.id)) return false;
+        for(QuestCore.Quest quest:quests.values()) if(QuestCore.required(quest) && !progress().completed(owner).contains(quest.id)) return false;
         return true;
     }
     public String objectTitle(String reference) {
@@ -521,6 +521,12 @@ public class QuestService {
         long wait=emergencyWait(player); if(wait>0) throw new IllegalArgumentException("Emergency items available in "+wait+" seconds");
         for(QuestCore.Reward reward:book.emergencyItems) validateReward(reward);
         progress().emergency(player.getUniqueID(),player.worldObj.getTotalWorldTime()); applyRewards(player,book.emergencyItems,null);
+    }
+    public String clickCommand(UUID player,String questId) {
+        QuestCore.Quest quest=quests.get(questId);
+        if(quest==null || !visible(player,quest)) throw new IllegalArgumentException("Quest action is not visible");
+        QuestClick click=new QuestClick(quest.customClick); if(!click.type.equals("command")) throw new IllegalArgumentException("Quest has no command action");
+        return click.value.startsWith("/")?click.value:"/"+click.value;
     }
     public void openLoot(EntityPlayerMP p,String table,ItemStack crate) {
         table=QuestLoot.resolve(book,table);

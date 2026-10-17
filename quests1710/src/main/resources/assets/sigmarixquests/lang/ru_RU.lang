@@ -87,3 +87,6 @@ quests.ui.crates=Кейсы
 quests.ui.open_in_guide=Открыть руководство
 quests.ui.guide_is_not_available=Руководство недоступно
 quests.ui.guides=Руководства
+
+quests.ui.open_action=Выполнить действие
+quests.ui.open_local_file=Открыть локальный файл?

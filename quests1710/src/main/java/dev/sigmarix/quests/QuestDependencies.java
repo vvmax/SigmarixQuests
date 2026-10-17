@@ -25,7 +25,7 @@ public final class QuestDependencies {
             for(QuestCore.Chapter c:book.chapters) if(c.id.equals(id)) exists=true;
             if(!exists) throw new IllegalArgumentException("Unknown chapter dependency: "+id);
             List<String> result=new ArrayList<String>();
-            for(QuestCore.Quest q:quests.values()) if(QuestPresentation.within(book,q.chapter,id) && (started || !q.optional)) result.add(q.id);
+            for(QuestCore.Quest q:quests.values()) if(QuestPresentation.within(book,q.chapter,id) && (started || QuestCore.required(q))) result.add(q.id);
             return result;
         }
         String id=reference.startsWith("quest:")?reference.substring(6):reference;
@@ -45,7 +45,7 @@ public final class QuestDependencies {
         if(!exists) return false;
         for(QuestCore.Quest q:quests.values()) if(QuestPresentation.within(book,q.chapter,id)) {
             if(started && progress.started(q.id)) return true;
-            if(!started && !q.optional) { if(!progress.completed(q.id)) return false; }
+            if(!started && QuestCore.required(q)) { if(!progress.completed(q.id)) return false; }
         }
         // An empty/optional-only chapter has no required unfinished quests.
         return !started;
