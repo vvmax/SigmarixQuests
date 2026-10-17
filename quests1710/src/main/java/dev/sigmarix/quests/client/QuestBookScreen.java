@@ -64,8 +64,9 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(QuestCore.Quest q:ClientProxy.snapshot.book.quests) if(QuestPresentation.within(ClientProxy.snapshot.book,q.chapter,group) && (chapter.isEmpty() || chapter.equals(q.chapter)) && (q.title.toLowerCase(Locale.ROOT).contains(filter) || q.id.toLowerCase(Locale.ROOT).contains(filter) || q.tags.toString().toLowerCase(Locale.ROOT).contains(filter))) result.add(q);
         return result;
     }
-    private double qx(QuestCore.Quest q) { return q.x*48; }
-    private double qy(QuestCore.Quest q) { return q.y*48; }
+    private double mapUnit() { return QuestPresentation.mapUnit(ClientProxy.snapshot.book); }
+    private double qx(QuestCore.Quest q) { return q.x*mapUnit(); }
+    private double qy(QuestCore.Quest q) { return q.y*mapUnit(); }
     private int sx(QuestCore.Quest q) { return (int)(panX+qx(q)*zoom); }
     private int sy(QuestCore.Quest q) { return 66+(int)(panY+qy(q)*zoom); }
     @Override public void drawScreen(int mouseX,int mouseY,float partial) {
@@ -81,19 +82,20 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(QuestCore.Chapter c:ClientProxy.snapshot.book.chapters) if(c.id.equals(chapter) && !c.image.isEmpty()) { mc.getTextureManager().bindTexture(QuestImages.texture(c.image)); GL11.glColor4f(1,1,1,.5f); func_152125_a(0,60,0,0,256,256,split(),height-68,256,256); GL11.glColor4f(1,1,1,1); }
         QuestPresentation.MapImage imageHover=null;
         for(QuestPresentation.MapImage image:images()) {
-            int iw=Math.max(1,(int)(image.width*48*zoom)),ih=Math.max(1,(int)(image.height*48*zoom));
+            int iw=Math.max(1,(int)(image.width*mapUnit()*zoom)),ih=Math.max(1,(int)(image.height*mapUnit()*zoom));
             GL11.glPushMatrix(); GL11.glTranslated(imageX(image),imageY(image),0); GL11.glRotatef((float)image.rotation,0,0,1); GL11.glColor4f(1,1,1,(float)image.opacity); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
             mc.getTextureManager().bindTexture(QuestImages.texture(image.resource)); func_152125_a(-iw/2,-ih/2,0,0,256,256,iw,ih,256,256); GL11.glPopMatrix(); GL11.glColor4f(1,1,1,1);
             if(imageContains(image,mouseX,mouseY)) imageHover=image;
         }
+        float oldLineWidth=GL11.glGetFloat(GL11.GL_LINE_WIDTH); GL11.glLineWidth((float)Math.max(.1,theme.lineWidth));
         GL11.glDisable(GL11.GL_TEXTURE_2D); int edge=QuestPresentation.color(theme.edge); GL11.glColor4f((edge>>16&255)/255f,(edge>>8&255)/255f,(edge&255)/255f,(edge>>>24)/255f); GL11.glBegin(GL11.GL_LINES);
         Set<String> ids=new HashSet<String>(); for(QuestCore.Quest q:list) ids.add(q.id);
         Map<String,QuestCore.Quest> byId=new LinkedHashMap<String,QuestCore.Quest>(); for(QuestCore.Quest q:ClientProxy.snapshot.book.quests) byId.put(q.id,q);
-        for(QuestCore.Quest q:list) if(!q.hideDependencyLines) for(String dep:q.dependencies) {
+        for(QuestCore.Quest q:list) if(theme.lineWidth>0 && !q.hideDependencyLines) for(String dep:q.dependencies) {
             try { for(String owner:QuestDependencies.owners(ClientProxy.snapshot.book,byId,dep,q.dependencyState.equals("started"))) { QuestCore.Quest d=find(owner); if(d!=null && ids.contains(owner)) { GL11.glVertex2d(sx(d)+12,sy(d)+12); GL11.glVertex2d(sx(q)+12,sy(q)+12); } } }
             catch(IllegalArgumentException ignored) { /* Hidden source quests are absent from a public snapshot. */ }
         }
-        GL11.glEnd(); GL11.glEnable(GL11.GL_TEXTURE_2D); GL11.glColor4f(1,1,1,1);
+        GL11.glEnd(); GL11.glLineWidth(oldLineWidth); GL11.glEnable(GL11.GL_TEXTURE_2D); GL11.glColor4f(1,1,1,1);
         QuestCore.Quest hover=null;
         for(QuestCore.Quest q:list) {
             int x=sx(q),y=sy(q); String state=ClientProxy.snapshot.states.get(q.id);
@@ -187,10 +189,10 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         QuestCore.Chapter definition=QuestPresentation.chapter(ClientProxy.snapshot.book,chapter); List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
         if(definition!=null) for(QuestPresentation.MapImage image:definition.images) if(!image.dev || ClientProxy.snapshot.canEdit) images.add(image); return images;
     }
-    private double imageX(QuestPresentation.MapImage image) { return panX+12+image.x*48*zoom; }
-    private double imageY(QuestPresentation.MapImage image) { return 78+panY+image.y*48*zoom; }
+    private double imageX(QuestPresentation.MapImage image) { return panX+12+image.x*mapUnit()*zoom; }
+    private double imageY(QuestPresentation.MapImage image) { return 78+panY+image.y*mapUnit()*zoom; }
     private boolean imageContains(QuestPresentation.MapImage image,int x,int y) {
-        double dx=x-imageX(image),dy=y-imageY(image),angle=Math.toRadians(image.rotation),scale=48*zoom;
+        double dx=x-imageX(image),dy=y-imageY(image),angle=Math.toRadians(image.rotation),scale=mapUnit()*zoom;
         return Math.abs(Math.cos(angle)*dx+Math.sin(angle)*dy)<=image.width*scale/2 && Math.abs(-Math.sin(angle)*dx+Math.cos(angle)*dy)<=image.height*scale/2;
     }
     @Override public void confirmClicked(boolean accepted,int id) {
@@ -199,7 +201,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
     }
     @Override protected void mouseClickMove(int x,int y,int button,long time) {
         if(dragging) { panX+=x-lastX; panY+=y-lastY; }
-        if(moving) { QuestCore.Quest q=find(movingId); if(q!=null) { q.x+=(x-lastX)/(48*zoom); q.y+=(y-lastY)/(48*zoom); } }
+        if(moving) { QuestCore.Quest q=find(movingId); if(q!=null) { q.x+=(x-lastX)/(mapUnit()*zoom); q.y+=(y-lastY)/(mapUnit()*zoom); } }
         lastX=x; lastY=y;
     }
     @Override protected void mouseMovedOrUp(int x,int y,int button) {

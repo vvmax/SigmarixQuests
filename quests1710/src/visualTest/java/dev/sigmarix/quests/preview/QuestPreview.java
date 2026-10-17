@@ -286,7 +286,7 @@ public final class QuestPreview {
                 if(bread(mc)!=4) throw new IllegalStateException("Repeated claim duplicated reward");
                 oldRevision=snap.revision;
                 QuestNetwork.Action edit=new QuestNetwork.Action(); edit.action="save"; edit.revision=snap.revision;
-                edit.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(original),QuestCore.Book.class); edit.book.title="Network edit smoke";
+                edit.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(original),QuestCore.Book.class); edit.book.title="Network edit smoke"; edit.book.theme.questSpacing=1.25; edit.book.theme.lineWidth=2;
                 if(cpw.mods.fml.common.Loader.isModLoaded("IC2")) {
                     QuestCore.Quest eu=new QuestCore.Quest(); eu.id="smoke-eu"; eu.title="IC2 energy";
                     QuestCore.Task charge=new QuestCore.Task(); charge.id="charge"; charge.type="ic2_energy"; charge.count=16; eu.tasks.add(charge); edit.book.quests.add(eu);
@@ -432,6 +432,7 @@ public final class QuestPreview {
             case 36:
                 if(waiting<15) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-grouped-map.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                if(snap.book.theme.questSpacing!=1.25 || snap.book.theme.lineWidth!=2) throw new IllegalStateException("Theme geometry lost in network snapshot");
                 QuestBookScreen map=(QuestBookScreen)mc.currentScreen; QuestPresentation.MapImage mapImage=QuestPresentation.chapter(snap.book,"start").images.get(0);
                 java.lang.reflect.Method imageX=QuestBookScreen.class.getDeclaredMethod("imageX",QuestPresentation.MapImage.class),imageY=QuestBookScreen.class.getDeclaredMethod("imageY",QuestPresentation.MapImage.class); imageX.setAccessible(true); imageY.setAccessible(true);
                 java.lang.reflect.Method mapClick=QuestBookScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class); mapClick.setAccessible(true); mapClick.invoke(map,((Double)imageX.invoke(map,mapImage)).intValue(),((Double)imageY.invoke(map,mapImage)).intValue(),0);

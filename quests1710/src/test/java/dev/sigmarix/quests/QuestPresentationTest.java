@@ -66,4 +66,34 @@ public class QuestPresentationTest {
         QuestCore.Book b=book(); for(String shape:java.util.Arrays.asList("rsquare","heart","gear","pack:shapes/star.png","https://example.org/mask.png")) { b.defaultQuestShape=shape; b.quests.get(0).shape=shape; b.validate(); }
     }
 
+    @Test public void booleanSelectorsPreserveLegacyNativeSyntaxAndValidateEveryBranch() {
+        QuestCore.Book b=book(); QuestCore.Quest q=b.quests.get(0); q.tags.add("ore");
+        assertTrue(QuestPresentation.matches("quest & .ore & !state:locked | #other",q,"available"));
+        assertFalse(QuestPresentation.matches("quest & !.ore | #other",q,"available"));
+        assertTrue(QuestPresentation.matches("!!#a",q,"locked"));
+        for(String bad:java.util.Arrays.asList("* |", "| *", "* &", "* && quest", "!", "* | unsupported:state")) {
+            QuestPresentation.Style rule=new QuestPresentation.Style(); rule.selector=bad; b.styles.clear(); b.styles.add(rule);
+            try { b.validate(); fail(bad); } catch(IllegalArgumentException expected) {}
+        }
+    }
+    @Test public void ancestorStylesCascadeInOrderWithoutChangingDirectChapterSelectors() {
+        QuestCore.Book b=book(); QuestCore.Quest q=b.quests.get(0);
+        QuestCore.Chapter parent=new QuestCore.Chapter(); parent.id="parent"; parent.title="Parent";
+        QuestCore.Chapter child=new QuestCore.Chapter(); child.id="child"; child.title="Child"; child.parent="parent";
+        b.chapters.add(parent); b.chapters.add(child); q.chapter="child";
+        QuestPresentation.Style ancestor=new QuestPresentation.Style(); ancestor.selector="within:parent & !state:locked"; ancestor.color="AA123456"; b.styles.add(ancestor);
+        QuestPresentation.Style direct=new QuestPresentation.Style(); direct.selector="chapter:parent"; direct.color="FF000000"; b.styles.add(direct); b.validate();
+        assertEquals("AA123456",QuestPresentation.resolve(b,q,"available")[0]);
+        assertEquals(b.theme.locked,QuestPresentation.resolve(b,q,"locked")[0]);
+        direct.selector="chapter:child | #other"; assertEquals("FF000000",QuestPresentation.resolve(b,q,"available")[0]);
+    }
+    @Test public void themeGeometryIsFiniteBoundedAndIndependentOfEditorSnapping() {
+        QuestCore.Book b=book(); b.gridScale=.25; b.theme.questSpacing=2; b.theme.lineWidth=0; b.validate();
+        assertEquals(96,QuestPresentation.mapUnit(b),0); assertEquals(.75,QuestPresentation.snap(b,.7,1),0);
+        QuestCore.Book copy=new Gson().fromJson(new Gson().toJson(b),QuestCore.Book.class); copy.validate(); assertEquals(2,copy.theme.questSpacing,0);
+        for(double bad:new double[]{0,Double.NaN,Double.POSITIVE_INFINITY,9}) { b.theme.questSpacing=bad; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {} }
+        b.theme.questSpacing=1;
+        for(double bad:new double[]{-1,Double.NaN,Double.POSITIVE_INFINITY,9}) { b.theme.lineWidth=bad; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {} }
+    }
+
 }

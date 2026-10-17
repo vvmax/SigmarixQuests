@@ -26,9 +26,9 @@
 | location | location | Сфера/прямоугольная область, измерение или его игнорирование |
 | checkmark | check | Отдельные кнопки/команды подтверждения (`manual:true`), совместимость с прежним подтверждением проверкой квеста |
 | advancement | achievement | Аналог на достижениях 1.7; система advancements 1.12 не перенесена |
-| observation | observation | Блок/существо, дистанция, metadata, непрерывный таймер; block/entity ID, TileEntity ID и Java class, NBT exact/subset/ignore; нет автоматического перевода свойств BlockState 1.12 в metadata 1.7 |
-| interaction | interaction | Правый клик по блоку/существу, счётчик; block/entity ID, TileEntity ID и Java class, NBT exact/subset/ignore; нет автоматического перевода свойств BlockState 1.12 в metadata 1.7 |
-| biome | biome | Имя/числовой ID биома 1.7; нет автоматического соответствия registry IDs 1.12 |
+| observation | observation | Блок/существо, дистанция, metadata, непрерывный таймер; block/entity ID, TileEntity ID и Java class, NBT exact/subset/ignore; явный перевод свойств BlockState 1.12 в metadata 1.7 через `--mappings` |
+| interaction | interaction | Правый клик по блоку/существу, счётчик; block/entity ID, TileEntity ID и Java class, NBT exact/subset/ignore; явный перевод свойств BlockState 1.12 в metadata 1.7 через `--mappings` |
+| biome | biome | Имя/числовой ID биома 1.7; vanilla соответствия и явные registry ID → имя/ID 1.7 через `--mappings` |
 
 | Награда FTB | Состояние |
 | --- | --- |
@@ -271,3 +271,12 @@ autoRepeat; обычные собственные книги могут сохр
 сборщик замыкает офлайн-цикл ресурсов и наград. При новой генерации очищаются
 таймеры наблюдения, а обработчики завершения/получения видят правильное время
 и прежний цикл. Полные старые API и формат тем FTBLib по-прежнему требуют адаптера.
+
+## Уточнения 0.22
+
+- Селекторы собственной схемы поддерживают И/ИЛИ/НЕ и `within:` для вложенных глав.
+  `questSpacing` и `lineWidth` работают в книге и на настенных картах. Полного чтения
+  FTBLib icon/theme DSL это не добавляет.
+- Конвертер принимает явные таблицы `--mappings` для предметов/жидкостей, существ/биомов, состояний блоков,
+  tile ID/классов, статистики и достижений. Критерии advancements требуют отдельной
+  записи, чтобы не превращать условие одного критерия в условие всего достижения.

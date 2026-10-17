@@ -172,7 +172,7 @@ def item_id(value):
     return value
 
 
-def item(value):
+def _item(value):
     if isinstance(value, str):
         # The supported compact form is a registry ID, with optional " count".
         parts = value.split()
@@ -188,6 +188,18 @@ def item(value):
         result['meta'] = 0
     if value.get('tag'):
         result['nbt'] = snbt(value['tag'])
+    return result
+
+
+def item(value, mappings=None):
+    result = _item(value)
+    mapped = (mappings or {}).get('items', {}).get(result['item'])
+    if isinstance(mapped, str):
+        result['item'] = mapped
+    elif mapped is not None:
+        result['item'] = mapped['id']
+        if 'meta' in mapped:
+            result['meta'] = mapped['meta']
     return result
 
 
@@ -209,30 +221,77 @@ def tristate(value, default=False):
 VANILLA_ENTITIES = {'minecraft:zombie': 'Zombie', 'minecraft:skeleton': 'Skeleton', 'minecraft:creeper': 'Creeper', 'minecraft:spider': 'Spider', 'minecraft:cave_spider': 'CaveSpider', 'minecraft:blaze': 'Blaze', 'minecraft:enderman': 'Enderman', 'minecraft:wither': 'WitherBoss', 'minecraft:ender_dragon': 'EnderDragon', 'minecraft:pig': 'Pig', 'minecraft:cow': 'Cow', 'minecraft:sheep': 'Sheep', 'minecraft:chicken': 'Chicken', 'minecraft:ghast': 'Ghast', 'minecraft:slime': 'Slime', 'minecraft:magma_cube': 'LavaSlime', 'minecraft:villager': 'Villager', 'minecraft:zombie_pigman': 'PigZombie', 'minecraft:wolf': 'Wolf', 'minecraft:ocelot': 'Ozelot', 'minecraft:horse': 'EntityHorse', 'minecraft:squid': 'Squid', 'minecraft:witch': 'Witch', 'minecraft:bat': 'Bat', 'minecraft:silverfish': 'Silverfish', 'minecraft:iron_golem': 'VillagerGolem', 'minecraft:snowman': 'SnowMan'}
 VANILLA_BIOMES = {'minecraft:ocean': 0, 'minecraft:plains': 1, 'minecraft:desert': 2, 'minecraft:extreme_hills': 3, 'minecraft:forest': 4, 'minecraft:taiga': 5, 'minecraft:swampland': 6, 'minecraft:river': 7, 'minecraft:hell': 8, 'minecraft:sky': 9, 'minecraft:frozen_ocean': 10, 'minecraft:frozen_river': 11, 'minecraft:ice_flats': 12, 'minecraft:ice_mountains': 13, 'minecraft:mushroom_island': 14, 'minecraft:mushroom_island_shore': 15, 'minecraft:beaches': 16, 'minecraft:jungle': 21, 'minecraft:jungle_hills': 22, 'minecraft:deep_ocean': 24, 'minecraft:birch_forest': 27, 'minecraft:roofed_forest': 29, 'minecraft:cold_taiga': 30, 'minecraft:mega_taiga': 32, 'minecraft:savanna': 35, 'minecraft:mesa': 37}
 
-def entity_id(value):
-    if value not in VANILLA_ENTITIES:
-        raise ValueError('Entity registry mapping needed: ' + str(value))
-    return VANILLA_ENTITIES[value]
+def mapping_rules(value):
+    """Mappings are explicit pack-author decisions, never guessed version conversions."""
+    value = {} if value is None else value
+    if not isinstance(value, dict) or set(value) - {'items', 'fluids', 'entities', 'biomes', 'blocks', 'tileEntities', 'classes', 'advancements', 'stats'}:
+        raise ValueError('Unknown mapping section')
+    for section, entries in value.items():
+        if not isinstance(entries, dict) or len(entries) > 4096:
+            raise ValueError('Invalid mapping section: ' + section)
+        for source, target in entries.items():
+            if not isinstance(source, str) or not source or len(source) > 1024:
+                raise ValueError('Invalid mapping key')
+            if section == 'blocks':
+                if not isinstance(target, dict) or set(target) - {'id', 'meta'} or not isinstance(target.get('id'), str) or not target['id'] or type(target.get('meta')) is not int or not 0 <= target['meta'] <= 15:
+                    raise ValueError('Block mapping needs id and metadata 0..15: ' + source)
+            elif section == 'items' and isinstance(target, dict):
+                if set(target) - {'id', 'meta'} or not isinstance(target.get('id'), str) or not target['id'] or 'meta' in target and (type(target['meta']) is not int or not 0 <= target['meta'] <= 32767):
+                    raise ValueError('Item mapping needs id and optional metadata 0..32767: ' + source)
+            elif not isinstance(target, str) or not target or len(target) > 1024:
+                raise ValueError('Mapping target must be a nonempty string: ' + source)
+    return value
 
-def object_presentation(raw):
+
+def entity_id(value, mappings=None):
+    target = (mappings or {}).get('entities', {}).get(value, VANILLA_ENTITIES.get(value))
+    if target is None:
+        raise ValueError('Entity registry mapping needed: ' + str(value))
+    return target
+
+
+def achievement_id(raw, mappings):
+    source = raw.get('advancement', '')
+    if raw.get('criterion'):
+        source += '#' + raw['criterion']
+    target = (mappings or {}).get('advancements', {}).get(source)
+    if not target:
+        raise ValueError('Achievement mapping needed: ' + source)
+    return target
+
+
+def block_state_key(block, properties):
+    if not properties:
+        return block
+    if isinstance(properties, str):
+        pairs = [[value.strip() for value in part.split('=', 1)] for part in properties.split(',')]
+        if any(len(pair) != 2 or not pair[0] or not pair[1] for pair in pairs) or len({pair[0] for pair in pairs}) != len(pairs):
+            raise ValueError('Invalid block properties')
+        properties = dict(pairs)
+    if not isinstance(properties, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in properties.items()):
+        raise ValueError('Invalid block properties')
+    return block + '[' + ','.join(k + '=' + properties[k] for k in sorted(properties)) + ']'
+
+
+def object_presentation(raw, mappings=None):
     result = {'title': text(raw.get('title', '')), 'description': text(raw.get('description', ''))}
     if raw.get('icon'):
-        value = item(raw['icon'])
+        value = item(raw['icon'], mappings)
         result.update(icon=value['item'], iconMeta=value.get('meta', 0), iconNbt=value.get('nbt', ''))
     return result
 
 
-def convert_task(raw, index, defaults=None, repeat=False):
+def convert_task(raw, index, defaults=None, repeat=False, mappings=None):
     defaults = defaults or {}
     kind = raw.get('type', '').removeprefix('ftbquests:')
     result = {'id': code(raw['uid']) if raw.get('uid') else 't' + str(index)}
-    result.update(object_presentation(raw))
+    result.update(object_presentation(raw, mappings))
     result['disableToast'] = bool(raw.get('disable_toast', False))
     if kind == 'checkmark':
         result.update(type='check', manual=True)
     elif kind == 'item':
         alternatives = raw.get('items') or [raw.get('item')]
-        values = [item(v) for v in alternatives]
+        values = [item(v, mappings) for v in alternatives]
         value = values[0]
         # Metadata/NBT filters are shared by our alternatives. Refuse alternatives with distinct filters.
         distinct_filters = any((v.get('meta', 0), v.get('nbt', '')) != (value.get('meta', 0), value.get('nbt', '')) for v in values)
@@ -257,20 +316,21 @@ def convert_task(raw, index, defaults=None, repeat=False):
     elif kind in ('forge_energy', 'ic2_energy', 'botania_mana', 'buildcraft_mj', 'fluid'):
         result.update(type='energy' if kind == 'forge_energy' else kind, count=int(raw.get('value', raw.get('amount', 1000))))
         if kind == 'fluid':
-            result.update(target=raw.get('fluid', 'water'), consume=True)
+            result.update(target=(mappings or {}).get('fluids', {}).get(raw.get('fluid', 'water'), raw.get('fluid', 'water')), consume=True)
             if raw.get('nbt'):
                 result['nbt'] = snbt(raw['nbt']) if isinstance(raw['nbt'], dict) else raw['nbt']
     elif kind == 'emc':
         result.update(type='emc', count=int(raw.get('value', 8192)), consume=True)
     elif kind == 'stat':
-        result.update(type='stat', target=raw.get('stat', ''), count=int(raw.get('value', 1)))
+        result.update(type='stat', target=(mappings or {}).get('stats', {}).get(raw.get('stat', ''), raw.get('stat', '')), count=int(raw.get('value', 1)))
     elif kind == 'kill':
-        result.update(type='kill', target=entity_id(raw.get('entity', '')), count=int(raw.get('value', 1)))
+        result.update(type='kill', target=entity_id(raw.get('entity', ''), mappings), count=int(raw.get('value', 1)))
     elif kind == 'biome':
         biome = raw.get('biome')
-        if biome not in VANILLA_BIOMES:
+        target = (mappings or {}).get('biomes', {}).get(biome, VANILLA_BIOMES.get(biome))
+        if target is None:
             raise ValueError('Biome registry mapping needed: ' + str(biome))
-        result.update(type='biome', target=str(VANILLA_BIOMES[biome]))
+        result.update(type='biome', target=str(target))
     elif kind == 'location':
         area = raw.get('location', [])
         if len(area) != 7 or any(int(v) < 0 for v in area[4:]):
@@ -280,18 +340,26 @@ def convert_task(raw, index, defaults=None, repeat=False):
         result.update(type='location', box=True, dimension=dim, x=x, y=y, z=z,
                       width=w, height=h, depth=d, ignoreDimension=bool(raw.get('ignore_dim', False)))
     elif kind in ('observation', 'interaction'):
-        refuse_fields(raw, ('properties',))
         match_type = raw.get('match_type', 'block_id')
         if match_type not in ('block_id', 'entity_id', 'block_entity_id', 'block_entity_class', 'entity_class'):
             raise ValueError('Ray matcher requires manual conversion: ' + str(match_type))
         target = raw.get('match', '')
-        result.update(type=kind, target=entity_id(target) if match_type == 'entity_id' else target,
+        result.update(type=kind, target=entity_id(target, mappings) if match_type == 'entity_id' else (mappings or {}).get('classes' if match_type.endswith('_class') else 'tileEntities' if match_type == 'block_entity_id' else '_', {}).get(target, target),
                       entity=match_type.startswith('entity_'), matchType=match_type, ignoreDamage=True)
+        if match_type == 'block_id':
+            key = block_state_key(target, raw.get('properties'))
+            block = (mappings or {}).get('blocks', {}).get(key)
+            if raw.get('properties') and block is None:
+                raise ValueError('Block state mapping needed: ' + key)
+            if block is not None:
+                result.update(target=block['id'], meta=block['meta'], ignoreDamage=False)
+        elif raw.get('properties'):
+            raise ValueError('Properties require a block matcher')
         if raw.get('nbt'): result.update(nbt=snbt(raw['nbt']) if isinstance(raw['nbt'], dict) else raw['nbt'], nbtMode='subset')
         if kind == 'observation':
             result['lookTicks'] = int(raw.get('timer', 0))
     elif kind == 'advancement':
-        raise ValueError('Advancement IDs require manual conversion to 1.7 achievements')
+        result.update(type='achievement', target=achievement_id(raw, mappings))
     elif kind in ('npc_quest', 'npc_dialog', 'npc_faction'):
         result.update(type=kind, target=str(int(raw.get(kind, 0))))
         if kind == 'npc_quest': result['checkActive'] = bool(raw.get('check_active', False))
@@ -309,10 +377,10 @@ def convert_task(raw, index, defaults=None, repeat=False):
         raise ValueError('Task requires manual conversion: ' + kind)
     return result
 
-def convert_reward(raw, defaults=None, repeat=False, nested=False):
+def convert_reward(raw, defaults=None, repeat=False, nested=False, mappings=None):
     defaults = defaults or {}
     kind = raw.get('type', '').removeprefix('ftbquests:')
-    result = object_presentation(raw)
+    result = object_presentation(raw, mappings)
     if not nested:
         if raw.get('uid'):
             result['id'] = code(raw['uid'])
@@ -324,7 +392,7 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False):
     elif raw.get('team_reward') not in (None, 'default') or raw.get('auto') not in (None, 'default', 'disabled'):
         raise ValueError('Nested reward scope requires manual conversion')
     if kind == 'item':
-        value = item(raw.get('item')); result.update(value)
+        value = item(raw.get('item'), mappings); result.update(value)
         result.update(type='item', count=int(raw.get('count', value['count'])), onlyOne=bool(raw.get('only_one', False)), randomBonus=int(raw.get('random_bonus', 0)))
     elif kind in ('xp', 'xp_levels'):
         result.update(type=kind, count=int(raw.get('xp_levels' if kind == 'xp_levels' else 'xp', raw.get('levels', 1))))
@@ -342,7 +410,7 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False):
         else:
             result.update(type='choice' if kind == 'choice' else 'random', options=[])
             for option in raw.get('rewards', []):
-                value = convert_reward(option, defaults, repeat, True); value['weight'] = int(option.get('weight', 1)); result['options'].append(value)
+                value = convert_reward(option, defaults, repeat, True, mappings); value['weight'] = int(option.get('weight', 1)); result['options'].append(value)
             if not result['options']:
                 raise ValueError('Missing reward table/options')
     elif kind in ('npc_quest', 'npc_faction'):
@@ -354,16 +422,18 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False):
         mail = dict(mail)
         attachments = []
         for index, stack in enumerate(mail.pop('MailItems', [])):
-            value = item(stack)
+            value = item(stack, mappings)
             if not isinstance(value['item'], str): raise ValueError('NPC mail items require registry IDs')
             value['slot'] = int(stack.get('Slot', index)); attachments.append(value)
         result.update(type='npc_mail', nbt=snbt(mail), attachments=attachments)
+    elif kind == 'advancement':
+        result.update(type='achievement', target=achievement_id(raw, mappings))
     elif kind == 'gamestage':
         result.update(type='gamestage', target=raw.get('stage', ''), remove=bool(raw.get('remove', False)))
     elif kind == 'toast':
         result.update(type='toast', target=raw.get('title') or 'Quest reward', text=raw.get('description', ''))
         if raw.get('icon'):
-            result['item'] = item(raw['icon'])['item']
+            result['item'] = item(raw['icon'], mappings)['item']
     else:
         raise ValueError('Reward requires manual conversion: ' + kind)
     return result
@@ -464,11 +534,12 @@ def convert_map_image(raw):
     if click and not http_uri(click): raise ValueError('Map illustration click needs a supported http/https URI')
     return dict(resource=resource, x=float(raw.get('x', 0)), y=float(raw.get('y', 0)), width=float(raw.get('width', 1)), height=float(raw.get('height', 1)), rotation=float(raw.get('rotation', 0)), hover=[raw['hover']] if isinstance(raw.get('hover'), str) else raw.get('hover', []), uri=click, dev=bool(raw.get('dev', False)))
 
-def convert(folder):
+def convert(folder, mappings=None):
+    mappings = mapping_rules(mappings)
     defaults = document(folder, 'file', True)
     book = {'format': 2, 'title': defaults.get('title') or 'Imported FTB 1.12 book', 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
     book.update(disableGui=bool(defaults.get('disable_gui', False)), gridScale=float(defaults.get('grid_scale', .5) or .5), defaultQuestShape=quest_shape(defaults.get('default_quest_shape')), hideFromItemBrowser=bool(defaults.get('default_quest_disable_jei', False)))
-    book['emergencyItems'] = [dict(item(stack), type='item') for stack in defaults.get('emergency_items', [])]
+    book['emergencyItems'] = [dict(item(stack, mappings), type='item') for stack in defaults.get('emergency_items', [])]
     book['emergencyCooldownSeconds'] = seconds(defaults.get('emergency_items_cooldown'))
     book['dropLootCrates'] = bool(defaults.get('drop_loot_crates', False))
     book['noDrop'] = weights(defaults.get('loot_crate_no_drop', {}), {'passive': 4000, 'monster': 600, 'boss': 0})
@@ -478,7 +549,7 @@ def convert(folder):
             raw = read_document(path); name = code(path.stem)
             entries = []
             for reward in raw.get('rewards', []):
-                entry = convert_reward(reward, defaults, nested=True); entry['weight'] = int(reward.get('weight', 1)); entries.append(entry)
+                entry = convert_reward(reward, defaults, nested=True, mappings=mappings); entry['weight'] = int(reward.get('weight', 1)); entries.append(entry)
             book['lootTables'][name] = entries
             book['lootSettings'][name] = {'rolls': max(1, int(raw.get('loot_size', 1))), 'emptyWeight': int(raw.get('empty_weight', 0))}
             if raw.get('loot_crate'):
@@ -523,10 +594,10 @@ def convert(folder):
                          'repeatable': repeat, 'autoRepeat': repeat, 'anyTask': bool(raw.get('or_tasks', False)),
                          'anyDependency': requirement.startswith('one_'), 'dependencyState': 'started' if requirement.endswith('started') else 'completed',
                          'minDependencies': int(raw.get('min_required_dependencies', 0)), 'dependencies': [],
-                         'tasks': [convert_task(t, i, defaults, repeat) for i, t in enumerate(raw.get('tasks', []))],
-                         'rewards': [convert_reward(r, defaults, repeat) for r in raw.get('rewards', [])]}
+                         'tasks': [convert_task(t, i, defaults, repeat, mappings) for i, t in enumerate(raw.get('tasks', []))],
+                         'rewards': [convert_reward(r, defaults, repeat, mappings=mappings) for r in raw.get('rewards', [])]}
                 if raw.get('icon'):
-                    icon = item(raw['icon']); quest['icon'] = icon['item']; quest['iconMeta'] = icon.get('meta', 0); quest['iconNbt'] = icon.get('nbt', '')
+                    icon = item(raw['icon'], mappings); quest['icon'] = icon['item']; quest['iconMeta'] = icon.get('meta', 0); quest['iconNbt'] = icon.get('nbt', '')
                 register(quest['id'], quest['id'])
                 for task in quest['tasks']:
                     if task['id'].startswith('ftb_'):
@@ -565,9 +636,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('folder', type=Path, help='config/ftbquests/normal from a 1.12.2 instance')
     parser.add_argument('output', type=Path, help='New destination JSON; existing files are never overwritten')
+    parser.add_argument('--mappings', type=Path, help='Explicit 1.12-to-1.7 identity, block metadata and achievement mapping JSON')
     args = parser.parse_args()
     try:
-        book = convert(args.folder)
+        if args.mappings and args.mappings.stat().st_size > 1024 * 1024:
+            raise ValueError('Mappings file exceeds 1 MiB')
+        mappings = json.loads(args.mappings.read_text(encoding='utf-8')) if args.mappings else None
+        book = convert(args.folder, mappings)
         encoded = json.dumps(book, ensure_ascii=False, indent=2).encode('utf-8')
         if len(encoded) > 900000:
             raise ValueError('Converted book exceeds the 900 KB server limit')

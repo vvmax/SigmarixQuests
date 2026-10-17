@@ -20,6 +20,7 @@ public final class QuestPresentation {
     public static final class Theme {
         public String background="EE17202A",panel="EE26313D",text="FFEEEEEE",edge="FF738CA6",selected="FFFFFFFF";
         public String available="FF397CB2",complete="FFB28B29",claimed="FF3A784E",locked="FF50545A";
+        public double questSpacing=1,lineWidth=1;
     }
     public static final class Style {
         public String selector="*",color="",textColor="",shape="";
@@ -46,10 +47,11 @@ public final class QuestPresentation {
         if(!Double.isFinite(book.gridScale) || book.gridScale<1D/32 || book.gridScale>8 || !shape(book.defaultQuestShape)) throw new IllegalArgumentException("Invalid map scale or default shape");
         if(book.theme==null || book.styles==null || book.styles.size()>128) throw new IllegalArgumentException("Invalid theme");
         Theme t=book.theme;
+        if(!Double.isFinite(t.questSpacing) || t.questSpacing<.125 || t.questSpacing>8 || !Double.isFinite(t.lineWidth) || t.lineWidth<0 || t.lineWidth>8) throw new IllegalArgumentException("Invalid theme geometry");
         for(String value:Arrays.asList(t.background,t.panel,t.text,t.edge,t.selected,t.available,t.complete,t.claimed,t.locked)) color(value);
         for(Style style:book.styles) {
             if(style==null || style.selector==null || style.selector.length()>512 || style.selector.trim().isEmpty()) throw new IllegalArgumentException("Invalid style selector");
-            for(String token:style.selector.trim().split("\\s+")) if(!token.equals("*") && !token.equals("quest") && !(token.startsWith("#") && QuestCore.validId(token.substring(1))) && !(token.startsWith(".") && QuestCore.validId(token.substring(1))) && !(token.startsWith("chapter:") && QuestCore.validId(token.substring(8))) && !Arrays.asList("state:available","state:complete","state:claimed","state:locked").contains(token)) throw new IllegalArgumentException("Unsupported selector: "+token);
+            selector(style.selector,null,null,null);
             if(style.color==null || style.textColor==null || style.shape==null || !style.shape.isEmpty() && !shape(style.shape)) throw new IllegalArgumentException("Invalid style");
             if(!style.color.isEmpty()) color(style.color); if(!style.textColor.isEmpty()) color(style.textColor);
         }
@@ -93,21 +95,39 @@ public final class QuestPresentation {
         for(int depth=0;current!=null && depth<64;depth++) { if(!current.defaultQuestShape.isEmpty()) return current.defaultQuestShape; current=chapter(book,current.parent); }
         return book.defaultQuestShape;
     }
-    public static boolean matches(String selector,QuestCore.Quest q,String state) {
-        for(String token:selector.trim().split("\\s+")) {
-            if(token.equals("*") || token.equals("quest")) continue;
-            if(token.startsWith("#") && token.substring(1).equals(q.id)) continue;
-            if(token.startsWith(".") && q.tags.contains(token.substring(1))) continue;
-            if(token.startsWith("chapter:") && token.substring(8).equals(q.chapter)) continue;
-            if(token.startsWith("state:") && token.substring(6).equals(state)) continue;
-            return false;
+    /** Native #id/.tag syntax is retained; legacy theme #tag syntax has a different meaning. */
+    public static boolean matches(String expression,QuestCore.Quest q,String state) { return selector(expression,null,q,state); }
+    public static boolean matches(String expression,QuestCore.Book book,QuestCore.Quest q,String state) { return selector(expression,book,q,state); }
+    private static boolean selector(String expression,QuestCore.Book book,QuestCore.Quest q,String state) {
+        if(expression==null || expression.length()>512 || expression.trim().isEmpty()) throw new IllegalArgumentException("Invalid style selector");
+        boolean any=false;
+        for(String branch:expression.split("\\|",-1)) {
+            if(branch.trim().isEmpty()) throw new IllegalArgumentException("Empty selector branch");
+            boolean all=true;
+            for(String term:branch.trim().split("\\s*&\\s*",-1)) {
+                if(term.isEmpty()) throw new IllegalArgumentException("Empty selector term");
+                for(String token:term.trim().split("\\s+")) {
+                    int negations=0; while(token.startsWith("!")) { negations++; token=token.substring(1); }
+                    boolean value;
+                    if(token.equals("*") || token.equals("quest")) value=true;
+                    else if(token.startsWith("#") && QuestCore.validId(token.substring(1))) value=q!=null && token.substring(1).equals(q.id);
+                    else if(token.startsWith(".") && QuestCore.validId(token.substring(1))) value=q!=null && q.tags.contains(token.substring(1));
+                    else if(token.startsWith("chapter:") && QuestCore.validId(token.substring(8))) value=q!=null && token.substring(8).equals(q.chapter);
+                    else if(token.startsWith("within:") && QuestCore.validId(token.substring(7))) value=q!=null && book!=null && within(book,q.chapter,token.substring(7));
+                    else if(Arrays.asList("state:available","state:complete","state:claimed","state:locked").contains(token)) value=token.substring(6).equals(state);
+                    else throw new IllegalArgumentException("Unsupported selector: "+token);
+                    all &= (negations&1)==0?value:!value;
+                }
+            }
+            any |= all;
         }
-        return true;
+        return any;
     }
+    public static double mapUnit(QuestCore.Book book) { return 48*book.theme.questSpacing; }
     public static String[] resolve(QuestCore.Book book,QuestCore.Quest q,String state) {
         Theme t=book.theme; String base="claimed".equals(state)?t.claimed:"complete".equals(state)?t.complete:"available".equals(state)?t.available:t.locked;
         String[] result={base,t.text,shape(book,q)};
-        for(Style style:book.styles) if(matches(style.selector,q,state)) {
+        for(Style style:book.styles) if(matches(style.selector,book,q,state)) {
             if(!style.color.isEmpty()) result[0]=style.color; if(!style.textColor.isEmpty()) result[1]=style.textColor; if(!style.shape.isEmpty()) result[2]=style.shape;
         }
         return result;
