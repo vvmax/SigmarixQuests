@@ -673,7 +673,7 @@ public class QuestService {
         preflightRewardEffects(p,leaves);
         for(int index:pending) { QuestCore.Reward r=q.rewards.get(index); data.claimReward(id,q.id,rewardId(r,index),individual(q,r)); }
         if(allShared && (rootId==null || claimed(id,q)) && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
-        applyRewards(p,leaves,itemSink,silentRewards);
+        applyRewards(p,leaves,itemSink,silentRewards,q);
         for(int index:pending) QuestEvents.fire("reward_claimed",id,q.id,rewardId(q.rewards.get(index),index));
         if(q.autoRepeat) repeatAutomated(id,q,p.worldObj.getTotalWorldTime());
     }
@@ -722,7 +722,8 @@ public class QuestService {
         }
     }
     private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink){applyRewards(p,leaves,itemSink,Collections.<Integer>emptySet());}
-    private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink,Set<Integer> silentRewards) {
+    private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink,Set<Integer> silentRewards){applyRewards(p,leaves,itemSink,silentRewards,null);}
+    private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink,Set<Integer> silentRewards,QuestCore.Quest questContext) {
         UUID id=p.getUniqueID();
         for(int index=0;index<leaves.size();index++) {QuestCore.Reward r=leaves.get(index);boolean notify=!silentRewards.contains(index); boolean delivered=true;int deliveredCount=r.count;switch(r.type) {
             case "item":
@@ -737,7 +738,7 @@ public class QuestService {
             case "xp": p.addExperience(r.count); break;
             case "xp_levels": p.addExperienceLevel(r.count); break;
             case "command":
-                String command=r.target.replace("{player}",p.getCommandSenderName()).replace("{uuid}",id.toString()).replace("{x}",Integer.toString(MathHelper.floor_double(p.posX))).replace("{y}",Integer.toString(MathHelper.floor_double(p.posY))).replace("{z}",Integer.toString(MathHelper.floor_double(p.posZ)));
+                String command=rewardCommand(p,r,questContext);
                 MinecraftServer.getServer().getCommandManager().executeCommand(r.asPlayer?p:MinecraftServer.getServer(),command); break;
             case "achievement": if(r.criterion.isEmpty() || r.criterion.equals("done"))grantAchievement(p,(Achievement)stat(r.target,true),new HashSet<Achievement>());else delivered=false;break;
             case "toast": if(notify)QuestNetwork.toast(p,r.title.isEmpty()?(r.target==null?"":r.target):r.title,r.description.isEmpty()?r.text:r.description,r.icon.isEmpty()?(r.item==null?"minecraft:book":r.item):r.icon,r.icon.isEmpty()?r.meta:r.iconMeta,r.icon.isEmpty()?r.nbt:r.iconNbt);break;
@@ -747,6 +748,13 @@ public class QuestService {
         if(delivered && itemSink==null && notify)QuestNetwork.rewardToast(p,r,deliveredCount);
         }
         p.inventoryContainer.detectAndSendChanges();
+    }
+    public String rewardCommand(EntityPlayerMP player,QuestCore.Reward reward,QuestCore.Quest quest){
+        String name=player.getCommandSenderName(),team=progress().team(player.getUniqueID());if(team.isEmpty())team=name;
+        String x=Integer.toString(MathHelper.floor_double(player.posX)),y=Integer.toString(MathHelper.floor_double(player.posY)),z=Integer.toString(MathHelper.floor_double(player.posZ));
+        String command=reward.target.replace("{player}",name).replace("{uuid}",player.getUniqueID().toString()).replace("{x}",x).replace("{y}",y).replace("{z}",z);
+        command=command.replace("@team",team).replace("@p",name).replace("@x",x).replace("@y",y).replace("@z",z);if(quest!=null)command=command.replace("@quest",quest.id).replace("@chapter",quest.chapter);
+        return command.startsWith("/")?command.substring(1):command;
     }
     private void grantAchievement(EntityPlayerMP p, Achievement a, Set<Achievement> visited) {
         if(!visited.add(a)) return;

@@ -18,7 +18,7 @@ final class QuestLibraryTextField extends GuiTextField {
         try{
             GL11.glEnable(GL11.GL_SCISSOR_TEST);GL11.glScissor(clipX*scale,(res.getScaledHeight()-clipY-clipH)*scale,clipW*scale,clipH*scale);
             font.drawString(visible,left,top,tint);int cx=left+font.getStringWidth(visible.substring(0,j));
-            if(isFocused() && System.currentTimeMillis()%1000>500){if(cursor<text.length())Gui.drawRect(cx-1,top-1,cx,top+10,0xFF000000|tint);else Gui.drawRect(cx,top+7,cx+5,top+8,0xFF000000|tint);}
+            if(isFocused() && Minecraft.getSystemTime()%1000>500){if(cursor<text.length())Gui.drawRect(cx-1,top-1,cx,top+10,0xFF000000|tint);else Gui.drawRect(cx,top+7,cx+5,top+8,0xFF000000|tint);}
             if(k!=j){int end=left+font.getStringWidth(visible.substring(0,k))-1;GL11.glEnable(GL11.GL_COLOR_LOGIC_OP);GL11.glLogicOp(GL11.GL_OR_REVERSE);Gui.drawRect(Math.min(cx,end),top-1,Math.max(cx,end),top+10,0xFF0000FF);}
         }finally{GL11.glPopAttrib();}
     }

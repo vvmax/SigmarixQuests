@@ -29,7 +29,7 @@ abstract class QuestListScreen extends GuiScreen {
         if(hasSearch)panelWidth=Math.max(panelWidth,previousWidth);boxWidth=panelWidth+39;boxHeight=158+(hasSearch?14:0);left=(width-boxWidth)/2;top=(height-boxHeight)/2;panelY=hasSearch?23:9;
         contentHeight=borderV*2+rowOffset(visibleRows.size())-(visibleRows.isEmpty()?0:gap);scroll=Math.max(0,Math.min(scroll,Math.max(0,contentHeight-140)));
         input=new QuestLibraryTextField(fontRendererObj,left+12,top+8,boxWidth-24,8).clip(left+8,top+6,boxWidth-16,12);input.setMaxStringLength(128);input.setText(filter);input.setFocused(focus);
-        buttonList.clear();for(int i=0;i<visibleRows.size();i++){Row row=visibleRows.get(i);GuiButton button=questTheme?new QuestFlatButton(row.id,left+9+borderH,top+panelY+borderV+rowOffset(i)-scroll,panelWidth-borderH*2,rowHeight(row),row.title).left(row.icon.isEmpty() && row.playerId.isEmpty()?4:(rowHeight(row)<16?15:22)):new QuestLibraryUi.Button(row.id,left+9+borderH,top+panelY+borderV+rowOffset(i)-scroll,panelWidth-borderH*2,rowHeight(row),row.title,row.playerId.isEmpty() && !row.customIcon?row.icon:"blank").left();button.enabled=row.enabled;buttonList.add(button);}
+        buttonList.clear();for(int i=0;i<visibleRows.size();i++){Row row=visibleRows.get(i);GuiButton button=questTheme?new QuestFlatButton(row.id,left+9+borderH,top+panelY+borderV+rowOffset(i)-scroll,panelWidth-borderH*2,rowHeight(row),row.title).left(row.icon.isEmpty() && row.playerId.isEmpty()?4:(rowHeight(row)<16?(rowHeight(row)-8)/2+12:22)):new QuestLibraryUi.Button(row.id,left+9+borderH,top+panelY+borderV+rowOffset(i)-scroll,panelWidth-borderH*2,rowHeight(row),row.title,row.playerId.isEmpty() && !row.customIcon?row.icon:"blank").left();button.enabled=row.enabled;buttonList.add(button);}
         seen=revision();
     }
     private void drawScrollbar(){
@@ -47,7 +47,7 @@ abstract class QuestListScreen extends GuiScreen {
         Row hover=null;
         try{for(int i=0;i<buttonList.size();i++){GuiButton b=(GuiButton)buttonList.get(i);Row row=visibleRows.get(i);b.visible=b.yPosition+b.height>top+panelY && b.yPosition<top+panelY+140;if(!row.spacer)b.drawButton(mc,mx,my);if(!b.visible || row.spacer)continue;
             if(!row.playerId.isEmpty())QuestPlayerHeads.draw(row.playerId,row.playerName,b.xPosition+2,b.yPosition+2,16,row.border,row.teamHead);
-            else if((questTheme || row.customIcon) && !row.icon.isEmpty())drawRowIcon(row,b.xPosition+(b.height<16?3:2),b.yPosition+(b.height-(b.height<16?8:16))/2,b.height<16?8:16);
+            else if((questTheme || row.customIcon) && !row.icon.isEmpty())drawRowIcon(row,b.xPosition+(b.height-(b.height<16?8:16))/2,b.yPosition+(b.height-(b.height<16?8:16))/2,b.height<16?8:16);
             if(mx>=b.xPosition && mx<b.xPosition+b.width && my>=Math.max(top+panelY,b.yPosition) && my<Math.min(top+panelY+140,b.yPosition+b.height))hover=row;
         }}finally{GL11.glPopAttrib();}
         if(hover!=null && !hover.tooltip.isEmpty())drawHoveringText(hover.tooltip,mx,my,fontRendererObj);

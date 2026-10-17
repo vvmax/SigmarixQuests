@@ -80,6 +80,13 @@ class ImportTests(unittest.TestCase):
         self.assertFalse(task['manual'])
         self.assertTrue(convert_task({'type': 'custom', 'enable_button': True}, 0)['manual'])
 
+    def test_native_command_variables_are_preserved(self):
+        command = '/say @p @team @quest @chapter @x @y @z'
+        self.assertEqual(convert_reward({'type': 'command', 'command': command})['target'], command)
+        for command in ('give @s diamond', 'give @p[type=Player] diamond'):
+            with self.assertRaises(ValueError):
+                convert_reward({'type': 'command', 'command': command})
+
     def test_unsupported_types_fail_instead_of_becoming_checkmarks(self):
         with self.assertRaises(ValueError):
             convert_task({'type': 'ftbquests:missing_integration'}, 0)

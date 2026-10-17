@@ -57,7 +57,7 @@ official Botania r1.8-249. This ledger is not a claim of complete parity.
 
 ## Runtime verification (current checkpoint)
 
-- Build: 58 JUnit and 147 Forge integration tests, plus 42 Python migration tests.
+- Build: 60 JUnit and 150 Forge integration tests, plus 43 Python migration tests.
   Current backend checks passed; the final small render corrections are being measured.
 - Full vanilla client/integrated-world fixture passed with native property form
   save, native device accept/close/save and restart persistence.
@@ -80,6 +80,43 @@ official Botania r1.8-249. This ledger is not a claim of complete parity.
 The existing backend extensions remain available, but do not substitute for
 matching the original windows. Static texture identity alone is insufficient.
 
-The 26 native base task/reward/chapter/quest property forms have now been
-captured from the original runtime. Their comparison is in progress; this
-checkpoint does not claim that all 26 forms already match.
+All 26 base task/reward/chapter/quest property forms now match the complete
+854×480 reference screenshot, with zero exclusions. Recompute with
+`python tools/compare_gui_pixels.py docs/object-form-pixel-comparison.json`.
+Energy input limits, command variables and 1.7 achievement criterion semantics
+have dedicated backend regression coverage. Native editor actions, desktop
+text editing and remaining interaction states are being completed.
+
+The native Swing text editor now matches the complete 835×761 reference frame
+(635,435 pixels, zero differences). Its Save button was also exercised through
+an integrated server and the resulting quest text was verified in the server book.
+Map editing now supports source-style placement/cancel, group moves, and batch
+reward creation/deletion, with dependency cleanup validated before submission.
+
+Nine complete scalar/item/NBT editor frames now match at 854×480: null and populated
+NBT, item SNBT, plain item text, empty item, count, metadata, name, and an invalid
+count with disabled Accept. Native 1.12 SNBT formatting is generated without
+changing the underlying 1.7 NBT. Item text supports string registry IDs and legacy
+numeric NBT. Nonempty ForgeCaps still require a compatibility mapping because
+Forge 1.7 has no capability framework.
+
+Ten complete auxiliary frames also match at 854×480: empty/populated reward-table
+directory, weighted reward editor, choice dialog, emergency items, and reward
+notifications. Countdown fixtures fix the same timer second; text fixtures hide
+carets to fix blink phase. No pixel regions are excluded. Reports are
+`value-pixel-comparison.json`, `auxiliary-pixel-comparison.json`, and
+`desktop-pixel-comparison.json`. Device property forms and world rendering remain
+under active comparison; this checkpoint does not claim complete state coverage.
+
+Eight native device property forms now match full reference screenshots at
+854×480: task/progress screens, barrier, collector, redstone/player/progress
+detectors, and chest. The reference forms were obtained from actual native
+server config messages, not a reconstruction. See `device-form-pixel-comparison.json`.
+The missing required-redstone-level property has been added. Detector input now
+reacts to power changes and persists the previous power, avoiding repeat
+completion under a steady signal; the Forge threshold test also covers reset
+under steady power and a subsequent above-threshold change. Protected screen
+fields now use native read-only state for non-editors.
+
+Checkpoint build passed: 60 JUnit, 150 Forge integration tests and 43 Python tests.
+A new combined optional-mod client run is in progress after these changes.

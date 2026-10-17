@@ -51,6 +51,7 @@ public final class QuestBlocks {
         }
         @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
         private net.minecraft.util.IIcon[] textures;
+        @Override public void onNeighborBlockChange(World world,int x,int y,int z,Block neighbor){super.onNeighborBlockChange(world,x,y,z,neighbor);if(mode==4 && !world.isRemote){TileEntity tile=world.getTileEntity(x,y,z);if(tile instanceof QuestDevice)((QuestDevice)tile).checkRedstone();}}
         @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
         public void registerBlockIcons(net.minecraft.client.renderer.texture.IIconRegister registry) {
             String[] names=mode<=1?new String[]{"screen_side","screen_front","screen_front_input"}:mode==2?new String[]{"barrier","barrier_completed"}:mode==7?new String[]{"chest_side","chest_top","chest_front"}:new String[]{new String[]{"","","","reward_collector","redstone_detector","player_detector","loot_crate_opener","","loot_crate_storage","progress_detector"}[mode]};

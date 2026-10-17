@@ -399,7 +399,7 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False, mappings=None
         result.update(type=kind, count=int(raw.get('xp_levels' if kind == 'xp_levels' else 'xp', raw.get('levels', 1))))
     elif kind == 'command':
         command = raw.get('command', '')
-        if '@' in command:
+        if '@' in re.sub(r'@(team|chapter|quest|p|x|y|z)(?![A-Za-z0-9_\[])', '', command):
             raise ValueError('1.12 command selectors need manual review')
         result.update(type='command', target=command, asPlayer=bool(raw.get('player_command', False)))
     elif kind in ('random', 'choice', 'loot'):

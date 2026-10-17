@@ -4,9 +4,12 @@ import dev.sigmarix.quests.*;import java.util.*;import net.minecraft.client.gui.
 final class QuestObjectMenus {
     private static String tr(String key){return StatCollector.translateToLocal(key);}
     static void open(final GuiScreen parent,final String questId,final String collection,final String id,int x,int y){
-        final QuestObjectConfigScreen config=QuestObjectConfigScreen.prepare(parent,questId,collection,id);Minecraft mc=Minecraft.getMinecraft();config.setWorldAndResolution(mc,parent.width,parent.height);List<QuestContextScreen.Entry> menu=new ArrayList<QuestContextScreen.Entry>();
+        open(parent,questId,collection,id,x,y,Collections.<QuestContextScreen.Entry>emptyList());
+    }
+    static void open(final GuiScreen parent,final String questId,final String collection,final String id,int x,int y,List<QuestContextScreen.Entry> before){
+        final QuestObjectConfigScreen config=QuestObjectConfigScreen.prepare(parent,questId,collection,id);Minecraft mc=Minecraft.getMinecraft();config.setWorldAndResolution(mc,parent.width,parent.height);List<QuestContextScreen.Entry> menu=new ArrayList<QuestContextScreen.Entry>(before);
         for(final QuestConfigScreen.Entry entry:config.quickEntries()){
-            boolean bool=entry.value.get().equals("true") || entry.value.get().equals("false");QuestContextScreen.Entry row=new QuestContextScreen.Entry(entry.label,bool?"accept":"",()->entry.edit.accept(0,config)){
+            boolean bool=entry.value.get().equals("true") || entry.value.get().equals("false");QuestContextScreen.Entry row=new QuestContextScreen.Entry(entry.label,bool?"accept":"",entry.enabled,()->entry.edit.accept(0,config)){
                 @Override void onClick(int button){entry.edit.accept(button,config);}
                 @Override void drawIcon(int ix,int iy,int size,int color){if(entry.value.get().equals("true") || entry.value.get().equals("false"))QuestClassicUi.libraryIcon(entry.value.get().equals("true")?"accept":"accept_gray",ix,iy,size,color);}
             };row.tooltip.add(entry.value.get());menu.add(row);

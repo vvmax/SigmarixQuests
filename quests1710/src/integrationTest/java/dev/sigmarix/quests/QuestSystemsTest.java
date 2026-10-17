@@ -6,7 +6,7 @@ import java.util.zip.GZIPOutputStream;
 import net.minecraft.init.*;
 import net.minecraft.entity.player.*;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemStack;import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -308,6 +308,8 @@ public class QuestSystemsTest {
         try {
             when(player.worldObj.getStrongestIndirectPower(0,0,0)).thenReturn(11); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(0,data.value(tile.owner,quest.id,target.id));
             when(player.worldObj.getStrongestIndirectPower(0,0,0)).thenReturn(12); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(9,data.value(tile.owner,quest.id,target.id)); assertTrue(data.completed(tile.owner).contains(quest.id));
+            data.reset(tile.owner,quest.id);for(int i=0;i<40;i++)tile.updateEntity();assertEquals(0,data.value(tile.owner,quest.id,target.id));
+            when(player.worldObj.getStrongestIndirectPower(0,0,0)).thenReturn(13);tile.checkRedstone();assertEquals(9,data.value(tile.owner,quest.id,target.id));
         } finally { QuestsMod.service=null; }
     }
     @Test public void publicDetectorCreditsDetectedPlayersInsteadOfItsOfflineBuilder() {
@@ -750,6 +752,17 @@ public class QuestSystemsTest {
     private QuestDevice terminalTile() {
         QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=quest.tasks.get(0).id; tile.setWorldObj(player.worldObj); doReturn(player).when(tile).player();
         when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"eu_test")); QuestsMod.service=service; return tile;
+    }
+    @Test public void nativeItemTextAndStringIdNbtPreserveMetadataCountsAndTags(){
+        ItemStack parsed=QuestStackText.parse("minecraft:stone 3 * {display:{Name:\"Kept\"}}",false);assertEquals(Item.getItemFromBlock(Blocks.stone),parsed.getItem());assertEquals(3,parsed.stackSize);assertEquals(32767,parsed.getItemDamage());assertEquals("Kept",parsed.getDisplayName());NBTTagCompound nativeNbt=QuestStackText.write(parsed);assertTrue(nativeNbt.hasKey("id",8));ItemStack restored=QuestStackText.parse(nativeNbt.toString(),false);assertTrue(ItemStack.areItemStacksEqual(parsed,restored));NBTTagCompound legacy=new NBTTagCompound();parsed.writeToNBT(legacy);assertTrue(ItemStack.areItemStacksEqual(parsed,QuestStackText.parse(legacy.toString(),false)));
+    }
+    @Test public void rawItemTextEnforcesSingleFieldsAndRejectsUnrepresentableCapabilities(){
+        assertNull(QuestStackText.parse("minecraft:air",true));assertNull(QuestStackText.parse("-",true));assertEquals(1,QuestStackText.parse("{id:\"minecraft:apple\"}",true).stackSize);
+        for(String invalid:Arrays.asList("minecraft:apple 2","unknown:missing","{id:\"minecraft:apple\",ForgeCaps:{unsupported:1}}"))try{QuestStackText.parse(invalid,true);fail();}catch(IllegalArgumentException expected){}
+    }
+    @Test public void nativeCommandVariablesUseClaimingPlayerQuestAndFlooredCoordinates(){
+        when(player.getCommandSenderName()).thenReturn("QuestPlayer");player.posX=-.2;player.posY=64.9;player.posZ=3.2;quest.chapter="chapter_id";QuestCore.Reward command=new QuestCore.Reward();command.type="command";command.target="/say @p @team @quest @chapter @x @y @z {player} {uuid}";
+        assertEquals("say QuestPlayer QuestPlayer test chapter_id -1 64 3 QuestPlayer "+player.getUniqueID(),service.rewardCommand(player,command,quest));
     }
     @Test public void nativeEnergyInputLimitCapsEachTransferAndSimulationKeepsProgress(){
         QuestCore.Task energy=task("energy",null,20,false);energy.maxInput=7;QuestDevice tile=terminalTile();

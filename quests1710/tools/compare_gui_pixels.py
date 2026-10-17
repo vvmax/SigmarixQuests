@@ -34,7 +34,9 @@ def main():
             continue
         images = args.report.parent / 'images'
         suffix = name.replace('_', '-') + '.png'
-        compared, different = compare(images / ('reference-' + suffix), images / ('port-' + suffix), specification['include'], specification.get('exclude', []))
+        reference = args.report.parent / specification['reference_image'] if 'reference_image' in specification else images / ('reference-' + suffix)
+        port = args.report.parent / specification['port_image'] if 'port_image' in specification else images / ('port-' + suffix)
+        compared, different = compare(reference, port, specification['include'], specification.get('exclude', []))
         results[name] = {'pixels_compared': compared, 'different_pixels': different}
     print(json.dumps(results, indent=2))
     return int(any(result['different_pixels'] for result in results.values()))

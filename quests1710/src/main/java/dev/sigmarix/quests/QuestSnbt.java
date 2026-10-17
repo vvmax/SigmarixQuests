@@ -11,6 +11,20 @@ public final class QuestSnbt {
         if(!(root instanceof NBTTagCompound) || parser.at!=text.length()) throw parser.error("Expected one compound");
         return (NBTTagCompound)root;
     }
+    private static final java.lang.reflect.Field LIST_VALUES=cpw.mods.fml.relauncher.ReflectionHelper.findField(NBTTagList.class,"tagList","field_74747_a");
+    @SuppressWarnings("unchecked") private static List<NBTBase> elements(NBTTagList list){try{return (List<NBTBase>)LIST_VALUES.get(list);}catch(IllegalAccessException error){throw new IllegalStateException(error);}}
+    public static String write(NBTBase value){StringBuilder output=new StringBuilder();write(value,output,0,new int[]{0});return output.toString();}
+    private static String quote(String value){StringBuilder output=new StringBuilder(" ");char quote=0;for(int i=0;i<value.length();i++){char c=value.charAt(i);if(c=='\\')output.append('\\');else if(c=='\"' || c=='\''){if(quote==0)quote=c=='\"'?'\'':'\"';if(quote==c)output.append('\\');}output.append(c);}if(quote==0)quote='\"';output.setCharAt(0,quote);return output.append(quote).toString();}
+    private static void write(NBTBase value,StringBuilder output,int depth,int[] nodes){
+        if(value==null){output.append("null");return;}if(depth>64 || ++nodes[0]>100000)throw new IllegalArgumentException("SNBT structure limit");
+        if(value instanceof NBTTagCompound){NBTTagCompound compound=(NBTTagCompound)value;output.append('{');boolean comma=false;for(Object raw:compound.func_150296_c()){String key=String.valueOf(raw);if(comma)output.append(',');comma=true;output.append(key.matches("[A-Za-z0-9._+\\-]+")?key:quote(key)).append(':');write(compound.getTag(key),output,depth+1,nodes);}output.append('}');}
+        else if(value instanceof NBTTagList){NBTTagList list=(NBTTagList)value;output.append('[');for(int i=0;i<list.tagCount();i++){if(i>0)output.append(',');write(elements(list).get(i),output,depth+1,nodes);}output.append(']');}
+        else if(value instanceof NBTTagString)output.append(quote(((NBTTagString)value).func_150285_a_()));
+        else if(value instanceof NBTTagByteArray){byte[] array=((NBTTagByteArray)value).func_150292_c();output.append("[B;");for(int i=0;i<array.length;i++){if(i>0)output.append(',');output.append(array[i]).append('B');}output.append(']');}
+        else if(value instanceof NBTTagIntArray){int[] array=((NBTTagIntArray)value).func_150302_c();output.append("[I;");for(int i=0;i<array.length;i++){if(i>0)output.append(',');output.append(array[i]);}output.append(']');}
+        else output.append(value.toString());
+        if(output.length()>1048576)throw new IllegalArgumentException("SNBT size limit");
+    }
     private IllegalArgumentException error(String reason) { return new IllegalArgumentException(reason+" at SNBT offset "+at); }
     private void space() { while(at<text.length() && Character.isWhitespace(text.charAt(at))) at++; }
     private boolean take(char c) { space(); if(at<text.length() && text.charAt(at)==c) { at++; return true; } return false; }

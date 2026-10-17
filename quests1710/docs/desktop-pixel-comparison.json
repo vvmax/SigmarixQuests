@@ -1,0 +1,21 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 native Swing TextEditorFrame, same Java 8 and Linux theme",
+  "resolution": [
+    835,
+    761
+  ],
+  "desktop_text_editor": {
+    "include": [
+      0,
+      0,
+      835,
+      761
+    ],
+    "exclude": [],
+    "pixels_compared": 635435,
+    "different_pixels": 0,
+    "notes": [
+      "Full native desktop window content, original controls and text. Both capture fixtures hide the caret to fix its blink phase."
+    ]
+  }
+}

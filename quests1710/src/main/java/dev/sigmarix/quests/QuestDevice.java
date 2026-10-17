@@ -18,6 +18,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     public UUID owner;
     public String quest="",task="",bindingProfile="default";
     public boolean signal,analog;
+    private int lastRedstoneInput;
     public double detectorRadius=1.49,detectorOffsetY=1.01,detectorHeight=2.98;
     public int detectorPower=1;
     public boolean detectorNotifications=true;
@@ -115,7 +116,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
                 if(input!=null) { s.acceptItems(owner,quest,task,input,false); if(input.stackSize<=0) input=null; markDirty(); }
                 if(player!=null) { if(s.active(player,q)) s.finish(player,q); } else s.finishStored(owner,q,worldObj.getTotalWorldTime());
             }
-            if(mode==4 && next && definition("custom")!=null && owner!=null) { creditDetected(owner,player); }
+            if(mode==4)checkRedstone();
             if(mode==3 && q!=null && owner!=null && s.progress().completed(owner).contains(quest) && !s.claimed(owner,q)) {
                 java.util.function.Predicate<java.util.List<net.minecraft.item.ItemStack>> capacity=stacks->QuestRewardBuffer.fits(collectorItems,stacks);
                 java.util.function.Consumer<net.minecraft.item.ItemStack> sink=stack->{ if(!QuestRewardBuffer.add(collectorItems,stack)) throw new IllegalStateException("Collector capacity changed during reward transaction"); markDirty(); };
@@ -154,6 +155,8 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         detectorRadius=radius; detectorOffsetY=offset; detectorHeight=height; detectorPower=power;
         markDirty(); if(worldObj!=null && !worldObj.isRemote) worldObj.markBlockForUpdate(xCoord,yCoord,zCoord);
     }
+    /** Like the native detector, a steady powered signal does not retrigger a reset task. */
+    public void checkRedstone(){if(worldObj==null || worldObj.isRemote || QuestsMod.service==null)return;int power=worldObj.getStrongestIndirectPower(xCoord,yCoord,zCoord);int previous=lastRedstoneInput;lastRedstoneInput=power;if(power!=previous)markDirty();if(power!=previous && power>=detectorPower && owner!=null && definition("custom")!=null)creditDetected(owner,player());}
     private void creditDetected(UUID recipient,EntityPlayerMP online) {
         QuestService service=QuestsMod.service; QuestCore.Task target=definition("custom"); if(target==null) return;
         QuestCore.Quest q=service.quests.get(quest);
@@ -175,7 +178,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         return present;
     }
     @Override public void readFromNBT(NBTTagCompound nbt) {
-        super.readFromNBT(nbt);
+        super.readFromNBT(nbt);lastRedstoneInput=Math.max(0,Math.min(15,nbt.getInteger("lastRedstoneInput")));
         try { owner=UUID.fromString(nbt.getString("owner")); } catch(IllegalArgumentException e) { owner=null; }
         euFraction=nbt.getDouble("euFraction"); if(!Double.isFinite(euFraction) || euFraction<0 || euFraction>=1) euFraction=0; euBinding=nbt.getString("euBinding");
         pendingLoot.clear(); queuedLoot=Math.max(0,Math.min(QuestService.MAX_AUTOMATED_STACKS*64,nbt.getInteger("queuedLoot")));
@@ -203,7 +206,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         nbt.setBoolean("detectorNotifications",detectorNotifications); nbt.setDouble("detectorRadius",detectorRadius); nbt.setDouble("detectorOffsetY",detectorOffsetY); nbt.setDouble("detectorHeight",detectorHeight); nbt.setInteger("detectorPower",detectorPower);
         nbt.setBoolean("indestructible",indestructible); nbt.setString("screenSkin",screenSkin); nbt.setInteger("screenSkinMeta",screenSkinMeta);
         nbt.setBoolean("screenFullscreen",screenFullscreen); nbt.setBoolean("screenHideIcons",screenHideIcons); nbt.setBoolean("screenInputOnly",screenInputOnly); if(screenInputIcon!=null) { NBTTagCompound icon=new NBTTagCompound(); screenInputIcon.writeToNBT(icon); nbt.setTag("screenInputIcon",icon); }
-        super.writeToNBT(nbt); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent);nbt.setLong("screenTaskProgress",screenTaskProgress); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
+        super.writeToNBT(nbt);nbt.setInteger("lastRedstoneInput",lastRedstoneInput); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent);nbt.setLong("screenTaskProgress",screenTaskProgress); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
     }
     @Override public AxisAlignedBB getRenderBoundingBox() { return AxisAlignedBB.getBoundingBox(xCoord-8,yCoord,zCoord-8,xCoord+9,yCoord+9,zCoord+9); }
     @Override public Packet getDescriptionPacket() { NBTTagCompound nbt=new NBTTagCompound(); writeToNBT(nbt); nbt.removeTag("collectorItems"); nbt.removeTag("input"); nbt.removeTag("pendingLoot"); return new S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,nbt); }
