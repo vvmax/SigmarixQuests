@@ -143,7 +143,8 @@ public final class QuestCore {
     public static boolean validId(String id) { return id != null && id.matches("[a-zA-Z0-9_.-]{1,64}"); }
     public static final class LootSettings { public int rolls=1, emptyWeight; public String name="",color="FFFFFF",alias=""; public boolean glow; public QuestLoot.Weights drops=new QuestLoot.Weights(); }
     public static final class Chapter {
-        public String id,title,description="",image="",parent="",defaultQuestShape="";
+        public String id,title,description="",image="",parent="",defaultQuestShape="",icon="",iconNbt="";
+        public int iconMeta;
         public boolean alwaysInvisible;
         public List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
     }

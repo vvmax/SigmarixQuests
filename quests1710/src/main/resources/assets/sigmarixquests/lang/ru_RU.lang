@@ -133,3 +133,17 @@ quests.ui.use_held_skin=Вид предмета
 quests.ui.unbreakable=Неразрушимый
 quests.ui.set_team=Назначить
 quests.ui.player_uuid=Игрок / UUID
+
+quests.ui.tasks=Задачи
+quests.ui.rewards=Награды
+quests.ui.dependencies=Зависимости
+quests.ui.dependants=Открывает задания
+quests.ui.no_tasks=Нет задач
+quests.ui.no_rewards=Нет наград
+quests.ui.valid_items_for=Подходящие предметы для
+quests.ui.submit=Сдать
+quests.ui.more_options=Другие действия
+quests.ui.search=Поиск
+quests.ui.collect_rewards=Неполученные награды
+quests.ui.claimed=Получено
+quests.ui.optional=Необязательное задание

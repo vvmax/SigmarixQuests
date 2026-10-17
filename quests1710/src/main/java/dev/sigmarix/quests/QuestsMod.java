@@ -226,6 +226,8 @@ public final class QuestsMod {
                 case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message=quest.tasks.stream().anyMatch(t->t.id.equals(action.text) && t.type.equals("custom"))?"Task action sent":"Task confirmed"; break;
                 case "submit": if(quest==null) throw new IllegalArgumentException("Unknown quest"); message="Submitted: "+service.submit(player,quest,action.text); break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
+                case "click_task": service.clickTask(player,quest,action.text); message="Task updated"; break;
+                case "claim_reward": service.claimReward(player,quest,action.text,choices); message="Reward claimed"; break;
                 case "claim": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.claim(player,quest,choices); message="Rewards claimed"; break;
                 case "repeat": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.repeat(player,quest); message="Quest reset"; break;
                 case "save": if(!editor(player)) throw new IllegalArgumentException("Operator permission required"); service.save(action.book,action.revision); message="Book saved (backup written)"; break;

@@ -15,7 +15,7 @@ import net.minecraft.util.ScreenShotHelper;
 @Mod(modid="sigmarixquestpreview",name="Quest GUI preview fixture",version="1",dependencies="required-after:sigmarixquests")
 public final class QuestPreview {
     private QuestNetwork.Snapshot fixture;
-    private int ticks,stage,waiting,loginRetries,lastServerStep=-3;
+    private int ticks,stage,waiting,loginRetries,lastServerStep=-5;
     private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
     private QuestCore.Book original;
@@ -30,7 +30,8 @@ public final class QuestPreview {
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
     private volatile boolean bcRequested,bcPassed;
     private volatile boolean iconRequested,iconReady;
-    private boolean iconPassed,pinPassed;
+    private boolean iconPassed,pinPassed,classicUiPassed;
+    private volatile boolean uiItemRequested;
     private volatile boolean openStorageRequested,commandVerified;
     private boolean bcRunning;
     private boolean emcRunning;
@@ -61,6 +62,7 @@ public final class QuestPreview {
             if(QuestsMod.service.progress().stage(actor.getUniqueID(),"native-click")) commandVerified=true;
         }
         if(openOpenerRequested) { openOpenerRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0); int[] position=NativeQuestSmoke.openerPosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]); }
+        if(uiItemRequested) { uiItemRequested=false; net.minecraft.entity.player.EntityPlayerMP actor=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0); actor.inventory.addItemStackToInventory(new net.minecraft.item.ItemStack(net.minecraft.init.Items.stick)); actor.inventory.markDirty(); actor.inventoryContainer.detectAndSendChanges(); }
         if(openCollectorRequested) {
             openCollectorRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
             int[] position=NativeQuestSmoke.collectorPosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]);
@@ -167,11 +169,11 @@ public final class QuestPreview {
         QuestScreens.configure(tile,2,2);
         if(QuestScreens.core((QuestDevice)world.getTileEntity(x,y+1,z+1))!=tile) throw new IllegalStateException("Screen part did not link to its core");
         player.playerNetServerHandler.setPlayerLocation(player.posX,player.posY,z+1D,-90,17);
-        deviceX=x; deviceY=y; deviceZ=z; deviceDelay=45;
+        deviceX=x; deviceY=y; deviceZ=z; deviceDelay=0;
     }
     @SubscribeEvent(priority=EventPriority.LOWEST) public void tick(TickEvent.ClientTickEvent event) throws Exception {
         if(event.phase!=TickEvent.Phase.END) return;
-        Minecraft mc=Minecraft.getMinecraft(); mc.gameSettings.pauseOnLostFocus=false; mc.gameSettings.renderDistanceChunks=2; mc.gameSettings.fancyGraphics=false; mc.gameSettings.enableVsync=false; mc.gameSettings.limitFramerate=30;
+        Minecraft mc=Minecraft.getMinecraft(); mc.guiAchievement.func_146257_b(); mc.gameSettings.showInventoryAchievementHint=false; mc.gameSettings.pauseOnLostFocus=false; mc.gameSettings.renderDistanceChunks=2; mc.gameSettings.fancyGraphics=false; mc.gameSettings.enableVsync=false; mc.gameSettings.limitFramerate=30;
         if(testing) { smoke(mc); return; }
         ClientProxy.snapshot=fixture; ticks++;
         if(ticks==30) {
@@ -197,6 +199,11 @@ public final class QuestPreview {
         java.lang.reflect.Method method=screen.getClass().getDeclaredMethod("actionPerformed",net.minecraft.client.gui.GuiButton.class); method.setAccessible(true);
         method.invoke(screen,new net.minecraft.client.gui.GuiButton(id,0,0,"fixture"));
     }
+    private void clickCard(Minecraft mc,boolean reward,int index) throws Exception {
+        java.lang.reflect.Field field=QuestBookScreen.class.getDeclaredField("card"); field.setAccessible(true); QuestViewLayout card=(QuestViewLayout)field.get(mc.currentScreen);
+        java.lang.reflect.Method click=QuestBookScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class); click.setAccessible(true);
+        click.invoke(mc.currentScreen,card.cellX(reward,index,2)+8,card.cellY(index)+8,0);
+    }
     private void action(String kind) {
         QuestNetwork.Action action=new QuestNetwork.Action(); action.action=kind; action.id="welcome"; ClientProxy.send(action);
     }
@@ -214,8 +221,8 @@ public final class QuestPreview {
             waiting=0; mc.launchIntegratedServer(worldName,"Quest smoke fixture",null); return;
         }
         if(mc.thePlayer==null || mc.theWorld==null || waiting%5!=0) return;
-        java.lang.reflect.Field serverClock=QuestsMod.class.getDeclaredField("ticks"); serverClock.setAccessible(true); int serverNow=serverClock.getInt(QuestsMod.instance); if(serverNow<lastServerStep) lastServerStep=-3;
-        if(serverNow-lastServerStep<3) return;
+        java.lang.reflect.Field serverClock=QuestsMod.class.getDeclaredField("ticks"); serverClock.setAccessible(true); int serverNow=serverClock.getInt(QuestsMod.instance); if(serverNow<lastServerStep) lastServerStep=-5;
+        if(serverNow-lastServerStep<5) return;
         long realNow=System.nanoTime(); if(realNow-lastSmokeStep<java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(200)) return; lastSmokeStep=realNow; lastServerStep=serverNow;
         QuestNetwork.Snapshot snap=ClientProxy.snapshot;
         switch(stage) {
@@ -310,6 +317,10 @@ public final class QuestPreview {
                 QuestPresentation.MapImage illustration=new QuestPresentation.MapImage(); illustration.x=1.5; illustration.y=.5; illustration.width=1.5; illustration.height=1.5; illustration.rotation=15; illustration.resource=remoteImage; illustration.uri="https://example.org/map-guide"; illustration.hover.add("Map illustration"); start.images.add(illustration);
                 QuestCore.Quest empty=new QuestCore.Quest(); empty.id="smoke-empty"; empty.title="Dependency-only"; empty.subtitle="Empty quests still require their dependencies"; empty.minWidth=240; empty.chapter="start"; empty.x=6; empty.y=3; empty.dependencies.add("welcome"); edit.book.quests.add(empty);
                 int shapeNumber=0; for(String shape:new String[]{"rsquare","heart","gear","minecraft:textures/items/diamond.png"}) { QuestCore.Quest shapeQuest=new QuestCore.Quest(); shapeQuest.id="shape_"+shapeNumber; shapeQuest.title=shape; shapeQuest.shape=shape; shapeQuest.optional=true; shapeQuest.chapter="start"; shapeQuest.x=shapeNumber++*1.2; shapeQuest.y=.95; QuestCore.Task shapeTask=new QuestCore.Task(); shapeTask.id="check"; shapeTask.type="check"; shapeQuest.tasks.add(shapeTask); edit.book.quests.add(shapeQuest); }
+                QuestCore.Quest ui=new QuestCore.Quest(); ui.id="smoke-classic-ui"; ui.title="Classic quest view"; ui.subtitle="Two columns, individual rewards"; ui.description="Click the task, then claim each reward separately."; ui.optional=true; ui.repeatable=true; ui.chapter="start"; ui.x=8; ui.y=5;
+                QuestCore.Task uiTask=new QuestCore.Task(); uiTask.id="confirm"; uiTask.type="check"; uiTask.manual=true; ui.tasks.add(uiTask); QuestCore.Task uiItems=new QuestCore.Task(); uiItems.id="submit"; uiItems.type="item"; uiItems.target="minecraft:stick"; uiItems.consume=true; ui.tasks.add(uiItems);
+                QuestCore.Reward uiXp=new QuestCore.Reward(); uiXp.id="xp"; uiXp.type="xp"; uiXp.count=2; ui.rewards.add(uiXp);
+                QuestCore.Reward uiChoice=new QuestCore.Reward(); uiChoice.id="pick"; uiChoice.type="choice"; QuestCore.Reward uiOption=new QuestCore.Reward(); uiOption.type="xp"; uiOption.count=7; uiChoice.options.add(uiOption); ui.rewards.add(uiChoice); edit.book.quests.add(ui);
                 QuestCore.Quest commandQuest=new QuestCore.Quest(); commandQuest.id="smoke-command-click"; commandQuest.title="Command action"; commandQuest.customClick="command:/quests stage "+mc.thePlayer.getCommandSenderName()+" native-click add"; edit.book.quests.add(commandQuest);
                 QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.guidePage="preview:event"; manual.customClick="custom:preview:click"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.GuidePage rich=new QuestPresentation.GuidePage(); rich.title="Rich guide page";
@@ -335,6 +346,9 @@ public final class QuestPreview {
                     if(snap==null) return;
                     QuestToasts.clear(); QuestBookScreen map=new QuestBookScreen(); mc.displayGuiScreen(map); press(map,11); press(map,2);
                     java.lang.reflect.Field chosen=QuestBookScreen.class.getDeclaredField("selected"); chosen.setAccessible(true); chosen.set(map,"smoke-empty"); map.refresh(); press(map,1); stage=36; waiting=0; return;
+                }
+                if(!classicUiPassed) {
+                    QuestToasts.clear(); uiItemRequested=true; QuestBookScreen uiBook=new QuestBookScreen(); mc.displayGuiScreen(uiBook); java.lang.reflect.Field selectedUi=QuestBookScreen.class.getDeclaredField("selected"); selectedUi.setAccessible(true); selectedUi.set(uiBook,"smoke-classic-ui"); uiBook.refresh(); stage=90; waiting=0; return;
                 }
                 if(cpw.mods.fml.common.Loader.isModLoaded("IC2")) { euRequested=true; stage=20; break; }
                 if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { manaRequested=true; stage=21; break; }
@@ -387,7 +401,8 @@ public final class QuestPreview {
                 if(snap==null || !"complete".equals(snap.states.get("smoke-manual"))) return;
                 QuestNetwork.Action collect=new QuestNetwork.Action(); collect.action="claim"; collect.id="smoke-manual"; ClientProxy.send(collect); stage=14; break;
             case 14:
-                if(snap==null || !"claimed".equals(snap.states.get("smoke-manual"))) return;
+                if(snap==null) return;
+                if(!"claimed".equals(snap.states.get("smoke-manual"))) { if("complete".equals(snap.states.get("smoke-manual")) && waiting>=40 && waiting%20==0) { QuestNetwork.Action retryClaim=new QuestNetwork.Action(); retryClaim.action="claim"; retryClaim.id="smoke-manual"; ClientProxy.send(retryClaim); } return; }
                 QuestGuideScreen guide=new QuestGuideScreen(null,snap.book.quests.get(snap.book.quests.size()-2)); mc.displayGuiScreen(guide);
                 java.lang.reflect.Field guidePage=QuestGuideScreen.class.getDeclaredField("page"); guidePage.setAccessible(true); guidePage.setInt(guide,2); stage=15; waiting=0; break;
             case 15:
@@ -431,8 +446,12 @@ public final class QuestPreview {
             case 38: if(QuestPresentation.chapter(snap.book,"start")!=null && snap.book.quests.stream().anyMatch(q->q.id.equals("welcome") && q.chapter.equals("start"))) { bookPrepared=true; stage=1; } break;
             case 36:
                 if(waiting<15) return;
-                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-grouped-map.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-classic-empty-card.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                press(mc.currentScreen,16); stage=95; waiting=0; break;
+            case 95:
+                if(waiting<10) return;
                 if(snap.book.theme.questSpacing!=1.25 || snap.book.theme.lineWidth!=2) throw new IllegalStateException("Theme geometry lost in network snapshot");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-grouped-map.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 QuestBookScreen map=(QuestBookScreen)mc.currentScreen; QuestPresentation.MapImage mapImage=QuestPresentation.chapter(snap.book,"start").images.get(0);
                 java.lang.reflect.Method imageX=QuestBookScreen.class.getDeclaredMethod("imageX",QuestPresentation.MapImage.class),imageY=QuestBookScreen.class.getDeclaredMethod("imageY",QuestPresentation.MapImage.class); imageX.setAccessible(true); imageY.setAccessible(true);
                 java.lang.reflect.Method mapClick=QuestBookScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class); mapClick.setAccessible(true); mapClick.invoke(map,((Double)imageX.invoke(map,mapImage)).intValue(),((Double)imageY.invoke(map,mapImage)).intValue(),0);
@@ -485,16 +504,17 @@ public final class QuestPreview {
             case 17:
                 if(snap==null || !snap.book.title.equals("Form edit smoke")) return;
                 QuestNetwork.Action restore=new QuestNetwork.Action(); restore.action="save"; restore.revision=snap.revision; restore.book=original;
-                ClientProxy.send(restore); stage=7; break;
+                pendingBookEdit=restore; ClientProxy.send(restore); lastBookAttempt=realNow; stage=7; waiting=0; break;
             case 7:
-                if(snap==null || !snap.book.title.equals(original.title)) return;
+                if(snap==null) return;
+                if(!snap.book.title.equals(original.title)) { if(realNow-lastBookAttempt>java.util.concurrent.TimeUnit.SECONDS.toNanos(1)) { System.out.println("Quest restore retry: current="+snap.book.title+", expected="+original.title+", message="+snap.message); pendingBookEdit.revision=snap.revision; ClientProxy.send(pendingBookEdit); lastBookAttempt=realNow; } return; }
                 QuestToasts.clear(); mc.displayGuiScreen(null); mc.thePlayer.rotationYaw=-90; mc.thePlayer.rotationPitch=30; placeDevice=true; stage=32; waiting=0; break;
             case 32:
                 if(waiting<30) return;
                 if(mc.currentScreen!=null) throw new IllegalStateException("Device container opened before world screen preview");
                 net.minecraft.tileentity.TileEntity rendered=mc.theWorld.getTileEntity(deviceX,deviceY,deviceZ);
                 if(!(rendered instanceof QuestDevice) || ((QuestDevice)rendered).screenWidth!=2 || ((QuestDevice)rendered).screenHeight!=2 || ((QuestDevice)rendered).screenPercent!=100) throw new IllegalStateException("World screen dimensions/progress did not synchronize");
-                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-world-screen.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer()); stage=18; break;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-world-screen.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer()); openProgressRequested=true; stage=18; break;
             case 18:
                 if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || snap==null) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-device.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
@@ -595,6 +615,51 @@ public final class QuestPreview {
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-book-live.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 mc.theWorld.sendQuittingDisconnectingPacket(); mc.loadWorld(null); restarted=true; stage=0; waiting=0; ClientProxy.snapshot=null;
                 mc.launchIntegratedServer(worldName,"Quest smoke fixture",null); return;
+            case 90:
+                if(waiting<15) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-classic-task-card.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                net.minecraft.client.gui.GuiScreen activeUi=mc.currentScreen; QuestBookScreen searchProbe=new QuestBookScreen(); mc.displayGuiScreen(searchProbe); press(searchProbe,22);
+                java.lang.reflect.Field filterField=QuestBookScreen.class.getDeclaredField("search"); filterField.setAccessible(true); net.minecraft.client.gui.GuiTextField filter=(net.minecraft.client.gui.GuiTextField)filterField.get(searchProbe); filter.setText("no-match");
+                java.lang.reflect.Method escape=QuestBookScreen.class.getDeclaredMethod("keyTyped",char.class,int.class); escape.setAccessible(true); escape.invoke(searchProbe,(char)0,org.lwjgl.input.Keyboard.KEY_ESCAPE);
+                java.lang.reflect.Field searchVisible=QuestBookScreen.class.getDeclaredField("showSearch"); searchVisible.setAccessible(true); if(!filter.getText().isEmpty() || searchVisible.getBoolean(searchProbe)) throw new IllegalStateException("Closing search left a hidden map filter");
+                mc.displayGuiScreen(activeUi); mc.gameSettings.guiScale=1; mc.displayGuiScreen(mc.currentScreen); stage=98; waiting=0; break;
+            case 98:
+                if(waiting<15) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-classic-scale-1.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.gameSettings.guiScale=2; mc.displayGuiScreen(mc.currentScreen); stage=99; waiting=0; break;
+            case 99:
+                if(waiting<15) return;
+                clickCard(mc,false,0); stage=91; waiting=0; break;
+            case 91:
+                if(waiting<10 || !Boolean.TRUE.equals(snap.taskStates.get("smoke-classic-ui:confirm"))) return;
+                if("complete".equals(snap.states.get("smoke-classic-ui"))) throw new IllegalStateException("Task confirmation consumed another task's inventory");
+                QuestToasts.clear(); clickCard(mc,false,1); stage=96; waiting=0; break;
+            case 96:
+                if(waiting<15 || !(mc.currentScreen instanceof QuestItemTaskScreen)) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-classic-items.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                press(mc.currentScreen,1); stage=97; waiting=0; break;
+            case 97:
+                if(waiting<10 || !"complete".equals(snap.states.get("smoke-classic-ui"))) return;
+                QuestToasts.clear(); clickCard(mc,true,0); stage=92; waiting=0; break;
+            case 92:
+                if(waiting<10 || !Boolean.TRUE.equals(snap.rewardStates.get("smoke-classic-ui:xp"))) return;
+                if(Boolean.TRUE.equals(snap.rewardStates.get("smoke-classic-ui:pick"))) throw new IllegalStateException("Reward click claimed another root");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-classic-reward-card.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                clickCard(mc,true,1); stage=93; waiting=0; break;
+            case 93:
+                if(waiting<15 || !(mc.currentScreen instanceof RewardChoiceScreen)) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-classic-choice.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                press(mc.currentScreen,100); stage=94; waiting=0; break;
+            case 94:
+                if(waiting<10 || !"claimed".equals(snap.states.get("smoke-classic-ui"))) return;
+                java.lang.reflect.Field buttons=net.minecraft.client.gui.GuiScreen.class.getDeclaredField("buttonList"); buttons.setAccessible(true); net.minecraft.client.gui.GuiButton repeatButton=null;
+                for(Object raw:(java.util.List<?>)buttons.get(mc.currentScreen)) if(((net.minecraft.client.gui.GuiButton)raw).id==6) repeatButton=(net.minecraft.client.gui.GuiButton)raw;
+                if(repeatButton==null || !repeatButton.visible || !repeatButton.enabled) throw new IllegalStateException("Legacy manual repeat control is missing");
+                java.lang.reflect.Method repeatClick=QuestBookScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class); repeatClick.setAccessible(true); repeatClick.invoke(mc.currentScreen,repeatButton.xPosition+repeatButton.width/2,repeatButton.yPosition+repeatButton.height/2,0); stage=100; waiting=0; break;
+            case 100:
+                if(waiting<10 || !"available".equals(snap.states.get("smoke-classic-ui"))) return;
+                if(Boolean.TRUE.equals(snap.taskStates.get("smoke-classic-ui:confirm"))) throw new IllegalStateException("Manual repeat retained task completion");
+                classicUiPassed=true; mc.displayGuiScreen(null); stage=6; waiting=0; break;
             default: throw new IllegalStateException("Unknown smoke stage");
         }
 

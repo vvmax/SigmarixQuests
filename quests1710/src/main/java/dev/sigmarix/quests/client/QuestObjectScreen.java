@@ -29,15 +29,14 @@ public final class QuestObjectScreen extends GuiScreen {
     private void rebuild() {
         if(node.isJsonObject()) keys=QuestEditing.keys(node.getAsJsonObject());
         buttonList.clear(); int rows=Math.max(1,(height-118)/24); scroll=Math.max(0,Math.min(scroll,Math.max(0,size()-rows)));
-        buttonList.add(new GuiButton(0,8,8,82,20,QuestText.tr("Save book"))); buttonList.add(new GuiButton(1,96,8,64,20,QuestText.tr("Back")));
-        buttonList.add(new GuiButton(2,166,8,80,20,QuestText.tr("Raw JSON")));
+        buttonList.add(new QuestFlatButton(0,8,8,82,20,QuestText.tr("Save book"))); buttonList.add(new QuestFlatButton(1,96,8,64,20,QuestText.tr("Back")));
+        buttonList.add(new QuestFlatButton(2,166,8,80,20,QuestText.tr("Raw JSON")));
         for(int i=scroll;i<size() && i<scroll+rows;i++) {
             JsonElement value=get(i); String label=key(i)+": "+summary(value);
-            buttonList.add(new GuiButton(100+i,12,44+(i-scroll)*24,width-24,22,fontRendererObj.trimStringToWidth((i==selected?"> ":"")+label,width-42)));
+            buttonList.add(new QuestFlatButton(100+i,12,44+(i-scroll)*24,width-24,22,fontRendererObj.trimStringToWidth((i==selected?"> ":"")+label,width-42)));
         }
-        int y=height-54; buttonList.add(new GuiButton(3,12,y,64,20,QuestText.tr("Add"))); buttonList.add(new GuiButton(4,82,y,64,20,QuestText.tr("Delete")));
-        buttonList.add(new GuiButton(5,152,y,64,20,QuestText.tr("Copy"))); buttonList.add(new GuiButton(6,222,y,64,20,QuestText.tr("Paste")));
-        buttonList.add(new GuiButton(7,292,y,40,20,QuestText.tr("Up"))); buttonList.add(new GuiButton(8,338,y,46,20,QuestText.tr("Down")));
+        int y=height-54,actionWidth=Math.min(64,(width-44)/6); String[] actions={"Add","Delete","Copy","Paste","Up","Down"};
+        for(int i=0;i<actions.length;i++) buttonList.add(new QuestFlatButton(3+i,12+i*(actionWidth+4),y,actionWidth,20,QuestText.tr(actions[i])));
         for(Object raw:buttonList) { GuiButton b=(GuiButton)raw;
             if(b.id==0) b.enabled=!session.pending;
             if(b.id==3 || b.id==6) b.enabled=collection() && !session.pending;
@@ -97,12 +96,12 @@ public final class QuestObjectScreen extends GuiScreen {
         if(snapshot.revision!=session.revision && !snapshot.message.startsWith("Error:")) mc.displayGuiScreen(session.destination);
     }
     @Override public void drawScreen(int x,int y,float partial) {
-        drawDefaultBackground(); drawCenteredString(fontRendererObj,fontRendererObj.trimStringToWidth(path,width-24),width/2,33,0xFFCC77);
+        QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,fontRendererObj.trimStringToWidth(path,width-24),width/2,33,0xFFCC77);
         fontRendererObj.drawString(fontRendererObj.trimStringToWidth(session.message,width-24),12,height-22,0xFFDD77); super.drawScreen(x,y,partial);
     }
     @Override public void handleMouseInput() { super.handleMouseInput(); int wheel=Mouse.getEventDWheel(); scroll+=wheel>0?-2:wheel<0?2:0; rebuild(); }
     @Override protected void keyTyped(char ch,int key) {
-        if(key==Keyboard.KEY_DELETE && collection() && selected>=0) { actionPerformed(new GuiButton(4,0,0,"")); return; }
+        if(key==Keyboard.KEY_DELETE && collection() && selected>=0) { actionPerformed(new QuestFlatButton(4,0,0,"")); return; }
         super.keyTyped(ch,key);
     }
     @Override public boolean doesGuiPauseGame() { return false; }
@@ -112,8 +111,8 @@ public final class QuestObjectScreen extends GuiScreen {
         ValueScreen(QuestObjectScreen parent,String label,JsonElement initial,java.util.function.Consumer<String> apply) { this.parent=parent; this.label=label; this.initial=initial; this.apply=apply; }
         @Override public void initGui() {
             Keyboard.enableRepeatEvents(true); input=new GuiTextField(fontRendererObj,16,62,width-32,20); input.setMaxStringLength(32768); input.setText(initial.isJsonNull()?"":initial.getAsString().replace("\\","\\\\").replace("\n","\\n")); input.setFocused(true);
-            buttonList.clear(); buttonList.add(new GuiButton(0,16,height-34,80,20,QuestText.tr("Apply"))); buttonList.add(new GuiButton(1,104,height-34,80,20,QuestText.tr("Cancel")));
-            if(label.equals("type") || label.equals("shape") || label.equals("mode") || label.equals("rewardMode") || label.equals("dependencyState") || label.equals("nbtMode") || label.equals("auto") || label.equals("matchType") || label.equals("comparison") || label.equals("defaultQuestShape") || label.equals("itemBrowser")) buttonList.add(new GuiButton(2,192,height-34,100,20,QuestText.tr("Next value")));
+            buttonList.clear(); buttonList.add(new QuestFlatButton(0,16,height-34,80,20,QuestText.tr("Apply"))); buttonList.add(new QuestFlatButton(1,104,height-34,80,20,QuestText.tr("Cancel")));
+            if(label.equals("type") || label.equals("shape") || label.equals("mode") || label.equals("rewardMode") || label.equals("dependencyState") || label.equals("nbtMode") || label.equals("auto") || label.equals("matchType") || label.equals("comparison") || label.equals("defaultQuestShape") || label.equals("itemBrowser")) buttonList.add(new QuestFlatButton(2,192,height-34,100,20,QuestText.tr("Next value")));
         }
         @Override protected void actionPerformed(GuiButton b) {
             if(b.id==1) { mc.displayGuiScreen(parent); return; }
@@ -139,10 +138,10 @@ public final class QuestObjectScreen extends GuiScreen {
             else values=Arrays.asList("exact","subset","ignore");
             input.setText(values.get((values.indexOf(input.getText())+1)%values.size()));
         }
-        @Override protected void keyTyped(char ch,int key) { if(key==Keyboard.KEY_RETURN) actionPerformed(new GuiButton(0,0,0,"")); else if(key==Keyboard.KEY_TAB) cycle(); else if(key==Keyboard.KEY_ESCAPE) mc.displayGuiScreen(parent); else input.textboxKeyTyped(ch,key); }
+        @Override protected void keyTyped(char ch,int key) { if(key==Keyboard.KEY_RETURN) actionPerformed(new QuestFlatButton(0,0,0,"")); else if(key==Keyboard.KEY_TAB) cycle(); else if(key==Keyboard.KEY_ESCAPE) mc.displayGuiScreen(parent); else input.textboxKeyTyped(ch,key); }
         @Override protected void mouseClicked(int x,int y,int b) { super.mouseClicked(x,y,b); input.mouseClicked(x,y,b); }
         @Override public void updateScreen() { input.updateCursorCounter(); }
-        @Override public void drawScreen(int x,int y,float partial) { drawDefaultBackground(); drawCenteredString(fontRendererObj,label,width/2,30,0xFFFFFF); input.drawTextBox(); fontRendererObj.drawSplitString(message,16,100,width-32,0xFFDD77); super.drawScreen(x,y,partial); }
+        @Override public void drawScreen(int x,int y,float partial) { QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,label,width/2,30,0xFFFFFF); input.drawTextBox(); fontRendererObj.drawSplitString(message,16,100,width-32,0xFFDD77); super.drawScreen(x,y,partial); }
         @Override public void onGuiClosed() { Keyboard.enableRepeatEvents(false); }
         @Override public boolean doesGuiPauseGame() { return false; }
     }

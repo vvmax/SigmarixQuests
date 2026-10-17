@@ -13,10 +13,10 @@ public final class QuestTeamScreen extends GuiScreen {
     private final String[] labels={"Create team","Invite player","Join leader","Kick player","Leave team","Disband team"};
     public QuestTeamScreen(GuiScreen parent) { this.parent=parent; }
     @Override public void initGui() {
-        buttonList.clear(); buttonList.add(new GuiButton(0,12,height-30,90,20,QuestText.tr("Back")));
-        buttonList.add(new GuiButton(1,width-142,height-30,130,20,QuestText.tr("Leaderboard")));
+        buttonList.clear(); buttonList.add(new QuestFlatButton(0,12,height-30,90,20,QuestText.tr("Back")));
+        buttonList.add(new QuestFlatButton(1,width-142,height-30,130,20,QuestText.tr("Leaderboard")));
         input=new GuiTextField(fontRendererObj,12,40,width-24,20); input.setMaxStringLength(32);
-        for(int i=0;i<operations.length;i++) buttonList.add(new GuiButton(10+i,12+(i%3)*(width-24)/3,68+(i/3)*24,(width-30)/3,20,QuestText.tr(labels[i])));
+        for(int i=0;i<operations.length;i++) buttonList.add(new QuestFlatButton(10+i,12+(i%3)*(width-24)/3,68+(i/3)*24,(width-30)/3,20,QuestText.tr(labels[i])));
     }
     @Override protected void actionPerformed(GuiButton button) {
         if(button.id==0) { mc.displayGuiScreen(parent); return; }
@@ -29,7 +29,7 @@ public final class QuestTeamScreen extends GuiScreen {
         for(Object raw:buttonList) { GuiButton b=(GuiButton)raw; if(b.id>=10) { b.visible=!leaderboard; b.enabled=b.id==10?ClientProxy.snapshot.team.isEmpty():b.id==11 || b.id==13 || b.id==15?ClientProxy.snapshot.teamLeader:!ClientProxy.snapshot.team.isEmpty() || b.id==12; } }
     }
     @Override public void drawScreen(int x,int y,float partial) {
-        drawDefaultBackground(); drawCenteredString(fontRendererObj,QuestText.tr(leaderboard?"Leaderboard":"Teams")+" — "+ClientProxy.snapshot.profile,width/2,15,0xFFFFFF);
+        QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,QuestText.tr(leaderboard?"Leaderboard":"Teams")+" — "+ClientProxy.snapshot.profile,width/2,15,0xFFFFFF);
         List<String> lines=new ArrayList<String>();
         if(leaderboard) {
             for(int i=0;i<ClientProxy.snapshot.leaderboard.size();i++) { QuestNetwork.Rank rank=ClientProxy.snapshot.leaderboard.get(i); lines.add((i+1)+". "+rank.name+" — "+rank.completed+"/"+rank.total); }

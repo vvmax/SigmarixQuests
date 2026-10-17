@@ -597,6 +597,32 @@ public class QuestService {
         if(player!=null) applyRewards(player,leaves,sink); else for(QuestCore.Reward reward:leaves) emitStoredItem(reward,random,sink);
         return true;
     }
+    public void clickTask(EntityPlayerMP player,QuestCore.Quest quest,String id) {
+        if(quest==null || !active(player,quest)) throw new IllegalArgumentException("Quest is locked or complete");
+        for(QuestCore.Task task:quest.tasks) if(task.id.equals(id)) {
+            if(task.type.equals("check") || task.type.equals("custom") && task.manual) confirm(player,quest,id);
+            else if(task.consume && (task.type.equals("emc") || task.type.equals("item") && !task.craftingOnly)) submit(player,quest,id);
+            detect(player);
+            if(finishStored(player.getUniqueID(),quest,player.worldObj.getTotalWorldTime())) { autoClaim(player,quest); return; }
+            for(QuestCore.Task other:quest.tasks) if(other.consume) {
+                if((other.type.equals("item") || other.type.equals("emc")) && counter(player,quest,other)<other.count) return;
+                if(other.type.equals("xp") && !other.id.equals(id) && !progress().taskDone(player.getUniqueID(),quest.id,other.id)) return;
+            }
+            finish(player,quest);
+            return;
+        }
+        throw new IllegalArgumentException("Unknown task");
+    }
+    public void claimReward(EntityPlayerMP player,QuestCore.Quest quest,String root,List<Integer> choices) {
+        if(quest==null || root==null || root.isEmpty()) throw new IllegalArgumentException("Unknown reward");
+        boolean found=false;
+        for(int i=0;i<quest.rewards.size();i++) { QuestCore.Reward reward=quest.rewards.get(i); if(rewardId(reward,i).equals(root)) {
+            if(progress().rewardClaimed(player.getUniqueID(),quest.id,root,individual(quest,reward))) throw new IllegalArgumentException("Reward unavailable");
+            found=true; break;
+        } }
+        if(!found) throw new IllegalArgumentException("Unknown reward");
+        claim(player,quest,choices,null,false,root,null);
+    }
     private void claim(EntityPlayerMP p,QuestCore.Quest q,List<Integer> choices,java.util.function.Consumer<ItemStack> itemSink,boolean automatic) {
         claim(p,q,choices,itemSink,automatic,null,null);
     }

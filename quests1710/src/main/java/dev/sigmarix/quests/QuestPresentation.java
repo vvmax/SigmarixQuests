@@ -56,6 +56,7 @@ public final class QuestPresentation {
             if(!style.color.isEmpty()) color(style.color); if(!style.textColor.isEmpty()) color(style.textColor);
         }
         for(QuestCore.Chapter chapter:book.chapters) {
+            metadata(chapter.title,chapter.description,chapter.icon,chapter.iconMeta,chapter.iconNbt);
             if(chapter.image==null || !chapter.image.isEmpty() && !image(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !shape(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
             for(MapImage image:chapter.images) {
                 if(image==null || !image(image.resource) || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");

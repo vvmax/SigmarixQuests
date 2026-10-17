@@ -38,6 +38,20 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void cardRewardClickClaimsExactlyOneRootAndRejectsReplays() {
+        task("check",null,1,false); xpReward(2,"team"); QuestCore.Reward choice=new QuestCore.Reward(); choice.id="pick"; choice.type="choice";
+        QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=7; choice.options.add(xp); quest.rewards.add(choice); service.finish(player,quest);
+        service.claimReward(player,quest,"r0",Collections.<Integer>emptyList()); verify(player).addExperience(2); verify(player,never()).addExperience(7); assertFalse(service.claimed(player.getUniqueID(),quest));
+        for(String bad:Arrays.asList("r0","unknown","")) try { service.claimReward(player,quest,bad,Collections.<Integer>emptyList()); fail(); } catch(IllegalArgumentException expected) {}
+        service.claimReward(player,quest,"pick",Collections.singletonList(0)); verify(player).addExperience(7); assertTrue(service.claimed(player.getUniqueID(),quest));
+    }
+    @Test public void cardConfirmationCompletesStoredRequirementsWithoutSubmittingOtherItems() {
+        QuestCore.Task check=task("check",null,1,false); check.manual=true;
+        QuestCore.Task item=task("item","minecraft:iron_ingot",2,true); QuestCore.Task dimension=task("dimension",null,1,false); dimension.dimension=0; player.inventory.mainInventory[0]=new ItemStack(Items.iron_ingot,2);
+        service.clickTask(player,quest,dimension.id); assertFalse(data.completed(player.getUniqueID()).contains(quest.id)); assertEquals(2,player.inventory.mainInventory[0].stackSize);
+        service.clickTask(player,quest,check.id); assertFalse(data.completed(player.getUniqueID()).contains(quest.id)); assertEquals(2,player.inventory.mainInventory[0].stackSize);
+        service.clickTask(player,quest,item.id); assertTrue(data.completed(player.getUniqueID()).contains(quest.id)); assertNull(player.inventory.mainInventory[0]);
+    }
     @Test public void automaticRepeatRunsAfterRewardEventsAndPreservesManualMode() {
         task("check",null,1,false); quest.repeatable=true; quest.autoRepeat=true; xpReward(1,"team"); service.finish(player,quest);
         java.util.function.Consumer<QuestEvents.Event> listener=event->{ if(event.quest.equals(quest.id)) { assertTrue(service.claimed(event.player,quest)); assertEquals(0,data.cycle(event.player,quest.id)); } }; QuestEvents.on("reward_claimed",listener);

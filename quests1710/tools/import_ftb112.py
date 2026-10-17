@@ -570,6 +570,9 @@ def convert(folder, mappings=None):
         try:
             chapter = document(chapter_dir, 'chapter'); chapter_id = code(chapter_dir.name)
             book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': text(chapter.get('description', [])), 'parent': code(chapter['group']) if chapter.get('group') else '', 'defaultQuestShape': quest_shape(chapter.get('default_quest_shape'), True), 'alwaysInvisible': bool(chapter.get('always_invisible', False)), 'images': [convert_map_image(image) for image in chapter.get('images', [])]})
+            if chapter.get('icon'):
+                icon = item(chapter['icon'], mappings)
+                book['chapters'][-1].update(icon=icon['item'], iconMeta=icon.get('meta', 0), iconNbt=icon.get('nbt', ''))
             register(chapter_id, 'chapter:' + chapter_id)
         except (ValueError, OSError, TypeError) as error:
             errors.append(str(chapter_dir) + ': ' + str(error)); continue

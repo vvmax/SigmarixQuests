@@ -16,9 +16,9 @@ public final class QuestEditorScreen extends GuiScreen {
     public QuestEditorScreen(GuiScreen parent,QuestCore.Book draft,long revision) { this.parent=parent; text=QuestService.JSON.toJson(draft); this.revision=revision; }
     @Override public void initGui() {
         Keyboard.enableRepeatEvents(true); buttonList.clear();
-        buttonList.add(new GuiButton(0,8,8,90,20,QuestText.tr("Save book")));
-        buttonList.add(new GuiButton(1,104,8,70,20,QuestText.tr("Back")));
-        buttonList.add(new GuiButton(2,180,8,100,20,QuestText.tr("Add quest")));
+        buttonList.add(new QuestFlatButton(0,8,8,90,20,QuestText.tr("Save book")));
+        buttonList.add(new QuestFlatButton(1,104,8,70,20,QuestText.tr("Back")));
+        buttonList.add(new QuestFlatButton(2,180,8,100,20,QuestText.tr("Add quest")));
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==1) { mc.displayGuiScreen(parent); return; }
@@ -94,7 +94,7 @@ public final class QuestEditorScreen extends GuiScreen {
         cursor=index+col; selectAll=false;
     }
     @Override public void drawScreen(int x,int y,float partial) {
-        drawDefaultBackground(); drawRect(6,38,width-6,height-24,selectAll?0xFF263E65:0xFF101820);
+        QuestClassicUi.background(mc,width,height); drawRect(6,38,width-6,height-24,selectAll?0xFF263E65:0xFF101820);
         String[] lines=text.split("\n",-1); int current=0,lineNo=0;
         for(int i=0;i<cursor;i++) { if(text.charAt(i)=='\n') { lineNo++; current=i+1; } }
         int rows=Math.max(1,(height-72)/11);

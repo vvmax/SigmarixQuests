@@ -133,3 +133,17 @@ quests.ui.use_held_skin=Use held skin
 quests.ui.unbreakable=Unbreakable
 quests.ui.set_team=Set team
 quests.ui.player_uuid=Player / UUID
+
+quests.ui.tasks=Tasks
+quests.ui.rewards=Rewards
+quests.ui.dependencies=Dependencies
+quests.ui.dependants=Dependants
+quests.ui.no_tasks=No tasks
+quests.ui.no_rewards=No rewards
+quests.ui.valid_items_for=Valid items for
+quests.ui.submit=Submit
+quests.ui.more_options=More options
+quests.ui.search=Search
+quests.ui.collect_rewards=Collect rewards
+quests.ui.claimed=Claimed
+quests.ui.optional=Optional

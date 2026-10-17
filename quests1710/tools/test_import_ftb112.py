@@ -100,9 +100,10 @@ class VersionMappingTests(unittest.TestCase):
                 mapping_rules(bad)
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder); chapter = root / 'chapters' / '01'; chapter.mkdir(parents=True)
-            (chapter / 'chapter.snbt').write_text('{title:"Map"}')
+            (chapter / 'chapter.snbt').write_text('{title:"Map" icon:{id:"pack:icon" Damage:2}}')
             (chapter / '02.snbt').write_text('{tasks:[{type:"kill" entity:"pack:new"}] rewards:[{type:"advancement" advancement:"pack:trial"}]}')
-            book = convert(root, {'entities': {'pack:new': 'OldMob'}, 'advancements': {'pack:trial': 'achievement.mineWood'}})
+            book = convert(root, {'items': {'pack:icon': {'id': 'minecraft:diamond', 'meta': 3}}, 'entities': {'pack:new': 'OldMob'}, 'advancements': {'pack:trial': 'achievement.mineWood'}})
+            self.assertEqual((book['chapters'][0]['icon'], book['chapters'][0]['iconMeta']), ('minecraft:diamond', 3))
             self.assertEqual(book['quests'][0]['tasks'][0]['target'], 'OldMob')
             self.assertEqual(book['quests'][0]['rewards'][0]['target'], 'achievement.mineWood')
 

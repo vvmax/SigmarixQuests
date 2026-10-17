@@ -14,11 +14,11 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
     private int pages() { return Math.max(1,quest.pages.size()+quest.richPages.size()+(quest.guidePage.isEmpty()?0:1)+(quest.customClick.isEmpty()?0:1)); }
     public QuestGuideScreen(GuiScreen parent,QuestCore.Quest quest) { this.parent=parent; this.quest=quest; }
     @Override public void initGui() {
-        buttonList.clear(); buttonList.add(new GuiButton(0,12,height-30,70,20,QuestText.tr("Back")));
-        buttonList.add(new GuiButton(1,90,height-30,45,20,"<")); buttonList.add(new GuiButton(2,140,height-30,45,20,">"));
-        if(!quest.customClick.isEmpty()) buttonList.add(new GuiButton(6,width/2-80,height/2,160,20,QuestText.tr("Open action")));
-        if(!quest.guidePage.isEmpty()) buttonList.add(new GuiButton(5,width/2-80,height/2,160,20,QuestText.tr("Open in guide")));
-        if(!quest.uri.isEmpty()) buttonList.add(new GuiButton(3,width-130,height-30,118,20,QuestText.tr("Open link...")));
+        buttonList.clear(); buttonList.add(new QuestFlatButton(0,12,height-30,70,20,QuestText.tr("Back")));
+        buttonList.add(new QuestFlatButton(1,90,height-30,45,20,"<")); buttonList.add(new QuestFlatButton(2,140,height-30,45,20,">"));
+        if(!quest.customClick.isEmpty()) buttonList.add(new QuestFlatButton(6,width/2-80,height/2,160,20,QuestText.tr("Open action")));
+        if(!quest.guidePage.isEmpty()) buttonList.add(new QuestFlatButton(5,width/2-80,height/2,160,20,QuestText.tr("Open in guide")));
+        if(!quest.uri.isEmpty()) buttonList.add(new QuestFlatButton(3,width-130,height-30,118,20,QuestText.tr("Open link...")));
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==0) mc.displayGuiScreen(parent);
@@ -34,7 +34,7 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
         mc.displayGuiScreen(this);
     }
     @Override public void drawScreen(int x,int y,float partial) {
-        drawDefaultBackground(); drawCenteredString(fontRendererObj,quest.title+" - "+(page+1)+"/"+pages(),width/2,14,0xFFFFFF);
+        QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,quest.title+" - "+(page+1)+"/"+pages(),width/2,14,0xFFFFFF);
         links.clear();
         int extra=quest.pages.size()+quest.richPages.size();
         boolean external=!quest.guidePage.isEmpty() && page==extra,action=!quest.customClick.isEmpty() && page==extra+(quest.guidePage.isEmpty()?0:1);

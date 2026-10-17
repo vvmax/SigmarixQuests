@@ -17,29 +17,29 @@ public final class QuestDeviceScreen extends GuiContainer {
         if(mode==4 || mode==5) {
             detectorFields=new GuiTextField[4]; String[] values={Double.toString(container.tile.detectorRadius),Double.toString(container.tile.detectorOffsetY),Double.toString(container.tile.detectorHeight),Integer.toString(container.tile.detectorPower)};
             for(int i=0;i<4;i++) { detectorFields[i]=new GuiTextField(fontRendererObj,guiLeft+282,guiTop+24+i*30,96,16); detectorFields[i].setMaxStringLength(20); detectorFields[i].setText(values[i]); }
-            buttonList.add(new GuiButton(6,guiLeft+282,guiTop+148,96,20,"Apply detector"));
-            buttonList.add(new GuiButton(7,guiLeft+282,guiTop+170,96,20,"Notifications"));
+            buttonList.add(new QuestFlatButton(6,guiLeft+282,guiTop+148,96,20,"Apply detector"));
+            buttonList.add(new QuestFlatButton(7,guiLeft+282,guiTop+170,96,20,"Notifications"));
         }
         if(mode==0 || mode==1) {
-            buttonList.add(new GuiButton(9,guiLeft+282,guiTop+24,96,20,mode==0?"Input only":"Fullscreen"));
-            buttonList.add(new GuiButton(10,guiLeft+282,guiTop+48,96,20,mode==0?"Held icon":"Hide icons"));
+            buttonList.add(new QuestFlatButton(9,guiLeft+282,guiTop+24,96,20,mode==0?"Input only":"Fullscreen"));
+            buttonList.add(new QuestFlatButton(10,guiLeft+282,guiTop+48,96,20,mode==0?"Held icon":"Hide icons"));
         }
         if(mode==0 || mode==1) {
-            buttonList.add(new GuiButton(11,guiLeft+282,guiTop+72,96,20,QuestText.tr("Use held skin")));
-            buttonList.add(new GuiButton(12,guiLeft+282,guiTop+96,96,20,QuestText.tr("Unbreakable")));
+            buttonList.add(new QuestFlatButton(11,guiLeft+282,guiTop+72,96,20,QuestText.tr("Use held skin")));
+            buttonList.add(new QuestFlatButton(12,guiLeft+282,guiTop+96,96,20,QuestText.tr("Unbreakable")));
         }
         owner=null;
         if(mode==0 || mode==1 || mode==9) {
             owner=new GuiTextField(fontRendererObj,guiLeft+282,guiTop+140,96,16); owner.setMaxStringLength(64); owner.setText(container.tile.owner==null?"":container.tile.owner.toString());
-            buttonList.add(new GuiButton(13,guiLeft+282,guiTop+160,96,20,QuestText.tr("Set team")));
+            buttonList.add(new QuestFlatButton(13,guiLeft+282,guiTop+160,96,20,QuestText.tr("Set team")));
         }
         quest=new GuiTextField(fontRendererObj,guiLeft+56,guiTop+24,210,16); quest.setMaxStringLength(160); quest.setText(container.tile.quest);
         task=new GuiTextField(fontRendererObj,guiLeft+56,guiTop+44,210,16); task.setMaxStringLength(64); task.setText(container.tile.task);
-        if(mode!=6) { buttonList.add(new GuiButton(0,guiLeft+184,guiTop+72,82,20,QuestText.tr("Bind"))); buttonList.add(new GuiButton(1,guiLeft+184,guiTop+98,82,20,QuestText.tr("Unbind"))); }
-        if(container.tile.getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode==9) buttonList.add(new GuiButton(5,guiLeft+184,guiTop+46,82,20,"0/15 / analog"));
-        if(mode==0 || mode==1) { buttonList.add(new GuiButton(3,guiLeft+184,guiTop+150,40,20,"W+")); buttonList.add(new GuiButton(4,guiLeft+226,guiTop+150,40,20,"H+")); }
-        if(mode==3) buttonList.add(new GuiButton(8,guiLeft+184,guiTop+150,82,20,"Reward >"));
-        buttonList.add(new GuiButton(2,guiLeft+184,guiTop+124,82,20,QuestText.tr("Quest book")));
+        if(mode!=6) { buttonList.add(new QuestFlatButton(0,guiLeft+184,guiTop+72,82,20,QuestText.tr("Bind"))); buttonList.add(new QuestFlatButton(1,guiLeft+184,guiTop+98,82,20,QuestText.tr("Unbind"))); }
+        if(container.tile.getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode==9) buttonList.add(new QuestFlatButton(5,guiLeft+184,guiTop+46,82,20,"0/15 / analog"));
+        if(mode==0 || mode==1) { buttonList.add(new QuestFlatButton(3,guiLeft+184,guiTop+150,40,20,"W+")); buttonList.add(new QuestFlatButton(4,guiLeft+226,guiTop+150,40,20,"H+")); }
+        if(mode==3) buttonList.add(new QuestFlatButton(8,guiLeft+184,guiTop+150,82,20,"Reward >"));
+        buttonList.add(new QuestFlatButton(2,guiLeft+184,guiTop+124,82,20,QuestText.tr("Quest book")));
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==2) { mc.thePlayer.closeScreen(); QuestsMod.proxy.open(); return; }
