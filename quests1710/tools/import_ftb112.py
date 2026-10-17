@@ -225,7 +225,7 @@ def convert_task(raw, index, defaults=None, repeat=False):
         result.update(type='dimension', dimension=int(raw.get('dim', 0)))
     elif kind == 'xp':
         result.update(type='xp', count=int(raw.get('value', 1)), levels=not bool(raw.get('points', False)), consume=True)
-    elif kind in ('forge_energy', 'ic2_energy', 'botania_mana', 'fluid'):
+    elif kind in ('forge_energy', 'ic2_energy', 'botania_mana', 'buildcraft_mj', 'fluid'):
         result.update(type='energy' if kind == 'forge_energy' else kind, count=int(raw.get('value', raw.get('amount', 1000))))
         if kind == 'fluid':
             result.update(target=raw.get('fluid', 'water'), consume=True)
@@ -251,17 +251,29 @@ def convert_task(raw, index, defaults=None, repeat=False):
         result.update(type='location', box=True, dimension=dim, x=x, y=y, z=z,
                       width=w, height=h, depth=d, ignoreDimension=bool(raw.get('ignore_dim', False)))
     elif kind in ('observation', 'interaction'):
-        refuse_fields(raw, ('properties', 'nbt'))
+        refuse_fields(raw, ('properties',))
         match_type = raw.get('match_type', 'block_id')
-        if match_type not in ('block_id', 'entity_id'):
+        if match_type not in ('block_id', 'entity_id', 'block_entity_id', 'block_entity_class', 'entity_class'):
             raise ValueError('Ray matcher requires manual conversion: ' + str(match_type))
         target = raw.get('match', '')
         result.update(type=kind, target=entity_id(target) if match_type == 'entity_id' else target,
-                      entity=match_type == 'entity_id', ignoreDamage=True)
+                      entity=match_type.startswith('entity_'), matchType=match_type, ignoreDamage=True)
+        if raw.get('nbt'): result.update(nbt=snbt(raw['nbt']) if isinstance(raw['nbt'], dict) else raw['nbt'], nbtMode='subset')
         if kind == 'observation':
             result['lookTicks'] = int(raw.get('timer', 0))
     elif kind == 'advancement':
         raise ValueError('Advancement IDs require manual conversion to 1.7 achievements')
+    elif kind in ('npc_quest', 'npc_dialog', 'npc_faction'):
+        result.update(type=kind, target=str(int(raw.get(kind, 0))))
+        if kind == 'npc_quest': result['checkActive'] = bool(raw.get('check_active', False))
+        if kind == 'npc_faction':
+            comparison = {'>=': 'at_least', '<=': 'at_most', '==': 'equals', '!=': 'not_equals', '>': 'greater', '<': 'less', 'greater_than_or_equal': 'at_least', 'less_than_or_equal': 'at_most', 'greater_than': 'greater', 'less_than': 'less', 'not': 'not_equals', 'more_or_equal': 'at_least', 'less_or_equal': 'at_most', 'equal': 'equals', 'at_least': 'at_least', 'at_most': 'at_most', 'equals': 'equals'}.get(raw.get('point_mode', 'more_or_equal'))
+            if comparison is None: raise ValueError('Unknown faction comparison: ' + str(raw.get('point_mode')))
+            result.update(points=int(raw.get('required_points', 1)), comparison=comparison)
+    elif kind == 'gamestage':
+        result.update(type='gamestage', target=raw.get('stage', ''))
+    elif kind == 'reskillable':
+        result.update(type='skill', target=raw.get('skill', ''), count=int(raw.get('skill_level', 1)))
     elif kind == 'custom':
         raise ValueError('Custom tasks require a registered 1.7 handler and manual conversion')
     else:
@@ -304,6 +316,21 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False):
                 value = convert_reward(option, defaults, repeat, True); value['weight'] = int(option.get('weight', 1)); result['options'].append(value)
             if not result['options']:
                 raise ValueError('Missing reward table/options')
+    elif kind in ('npc_quest', 'npc_faction'):
+        result.update(type=kind, target=str(int(raw.get(kind, 0))))
+        if kind == 'npc_faction': result.update(points=int(raw.get('points', raw.get('required_points', 1))), add=bool(raw.get('add', True)))
+    elif kind == 'npc_mail':
+        mail = raw.get('mail')
+        if not isinstance(mail, dict): raise ValueError('Missing NPC mail NBT')
+        mail = dict(mail)
+        attachments = []
+        for index, stack in enumerate(mail.pop('MailItems', [])):
+            value = item(stack)
+            if not isinstance(value['item'], str): raise ValueError('NPC mail items require registry IDs')
+            value['slot'] = int(stack.get('Slot', index)); attachments.append(value)
+        result.update(type='npc_mail', nbt=snbt(mail), attachments=attachments)
+    elif kind == 'gamestage':
+        result.update(type='gamestage', target=raw.get('stage', ''), remove=bool(raw.get('remove', False)))
     elif kind == 'toast':
         result.update(type='toast', target=raw.get('title') or 'Quest reward', text=raw.get('description', ''))
         if raw.get('icon'):
@@ -352,20 +379,37 @@ def resolve_choices(reward, tables, path=(), depth=0):
         resolve_choices(option, tables, path, depth + 1)
 
 
+def weights(raw, defaults=None):
+    defaults = defaults or {'passive': 0, 'monster': 0, 'boss': 0}
+    return {key: int(raw.get(key, raw.get('#' + key, fallback))) for key, fallback in defaults.items()}
+
+def seconds(value):
+    if value is None: return 300
+    text = str(value).strip().lower()
+    chunks = re.findall(r'(\d+)([tsmhd])', text)
+    if not chunks or ''.join(number + unit for number, unit in chunks) != text: raise ValueError('Unsupported cooldown duration: ' + text)
+    ticks = sum(int(number) * {'t': 1, 's': 20, 'm': 1200, 'h': 72000, 'd': 1728000}[unit] for number, unit in chunks)
+    return (ticks + 19) // 20
+
 def convert(folder):
     defaults = document(folder, 'file', True)
-    refuse_fields(defaults, ('emergency_items', 'loot_crate_no_drop', 'drop_loot_crates'))
     book = {'format': 2, 'title': defaults.get('title') or 'Imported FTB 1.12 book', 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
+    book['emergencyItems'] = [dict(item(stack), type='item') for stack in defaults.get('emergency_items', [])]
+    book['emergencyCooldownSeconds'] = seconds(defaults.get('emergency_items_cooldown'))
+    book['dropLootCrates'] = bool(defaults.get('drop_loot_crates', False))
+    book['noDrop'] = weights(defaults.get('loot_crate_no_drop', {}), {'passive': 4000, 'monster': 600, 'boss': 0})
     errors, references, raw_dependencies = [], {}, {}
     for path in documents(folder / 'reward_tables'):
         try:
             raw = read_document(path); name = code(path.stem)
-            refuse_fields(raw, ('loot_crate',))
             entries = []
             for reward in raw.get('rewards', []):
                 entry = convert_reward(reward, defaults, nested=True); entry['weight'] = int(reward.get('weight', 1)); entries.append(entry)
             book['lootTables'][name] = entries
             book['lootSettings'][name] = {'rolls': max(1, int(raw.get('loot_size', 1))), 'emptyWeight': int(raw.get('empty_weight', 0))}
+            if raw.get('loot_crate'):
+                crate = raw['loot_crate']
+                book['lootSettings'][name].update(name=crate.get('item_name', ''), color=format(int(crate.get('color', 0xffffff)) & 0xffffff, '06X'), glow=bool(crate.get('glow', False)), drops=weights(crate.get('drops', {})))
         except (ValueError, OSError, TypeError, KeyError) as error:
             errors.append(str(path) + ': ' + str(error))
     chapter_dirs = sorted(p for p in (folder / 'chapters').iterdir() if p.is_dir())

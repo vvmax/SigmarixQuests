@@ -15,11 +15,19 @@ public final class QuestDeviceScreen extends GuiContainer {
         task=new GuiTextField(fontRendererObj,guiLeft+56,guiTop+44,210,16); task.setMaxStringLength(64); task.setText(container.tile.task);
         buttonList.add(new GuiButton(0,guiLeft+184,guiTop+72,82,20,QuestText.tr("Bind")));
         buttonList.add(new GuiButton(1,guiLeft+184,guiTop+98,82,20,QuestText.tr("Unbind")));
+        if(container.tile.getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)container.tile.getBlockType()).mode==9) buttonList.add(new GuiButton(5,guiLeft+184,guiTop+46,82,20,"0/15 / analog"));
+        buttonList.add(new GuiButton(3,guiLeft+184,guiTop+150,40,20,"W+")); buttonList.add(new GuiButton(4,guiLeft+226,guiTop+150,40,20,"H+"));
         buttonList.add(new GuiButton(2,guiLeft+184,guiTop+124,82,20,QuestText.tr("Quest book")));
     }
     @Override protected void actionPerformed(GuiButton b) {
         if(b.id==2) { mc.thePlayer.closeScreen(); QuestsMod.proxy.open(); return; }
         QuestNetwork.Action action=new QuestNetwork.Action(); action.action=b.id==0?"bind_device":"unbind_device";
+        if(b.id==3 || b.id==4) {
+            action.action="screen_size"; int width=container.tile.screenWidth,height=container.tile.screenHeight;
+            if(b.id==3) width=isShiftKeyDown()?Math.max(1,width-1):Math.min(8,width+1); else height=isShiftKeyDown()?Math.max(1,height-1):Math.min(8,height+1);
+            action.choices=new int[]{width,height};
+        }
+        if(b.id==5) action.action="detector_mode";
         action.id=quest.getText(); action.text=task.getText(); action.x=container.tile.xCoord; action.y=container.tile.yCoord; action.z=container.tile.zCoord;
         ClientProxy.send(action);
     }
@@ -30,6 +38,7 @@ public final class QuestDeviceScreen extends GuiContainer {
     }
     @Override protected void drawGuiContainerForegroundLayer(int x,int y) {
         fontRendererObj.drawString(QuestText.tr("Quest device"),12,8,0xFFFFFF); fontRendererObj.drawString(QuestText.tr("Quest"),12,28,0xEEEEEE); fontRendererObj.drawString(QuestText.tr("Task"),12,48,0xEEEEEE);
+        fontRendererObj.drawString(container.tile.screenWidth+" x "+container.tile.screenHeight,184,174,0xB8CDD9);
         fontRendererObj.drawString(container.percent+"% / signal "+container.signal,42,66,0xEEEEEE);
         if(ClientProxy.snapshot!=null) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(ClientProxy.snapshot.message,260),12,184,0xFFDD77);
     }

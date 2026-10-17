@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.6.0", acceptableRemoteVersions="[0.6.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.7.0", acceptableRemoteVersions="[0.7.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -29,7 +29,9 @@ public final class QuestsMod {
     private File config;
     private int ticks;
     private static final ArrayBlockingQueue<Pending> QUEUE=new ArrayBlockingQueue<Pending>(128);
-    private static final Map<UUID,Long> LAST_REQUEST=new HashMap<UUID,Long>();
+    private static final Map<UUID,Long> LAST_REQUEST=new HashMap<UUID,Long>(),LAST_VIEW=new HashMap<UUID,Long>();
+    private static final Set<UUID> PENDING_VIEWS=new HashSet<UUID>();
+    private static final Map<UUID,String> LAST_MESSAGE=new HashMap<UUID,String>();
     private static final class Pending {
         final UUID player; final String json;
         Pending(EntityPlayerMP player,String json) { this.player=player.getUniqueID(); this.json=json; }
@@ -48,29 +50,37 @@ public final class QuestsMod {
     }
     @Mod.EventHandler public void init(FMLInitializationEvent event) { proxy.init(); QuestBlocks.recipes(); }
     @Mod.EventHandler public void starting(FMLServerStartingEvent event) throws IOException {
-        QUEUE.clear(); LAST_REQUEST.clear(); ticks=0;
-        service=new QuestService(config); service.load(); event.registerServerCommand(new QuestCommand());
+        QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); ticks=0;
+        QuestScripts.load(new File(config.getParentFile(),"scripts"));
+        service=new QuestService(config); service.loadActiveProfile(); event.registerServerCommand(new QuestCommand());
     }
-    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { service=null; QUEUE.clear(); LAST_REQUEST.clear(); }
+    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { service=null; QuestScripts.clear(); QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
     @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void onDeath(LivingDeathEvent event) {
         if(service!=null && !event.entity.worldObj.isRemote && event.source.getEntity() instanceof EntityPlayerMP)
             service.credit((EntityPlayerMP)event.source.getEntity(),"kill",EntityList.getEntityString(event.entityLiving),1);
+    }
+    @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void creatureLoot(net.minecraftforge.event.entity.living.LivingDropsEvent event) {
+        if(service==null || event.entityLiving.worldObj.isRemote || event.entityLiving instanceof net.minecraft.entity.player.EntityPlayer) return;
+        String table=QuestLoot.choose(service.book,event.entityLiving,event.entityLiving.getRNG());
+        if(table!=null) event.drops.add(new net.minecraft.entity.item.EntityItem(event.entityLiving.worldObj,event.entityLiving.posX,event.entityLiving.posY,event.entityLiving.posZ,QuestLoot.crate(service.book,table)));
     }
     @SubscribeEvent public void crafted(cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent event) {
         if(service!=null && event.player instanceof EntityPlayerMP) service.crafted((EntityPlayerMP)event.player,event.crafting);
     }
     @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void interactEntity(net.minecraftforge.event.entity.player.EntityInteractEvent event) {
         if(service!=null && event.entityPlayer instanceof EntityPlayerMP && event.entityPlayer.getDistanceSqToEntity(event.target)<=64)
-            service.credit((EntityPlayerMP)event.entityPlayer,"interaction",EntityList.getEntityString(event.target),1);
+            service.interact((EntityPlayerMP)event.entityPlayer,event.target);
     }
     @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void interact(PlayerInteractEvent event) {
         if(service!=null && !event.world.isRemote && event.entityPlayer instanceof EntityPlayerMP && event.action==PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             EntityPlayerMP player=(EntityPlayerMP)event.entityPlayer;
             // Distance checked on server; canceled interactions are not credited.
             if(player.getDistanceSq(event.x+.5,event.y+.5,event.z+.5)<=64)
-                service.credit(player,"interaction",net.minecraft.block.Block.blockRegistry.getNameForObject(event.world.getBlock(event.x,event.y,event.z)),1);
+                service.interact(player,event.world,event.x,event.y,event.z);
         }
     }
+    @SubscribeEvent public void login(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) { if(service!=null) service.clearObservations(event.player.getUniqueID()); }
+    @SubscribeEvent public void logout(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent event) { UUID id=event.player.getUniqueID(); if(service!=null) service.clearObservations(id); LAST_REQUEST.remove(id); LAST_VIEW.remove(id); PENDING_VIEWS.remove(id); LAST_MESSAGE.remove(id); }
     @SubscribeEvent public void serverTick(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END || service==null) return;
         ticks++;
@@ -80,15 +90,11 @@ public final class QuestsMod {
             for(Object entry:MinecraftServer.getServer().getConfigurationManager().playerEntityList)
                 if(((EntityPlayerMP)entry).getUniqueID().equals(pending.player)) { player=(EntityPlayerMP)entry; break; }
             if(player==null) continue;
-            Long last=LAST_REQUEST.get(player.getUniqueID());
-            if(last!=null && ticks-last<2) {
-                QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message="Error: Please wait before another action"; error.revision=service.revision;
-                QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); continue;
-            }
-            LAST_REQUEST.put(player.getUniqueID(),(long)ticks);
             handle(player,pending.json);
         }
         for(Object entry:MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
+            EntityPlayerMP viewer=(EntityPlayerMP)entry; UUID id=viewer.getUniqueID(); Long last=LAST_VIEW.get(id);
+            if(PENDING_VIEWS.contains(id) && (last==null || ticks-last>=2)) { PENDING_VIEWS.remove(id); LAST_VIEW.put(id,(long)ticks); sendSnapshot(viewer,null); }
             try { service.observe((EntityPlayerMP)entry); } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest observation failed: %s",ex.toString()); }
         }
         if(ticks%20==0) for(Object entry:MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
@@ -105,19 +111,33 @@ public final class QuestsMod {
     }
     private static boolean editor(EntityPlayerMP player) { return player.canCommandSenderUseCommand(2,"quests.edit"); }
     private void handle(EntityPlayerMP player,String json) {
-        String message="";
+        String message=""; boolean counted=false;
         try {
             QuestNetwork.Action action=QuestService.JSON.fromJson(json,QuestNetwork.Action.class);
             if(action==null || action.action==null || action.id==null || action.choices==null || action.choices.length>128) throw new IllegalArgumentException("Invalid action");
-            if(!action.action.equals("view") && action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
+            if(action.action.equals("view")) { PENDING_VIEWS.add(player.getUniqueID()); return; }
+            Long last=LAST_REQUEST.get(player.getUniqueID());
+            if(last!=null && ticks-last<2) {
+                QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message="Error: Please wait before another action"; error.revision=service.revision;
+                QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return;
+            }
+            LAST_REQUEST.put(player.getUniqueID(),(long)ticks); counted=true;
+            if(action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
             QuestCore.Quest quest=service.quests.get(action.id);
             List<Integer> choices=new ArrayList<Integer>(); for(int c:action.choices) choices.add(c);
             switch(action.action) {
                 case "view": break;
-                case "bind_device": case "unbind_device":
+                case "emergency": service.emergency(player); message="Emergency items received"; break;
+                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
                     QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
                     if(device.xCoord!=action.x || device.yCoord!=action.y || device.zCoord!=action.z || !device.isUseableByPlayer(player)) throw new IllegalArgumentException("Device unavailable");
+                    if(action.action.equals("detector_mode")) { device.analog=!device.analog; device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Detector mode updated"; break; }
+                    if(action.action.equals("screen_size")) {
+                        if(action.choices.length!=2) throw new IllegalArgumentException("Expected screen width and height");
+                        QuestScreens.configure(device,action.choices[0],action.choices[1]); message="Screen size updated"; break;
+                    }
+                    if(device.screenLinked) throw new IllegalArgumentException("Bind the core of this screen assembly");
                     if(action.action.equals("unbind_device")) { device.quest=""; device.task=""; }
                     else {
                         if(quest==null) throw new IllegalArgumentException("Unknown quest");
@@ -125,6 +145,9 @@ public final class QuestsMod {
                         device.quest=quest.id; device.task=action.text;
                     }
                     device.bindingChanged(); message="Device binding updated"; break;
+                case "team_create": case "team_invite": case "team_join": case "team_kick": case "team_leave": case "team_disband":
+                    if(action.text==null || action.text.length()>32) throw new IllegalArgumentException("Invalid team input");
+                    new QuestCommand().team(player,player,new String[]{"team",action.action.substring(5),action.text}); message="Team updated"; break;
                 case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
                 case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message="Task confirmed"; break;
                 case "submit": if(quest==null) throw new IllegalArgumentException("Unknown quest"); message="Submitted: "+service.submit(player,quest,action.text); break;
@@ -134,21 +157,29 @@ public final class QuestsMod {
                 case "save": if(!editor(player)) throw new IllegalArgumentException("Operator permission required"); service.save(action.book,action.revision); message="Book saved (backup written)"; break;
                 default: throw new IllegalArgumentException("Unknown action");
             }
-        } catch(Exception ex) { message="Error: "+ex.getMessage(); }
-        sendSnapshot(player,message);
+        } catch(Exception ex) {
+            message="Error: "+ex.getMessage();
+            if(!counted) { QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message=message; error.revision=service.revision; QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return; }
+        }
+        PENDING_VIEWS.remove(player.getUniqueID()); LAST_VIEW.put(player.getUniqueID(),(long)ticks); sendSnapshot(player,message);
     }
     public static void sendSnapshot(EntityPlayerMP player,String message) {
-        QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot(); snapshot.revision=service.revision; snapshot.canEdit=editor(player); snapshot.message=message;
+        if(message==null) message=LAST_MESSAGE.getOrDefault(player.getUniqueID(),""); else LAST_MESSAGE.put(player.getUniqueID(),message);
+        QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot(); snapshot.profile=service.progress().profile(); snapshot.revision=service.revision; snapshot.canEdit=editor(player); snapshot.message=message;
         QuestProgress data=service.progress(); UUID id=player.getUniqueID(); Set<String> done=data.completed(id);
-        snapshot.team=data.teamName(id);
+        snapshot.emergencyWait=service.emergencyWait(player); snapshot.team=data.teamName(id); snapshot.teamLeader=data.leader(id);
+        for(UUID member:data.members(id)) snapshot.teamMembers.add(playerName(member));
+        for(UUID leader:data.invitations(id)) snapshot.teamInvites.add(playerName(leader));
+        snapshot.leaderboard=data.leaderboard(service.quests.keySet());
+        for(QuestNetwork.Rank rank:snapshot.leaderboard) try { rank.name=playerName(UUID.fromString(rank.name)); } catch(IllegalArgumentException teamName) {}
         for(QuestCore.Chapter chapter:service.book.chapters) snapshot.chapterStates.put(chapter.id,service.chapterState(id,chapter.id));
         snapshot.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(service.book),QuestCore.Book.class);
         if(!snapshot.canEdit) {
             Iterator<QuestCore.Quest> it=snapshot.book.quests.iterator();
             while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !service.unlocked(id,q)) it.remove(); }
             // Command and custom implementation details are server-only for non-editors.
-            snapshot.book.lootTables.clear(); snapshot.book.lootSettings.clear();
-            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.description="Complete the quest to reveal its text"; q.pages.clear(); q.uri=""; } }
+            for(List<QuestCore.Reward> table:snapshot.book.lootTables.values()) redact(table);
+            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
         }
         for(QuestCore.Quest q:snapshot.book.quests) {
             snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");
@@ -159,6 +190,10 @@ public final class QuestsMod {
             }
         }
         QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(snapshot)),player);
+    }
+    private static String playerName(UUID id) {
+        com.mojang.authlib.GameProfile profile=MinecraftServer.getServer().func_152358_ax().func_152652_a(id);
+        return profile==null || profile.getName()==null?id.toString():profile.getName();
     }
     private static void redact(List<QuestCore.Reward> rewards) {
         for(QuestCore.Reward r:rewards) { if(r.type.equals("command") || r.type.equals("custom")) r.target="Server reward"; redact(r.options); }
@@ -175,12 +210,34 @@ public final class QuestsMod {
             try {
                 if(args.length>0 && args[0].equals("reload")) {
                     if(!sender.canCommandSenderUseCommand(2,"quests.reload")) throw new IllegalArgumentException("Operator permission required");
-                    service.load(); QuestService.say(sender,"Quest book reloaded"); return;
+                    service.reload(); QuestService.say(sender,"Quest book and scripts reloaded"); return;
+                }
+                if(args.length>0 && args[0].equals("mode")) {
+                    if(args.length>1) {
+                        if(!sender.canCommandSenderUseCommand(2,"quests.mode")) throw new IllegalArgumentException("Operator permission required");
+                        if(args.length==3 && args[1].equals("create")) service.createProfile(args[2]);
+                        else if(args.length==2) service.switchProfile(args[1]);
+                        else throw new IllegalArgumentException("/quests mode [<id>|create <id>]");
+                    }
+                    QuestService.say(sender,"Quest mode: "+service.progress().profile()+"; available: "+service.profiles()); return;
                 }
                 if(args.length==3 && args[0].equals("reset")) {
                     if(!sender.canCommandSenderUseCommand(2,"quests.reset")) throw new IllegalArgumentException("Operator permission required");
                     if(!service.quests.containsKey(args[1])) throw new IllegalArgumentException("Unknown quest");
                     EntityPlayerMP target=getPlayer(sender,args[2]); service.progress().reset(target.getUniqueID(),args[1]); QuestService.say(sender,"Progress reset"); return;
+                }
+                if(args.length>0 && (args[0].equals("stage") || args[0].equals("skill"))) {
+                    if(!sender.canCommandSenderUseCommand(2,"quests.attributes")) throw new IllegalArgumentException("Operator permission required");
+                    if(args.length<3 || args.length>4) throw new IllegalArgumentException("/quests stage <player> <key> [add|remove] or skill <player> <key> [level]");
+                    EntityPlayerMP target=getPlayer(sender,args[1]); QuestProgress attributes=service.progress();
+                    if(args[0].equals("stage")) {
+                        if(args.length==4) { if(!args[3].equals("add") && !args[3].equals("remove")) throw new IllegalArgumentException("Use add or remove"); attributes.stage(target.getUniqueID(),args[2],args[3].equals("add")); }
+                        QuestService.say(sender,"Stage "+args[2]+": "+attributes.stage(target.getUniqueID(),args[2]));
+                    } else {
+                        if(args.length==4) attributes.skill(target.getUniqueID(),args[2],Integer.parseInt(args[3]));
+                        QuestService.say(sender,"Skill "+args[2]+": "+attributes.skill(target.getUniqueID(),args[2]));
+                    }
+                    return;
                 }
                 EntityPlayerMP p=getCommandSenderAsPlayer(sender); QuestProgress data=service.progress(); UUID id=p.getUniqueID();
                 if(args.length==0 || args[0].equals("list")) {
@@ -191,6 +248,7 @@ public final class QuestsMod {
                     }
                     QuestService.say(sender,"GUI: /questbook (client mod), "+getCommandUsage(sender)); return;
                 }
+                if(args[0].equals("emergency")) { service.emergency(p); QuestService.say(sender,"Emergency items received"); return; }
                 if(args[0].equals("team")) { team(sender,p,args); return; }
                 if(args[0].equals("bind") || args[0].equals("unbind")) {
                     net.minecraft.util.MovingObjectPosition hit=p.rayTrace(6,1);
@@ -198,6 +256,7 @@ public final class QuestsMod {
                     net.minecraft.tileentity.TileEntity tile=p.worldObj.getTileEntity(hit.blockX,hit.blockY,hit.blockZ);
                     if(!(tile instanceof QuestDevice)) throw new IllegalArgumentException("Look at a quest device");
                     QuestDevice device=(QuestDevice)tile;
+                    if(device.screenLinked) throw new IllegalArgumentException("Bind the core of this screen assembly");
                     if(!id.equals(device.owner) && !editor(p)) throw new IllegalArgumentException("Only device owner or operator can bind");
                     if(args[0].equals("unbind")) { device.quest=""; device.task=""; }
                     else {

@@ -3,10 +3,30 @@ import unittest
 import uuid
 from pathlib import Path
 from nbt_codec import IntTag, FloatTag, TypedArray, read_nbt, write_nbt
-from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward
+from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights
 from migrate_progress import migrate
 
 class MigrationTests(unittest.TestCase):
+    def test_emergency_durations_and_creature_weights(self):
+        self.assertEqual(seconds('5m'), 300); self.assertEqual(seconds('1m20t'), 61); self.assertEqual(seconds('21t'), 2)
+        with self.assertRaises(ValueError): seconds('tomorrow')
+        self.assertEqual(weights({'#monster': 12, 'passive': 2}), {'monster': 12, 'passive': 2, 'boss': 0})
+    def test_ray_matchers_keep_tile_identity_and_nbt(self):
+        result = convert_task({'type': 'interaction', 'match_type': 'block_entity_id', 'match': 'Furnace', 'nbt': {'BurnTime': IntTag(7, 's')}}, 0)
+        self.assertEqual(result['matchType'], 'block_entity_id'); self.assertEqual(result['nbtMode'], 'subset'); self.assertFalse(result['entity'])
+        self.assertIn('7s', result['nbt'])
+    def test_npc_and_native_marker_integrations(self):
+        task = convert_task({'type': 'npc_quest', 'npc_quest': 17, 'check_active': True}, 0)
+        self.assertEqual(task['target'], '17'); self.assertTrue(task['checkActive'])
+        task = convert_task({'type': 'npc_faction', 'npc_faction': 3, 'required_points': -5, 'point_mode': '<='}, 0)
+        self.assertEqual(task['points'], -5); self.assertEqual(task['comparison'], 'at_most')
+        reward = convert_reward({'type': 'npc_faction', 'npc_faction': 3, 'points': 200, 'add': False})
+        self.assertEqual(reward['points'], 200); self.assertFalse(reward['add'])
+        mail = convert_reward({'type': 'npc_mail', 'mail': {'Subject': 'Test', 'Sender': 'Quests', 'Message': {'pages': ['Hello']}}})
+        self.assertEqual(SNBT(mail['nbt']).parse()['Message']['pages'], ['Hello'])
+        self.assertEqual(convert_task({'type': 'gamestage', 'stage': 'pack:bronze'}, 0)['target'], 'pack:bronze')
+        self.assertTrue(convert_reward({'type': 'gamestage', 'stage': 'pack:bronze', 'remove': True})['remove'])
+        self.assertEqual(convert_task({'type': 'reskillable', 'skill': 'reskillable:mining', 'skill_level': 12}, 0)['count'], 12)
     def test_binary_nbt_roundtrip_preserves_types_arrays_and_java_unicode(self):
         value = {'text': 'Привет\0🐲', 'byte': IntTag(-2, 'b'), 'short': IntTag(500, 's'), 'long': IntTag(2**48, 'L'), 'float': FloatTag(1.25, 'f'), 'intArray': TypedArray([1, 2], 'I'), 'byteArray': TypedArray([-1, 2], 'B'), 'longArray': TypedArray([2**40], 'L'), 'list': [{'a': 'b'}]}
         with tempfile.TemporaryDirectory() as folder:

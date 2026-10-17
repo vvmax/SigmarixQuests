@@ -23,8 +23,30 @@ public class QuestService {
     public QuestCore.Book book = new QuestCore.Book();
     public Map<String, QuestCore.Quest> quests = Collections.emptyMap();
     public long revision;
-    private final File config;
-    public QuestService(File config) { this.config = config; }
+    private final Map<UUID,Map<String,Integer>> lookTimers=new HashMap<UUID,Map<String,Integer>>();
+    private File config;
+    private final File defaultConfig;
+    public QuestService(File config) { this.config = this.defaultConfig = config; }
+    private File profileFile(String key) {
+        if(!QuestCore.validId(key)) throw new IllegalArgumentException("Invalid quest profile");
+        return key.equals("default")?defaultConfig:new File(new File(defaultConfig.getParentFile(),"profiles"),key+".json");
+    }
+    public void reload() throws IOException { QuestScripts.reload(new File(defaultConfig.getParentFile(),"scripts"),this::load); }
+    public void loadActiveProfile() throws IOException { config=profileFile(progress().profile()); load(); }
+    public void switchProfile(String key) throws IOException {
+        File source=profileFile(key); QuestService candidate=new QuestService(source); candidate.load();
+        progress().profile(key); config=source; book=candidate.book; quests=candidate.quests; lookTimers.clear(); revision++;
+    }
+    public void createProfile(String key) throws IOException {
+        File target=profileFile(key); Files.createDirectories(target.getParentFile().toPath());
+        Files.write(target.toPath(),JSON.toJson(book).getBytes(StandardCharsets.UTF_8),StandardOpenOption.CREATE_NEW);
+    }
+    public List<String> profiles() {
+        List<String> result=new ArrayList<String>(); result.add("default");
+        File[] files=new File(defaultConfig.getParentFile(),"profiles").listFiles((dir,name)->name.endsWith(".json"));
+        if(files!=null) for(File file:files) { String name=file.getName().substring(0,file.getName().length()-5); if(QuestCore.validId(name) && !name.equals("default")) result.add(name); }
+        Collections.sort(result); return result;
+    }
     public void load() throws IOException {
         if(config.length()>900000) throw new IOException("Quest book exceeds 900 KB");
         byte[] source=Files.readAllBytes(config.toPath());
@@ -38,15 +60,15 @@ public class QuestService {
     }
     private void install(QuestCore.Book next) {
         Map<String, QuestCore.Quest> validated = validate(next);
-        book = next; quests = validated; revision++;
+        book = next; quests = validated; lookTimers.clear(); revision++;
     }
     public void save(QuestCore.Book next, long expectedRevision) throws IOException {
         if (expectedRevision != revision) throw new IllegalArgumentException("Book changed; refresh before editing");
         validate(next);
         byte[] bytes = JSON.toJson(next).getBytes(StandardCharsets.UTF_8);
         if (bytes.length > 900000) throw new IllegalArgumentException("Book too large (900 KB maximum)");
-        Path target = config.toPath(), temporary = target.resolveSibling("quests.json.tmp");
-        if (Files.exists(target)) Files.copy(target, target.resolveSibling("quests.json.bak"), StandardCopyOption.REPLACE_EXISTING);
+        Path target = config.toPath(), temporary = target.resolveSibling(target.getFileName()+".tmp");
+        if (Files.exists(target)) Files.copy(target, target.resolveSibling(target.getFileName()+".bak"), StandardCopyOption.REPLACE_EXISTING);
         Files.write(temporary, bytes);
         try { Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING); }
         catch (AtomicMoveNotSupportedException e) { Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING); }
@@ -57,20 +79,23 @@ public class QuestService {
         Map<String, QuestCore.Quest> result = next.validate();
         for (QuestCore.Quest q : next.quests) {
             item(q.icon); tag(q.iconNbt);
+            for(QuestPresentation.GuidePage page:q.richPages) for(QuestPresentation.GuideElement element:page.elements) if(element.type.equals("item")) { item(element.item); tag(element.nbt); }
             for (QuestCore.Task t : q.tasks) {
                 switch (t.type) {
                     case "item":
                         if(t.target!=null && !t.target.isEmpty()) validateItemTarget(t.target);
                         for(String target:t.targets) validateItemTarget(target);
                         tag(t.nbt); if(t.filter!=null) t.filter.validate(true); break;
+                    case "npc_quest": case "npc_dialog": case "npc_faction": QuestNPCs.require(); break;
+                    case "buildcraft_mj": if(!cpw.mods.fml.common.Loader.isModLoaded("BuildCraft|Core")) throw new IllegalArgumentException("MJ tasks require BuildCraft 7.1.23 (1.7.10 RF bridge)"); break;
                     case "emc": QuestProjectE.validateAPI(); break;
                     case "botania_mana": if(!cpw.mods.fml.common.Loader.isModLoaded("Botania")) throw new IllegalArgumentException("Mana tasks require Botania"); break;
                     case "ic2_energy": if(!cpw.mods.fml.common.Loader.isModLoaded("IC2")) throw new IllegalArgumentException("IC2 EU tasks require IndustrialCraft 2"); break;
                     case "kill": if (!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: " + t.target); break;
                     case "fluid": tag(t.nbt); if (!FluidRegistry.isFluidRegistered(t.target)) throw new IllegalArgumentException("Unknown fluid: " + t.target); break;
                     case "observation": case "interaction":
-                        if(t.entity) { if(!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: "+t.target); }
-                        else block(t.target); break;
+                        if(QuestRayMatcher.type(t).equals("entity_id")) { if(!EntityList.stringToClassMapping.containsKey(t.target)) throw new IllegalArgumentException("Unknown entity: "+t.target); }
+                        else if(QuestRayMatcher.type(t).equals("block_id")) block(t.target); tag(t.nbt); break;
                     case "stat": case "achievement": stat(t.target, t.type.equals("achievement")); break;
                     case "custom": if (!QuestHooks.TASKS.containsKey(t.target)) throw new IllegalArgumentException("Unregistered task hook: " + t.target); break;
                     default: break;
@@ -78,6 +103,7 @@ public class QuestService {
             }
             for (QuestCore.Reward r : q.rewards) validateReward(r);
         }
+        for(QuestCore.Reward reward:next.emergencyItems) validateReward(reward);
         for (List<QuestCore.Reward> table : next.lootTables.values()) for (QuestCore.Reward r : table) validateReward(r);
         QuestNetwork.Snapshot wire=new QuestNetwork.Snapshot(); wire.book=next;
         for(QuestCore.Chapter c:next.chapters) wire.chapterStates.put(c.id,"not_started");
@@ -86,6 +112,7 @@ public class QuestService {
         return result;
     }
     private void validateReward(QuestCore.Reward r) {
+        if (r.type.startsWith("npc_")) QuestNPCs.validate(r);
         if (r.type.equals("item")) { item(r.item); tag(r.nbt); }
         if (r.type.equals("achievement")) stat(r.target, true);
         if (r.type.equals("custom") && !QuestHooks.REWARDS.containsKey(r.target)) throw new IllegalArgumentException("Unregistered reward hook: " + r.target);
@@ -174,7 +201,7 @@ public class QuestService {
     public void creditTask(EntityPlayerMP p, String quest, String task, long amount) {
         QuestCore.Quest q = quests.get(quest);
         if (q == null || !active(p, q)) return;
-        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("ic2_energy") || t.type.equals("botania_mana") || t.type.equals("fluid") || t.type.equals("custom")))
+        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("ic2_energy") || t.type.equals("botania_mana") || t.type.equals("buildcraft_mj") || t.type.equals("fluid") || t.type.equals("custom")))
             progress().add(p.getUniqueID(), quest, task, amount, t.count);
     }
     public long counter(EntityPlayerMP p, QuestCore.Quest q, QuestCore.Task t) {
@@ -226,21 +253,24 @@ public class QuestService {
         if(t.sticky && counter(p,q,t)>=t.count) return true;
         switch (t.type) {
             case "check": return !t.manual || counter(p,q,t)>=t.count;
-            case "kill": case "interaction": case "energy": case "ic2_energy": case "botania_mana": return counter(p,q,t) >= t.count;
+            case "kill": case "interaction": case "energy": case "ic2_energy": case "botania_mana": case "buildcraft_mj": return counter(p,q,t) >= t.count;
             case "custom": return counter(p,q,t) >= t.count || QuestHooks.TASKS.get(t.target).complete(p,t);
+            case "gamestage": return progress().stage(p.getUniqueID(),t.target);
+            case "skill": return progress().skill(p.getUniqueID(),t.target)>=t.count;
+            case "npc_quest": case "npc_dialog": case "npc_faction": return QuestNPCs.task(p,t);
             case "dimension": return p.dimension == t.dimension;
             case "biome": return t.target.equalsIgnoreCase(p.worldObj.getBiomeGenForCoords(MathHelper.floor_double(p.posX), MathHelper.floor_double(p.posZ)).biomeName) ||
                 t.target.equals(Integer.toString(p.worldObj.getBiomeGenForCoords(MathHelper.floor_double(p.posX), MathHelper.floor_double(p.posZ)).biomeID));
             case "location": return (t.ignoreDimension || p.dimension==t.dimension) && (t.box ? p.posX>=t.x && p.posX<t.x+t.width && p.posY>=t.y && p.posY<t.y+t.height && p.posZ>=t.z && p.posZ<t.z+t.depth : p.getDistanceSq(t.x,t.y,t.z)<=t.radius*t.radius);
             case "stat": return p.func_147099_x().writeStat(stat(t.target,false)) >= t.count;
             case "achievement": return p.func_147099_x().hasAchievementUnlocked((Achievement)stat(t.target,true));
-            case "observation": return looking(p,t) && (t.lookTicks==0 || progress().value(p.getUniqueID(),q.id,t.id+"_look")>=t.lookTicks);
+            case "observation": return looking(p,t) && (t.lookTicks==0 || lookTimers.getOrDefault(p.getUniqueID(),Collections.<String,Integer>emptyMap()).getOrDefault(q.id+":"+t.id,0)>=t.lookTicks);
             default: return false;
         }
     }
     private boolean looking(EntityPlayerMP p,QuestCore.Task t) {
         double distance=Math.min(t.radius,64); MovingObjectPosition blockHit=p.rayTrace(distance,1);
-        if(!t.entity) return blockHit!=null && blockHit.typeOfHit==MovingObjectPosition.MovingObjectType.BLOCK && p.worldObj.getBlock(blockHit.blockX,blockHit.blockY,blockHit.blockZ)==block(t.target) && (t.ignoreDamage || p.worldObj.getBlockMetadata(blockHit.blockX,blockHit.blockY,blockHit.blockZ)==t.meta);
+        if(!QuestRayMatcher.entity(t)) return blockHit!=null && blockHit.typeOfHit==MovingObjectPosition.MovingObjectType.BLOCK && QuestRayMatcher.block(t,p.worldObj,blockHit.blockX,blockHit.blockY,blockHit.blockZ);
         Vec3 eye=Vec3.createVectorHelper(p.posX,p.posY+p.getEyeHeight(),p.posZ),look=p.getLook(1),end=eye.addVector(look.xCoord*distance,look.yCoord*distance,look.zCoord*distance);
         double closest=blockHit==null?distance:eye.distanceTo(blockHit.hitVec); net.minecraft.entity.Entity target=null;
         for(Object raw:p.worldObj.getEntitiesWithinAABBExcludingEntity(p,p.boundingBox.addCoord(look.xCoord*distance,look.yCoord*distance,look.zCoord*distance).expand(1,1,1))) {
@@ -249,15 +279,26 @@ public class QuestService {
             MovingObjectPosition hit=bounds.calculateIntercept(eye,end); double d=bounds.isVecInside(eye)?0:hit==null?Double.MAX_VALUE:eye.distanceTo(hit.hitVec);
             if(d<closest) { closest=d; target=e; }
         }
-        return target!=null && t.target.equals(EntityList.getEntityString(target));
+        return target!=null && QuestRayMatcher.entity(t,target);
     }
-    public void observe(EntityPlayerMP p) {
-        for(QuestCore.Quest q:quests.values()) if(active(p,q)) for(QuestCore.Task t:q.tasks) if(t.type.equals("observation") && t.lookTicks>0 && (!t.sticky || counter(p,q,t)<t.count)) {
-            if(looking(p,t)) {
-                progress().add(p.getUniqueID(),q.id,t.id+"_look",1,t.lookTicks);
-                if(progress().value(p.getUniqueID(),q.id,t.id+"_look")>=t.lookTicks) progress().add(p.getUniqueID(),q.id,t.id,t.count,t.count);
-            } else progress().add(p.getUniqueID(),q.id,t.id+"_look",0,0);
+    public void interact(EntityPlayerMP player,net.minecraft.entity.Entity target) {
+        for(QuestCore.Quest quest:quests.values()) if(active(player,quest)) for(QuestCore.Task task:quest.tasks)
+            if(task.type.equals("interaction") && QuestRayMatcher.entity(task,target)) progress().add(player.getUniqueID(),quest.id,task.id,1,task.count);
+    }
+    public void interact(EntityPlayerMP player,net.minecraft.world.World world,int x,int y,int z) {
+        for(QuestCore.Quest quest:quests.values()) if(active(player,quest)) for(QuestCore.Task task:quest.tasks)
+            if(task.type.equals("interaction") && QuestRayMatcher.block(task,world,x,y,z)) progress().add(player.getUniqueID(),quest.id,task.id,1,task.count);
+    }
+    public void clearObservations(UUID id) { lookTimers.remove(id); }
+    public void observe(EntityPlayerMP player) {
+        Map<String,Integer> timers=lookTimers.computeIfAbsent(player.getUniqueID(),id->new HashMap<String,Integer>()); Set<String> active=new HashSet<String>();
+        for(QuestCore.Quest quest:quests.values()) if(active(player,quest)) for(QuestCore.Task task:quest.tasks) if(task.type.equals("observation") && task.lookTicks>0 && (!task.sticky || counter(player,quest,task)<task.count)) {
+            String key=quest.id+":"+task.id; active.add(key); boolean looking=looking(player,task);
+            int ticks=looking?Math.min(task.lookTicks,timers.getOrDefault(key,0)+1):0; timers.put(key,ticks);
+            if(looking) { progress().start(player.getUniqueID(),quest.id); progress().startTask(player.getUniqueID(),quest.id,task.id); }
+            if(ticks>=task.lookTicks && task.sticky) progress().add(player.getUniqueID(),quest.id,task.id,task.count,task.count);
         }
+        timers.keySet().retainAll(active);
     }
     public void crafted(EntityPlayerMP p,ItemStack output) {
         for(QuestCore.Quest q:quests.values()) if(active(p,q)) for(QuestCore.Task t:q.tasks)
@@ -410,9 +451,18 @@ public class QuestService {
         if(automatic && pending.isEmpty() && !(q.rewards.isEmpty() && q.autoClaim)) return;
         if(selected.hasNext()) throw new IllegalArgumentException("Too many reward choices");
         for(QuestCore.Reward r:leaves) validateReward(r);
+        preflightRewardEffects(p,leaves);
         for(int index:pending) { QuestCore.Reward r=q.rewards.get(index); data.claimReward(id,q.id,rewardId(r,index),individual(q,r)); }
         if(allShared && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
         applyRewards(p,leaves,itemSink);
+        for(int index:pending) QuestEvents.fire("reward_claimed",id,q.id,rewardId(q.rewards.get(index),index));
+    }
+    public long emergencyWait(EntityPlayerMP player) { return (progress().emergencyWait(player.getUniqueID(),player.worldObj.getTotalWorldTime(),book.emergencyCooldownSeconds*20L)+19)/20; }
+    public void emergency(EntityPlayerMP player) {
+        if(book.emergencyItems.isEmpty()) throw new IllegalArgumentException("Emergency items are not configured");
+        long wait=emergencyWait(player); if(wait>0) throw new IllegalArgumentException("Emergency items available in "+wait+" seconds");
+        for(QuestCore.Reward reward:book.emergencyItems) validateReward(reward);
+        progress().emergency(player.getUniqueID(),player.worldObj.getTotalWorldTime()); applyRewards(player,book.emergencyItems,null);
     }
     public void openLoot(EntityPlayerMP p,String table,ItemStack crate) {
         if(!book.lootTables.containsKey(table)) throw new IllegalArgumentException("Unknown loot table");
@@ -420,8 +470,22 @@ public class QuestService {
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>();
         flatten(roll,Collections.<Integer>emptyList().iterator(),p.getRNG(),leaves,new int[]{0},0);
         for(QuestCore.Reward r:leaves) validateReward(r);
+        preflightRewardEffects(p,leaves);
         if(crate.stackSize<=0) throw new IllegalArgumentException("Empty crate stack");
         crate.stackSize--; applyRewards(p,leaves,null);
+    }
+    private void preflightRewardEffects(EntityPlayerMP player,List<QuestCore.Reward> leaves) {
+        Map<String,Integer> levels=new HashMap<String,Integer>(),factions=new HashMap<String,Integer>();
+        for(QuestCore.Reward reward:leaves) {
+            if(reward.type.startsWith("npc_")) QuestNPCs.preflight(reward);
+            if(reward.type.equals("skill")) {
+                int old=levels.containsKey(reward.target)?levels.get(reward.target):progress().skill(player.getUniqueID(),reward.target);
+                levels.put(reward.target,reward.add?Math.addExact(old,reward.points):reward.points);
+            } else if(reward.type.equals("npc_faction")) {
+                int old=factions.containsKey(reward.target)?factions.get(reward.target):QuestNPCs.points(player,reward.target);
+                factions.put(reward.target,Math.addExact(old,reward.add?reward.points:-reward.points));
+            }
+        }
     }
     private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink) {
         UUID id=p.getUniqueID();
@@ -432,6 +496,9 @@ public class QuestService {
                 if(r.onlyOne && exists) break;
                 int remaining=r.count+(r.randomBonus>0?p.getRNG().nextInt(r.randomBonus+1):0);
                 while(remaining>0) { int count=Math.min(remaining,reward.getItemStackLimit()); ItemStack stack=new ItemStack(reward,count,r.meta); stack.setTagCompound(tag(r.nbt)); if(itemSink==null) give(p,stack); else itemSink.accept(stack); remaining-=count; } break;
+            case "gamestage": progress().stage(id,r.target,!r.remove); break;
+            case "skill": progress().skill(id,r.target,r.add?Math.addExact(progress().skill(id,r.target),r.points):r.points); break;
+            case "npc_quest": case "npc_faction": case "npc_mail": QuestNPCs.grant(p,r); break;
             case "xp": p.addExperience(r.count); break;
             case "xp_levels": p.addExperienceLevel(r.count); break;
             case "command":

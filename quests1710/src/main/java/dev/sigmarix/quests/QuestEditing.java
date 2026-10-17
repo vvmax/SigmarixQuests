@@ -11,6 +11,10 @@ public final class QuestEditing {
         else if(field.equals("chapters")) { QuestCore.Chapter c=new QuestCore.Chapter(); c.id=id("chapter"); c.title="New chapter"; value=c; }
         else if(field.equals("tasks")) { QuestCore.Task t=new QuestCore.Task(); t.id=id("task"); t.type="check"; t.manual=true; value=t; }
         else if(field.equals("rewards") || field.equals("options") || field.equals("lootEntries")) { QuestCore.Reward r=new QuestCore.Reward(); r.id=id("reward"); r.type="xp"; value=r; }
+        else if(field.equals("richPages")) value=new QuestPresentation.GuidePage();
+        else if(field.equals("elements")) value=new QuestPresentation.GuideElement();
+        else if(field.equals("attachments")) { QuestCore.MailItem item=new QuestCore.MailItem(); item.item="minecraft:diamond"; value=item; }
+        else if(field.equals("emergencyItems")) { QuestCore.Reward reward=new QuestCore.Reward(); reward.item="minecraft:bread"; value=reward; }
         else if(field.equals("children")) value=new QuestItemFilter();
         else if(field.equals("styles")) value=new QuestPresentation.Style();
         else value="";

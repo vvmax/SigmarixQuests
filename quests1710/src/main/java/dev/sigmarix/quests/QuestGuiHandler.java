@@ -8,7 +8,7 @@ public final class QuestGuiHandler implements IGuiHandler {
         QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); return world.isRemote || tile.isUseableByPlayer(player)?tile:null;
     }
     @Override public Object getServerGuiElement(int id,EntityPlayer player,World world,int x,int y,int z) {
-        QuestDevice tile=tile(player,world,x,y,z); return id==0 && tile!=null?new QuestDeviceContainer(player,tile):null;
+        QuestDevice tile=tile(player,world,x,y,z); return id!=0 || tile==null?null:tile instanceof QuestStorage?new net.minecraft.inventory.ContainerChest(player.inventory,tile):new QuestDeviceContainer(player,tile);
     }
     @Override public Object getClientGuiElement(int id,EntityPlayer player,World world,int x,int y,int z) {
         QuestDevice tile=tile(player,world,x,y,z); return id==0 && tile!=null?QuestsMod.proxy.deviceScreen(player,tile):null;

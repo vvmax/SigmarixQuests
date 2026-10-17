@@ -23,13 +23,15 @@ public final class QuestBookScreen extends GuiScreen {
         buttonList.add(new GuiButton(1,8,8,70,20,QuestText.tr("Refresh")));
         buttonList.add(new GuiButton(2,84,8,110,20,QuestText.tr("Chapter")));
         if(ClientProxy.snapshot.canEdit) buttonList.add(new GuiButton(3,200,8,70,20,QuestText.tr("Edit book")));
+        buttonList.add(new GuiButton(9,276,8,66,20,QuestText.tr("Teams")));
         int buttonWidth=Math.max(32,(width-split()-24)/3);
         buttonList.add(new GuiButton(8,split()+6,height-78,Math.max(60,width-split()-12),18,QuestText.tr("Guide / link")));
         buttonList.add(new GuiButton(4,split()+6,height-54,buttonWidth,20,QuestText.tr("Check")));
         buttonList.add(new GuiButton(5,split()+10+buttonWidth,height-54,buttonWidth,20,QuestText.tr("Claim")));
         buttonList.add(new GuiButton(6,split()+14+buttonWidth*2,height-54,buttonWidth,20,QuestText.tr("Repeat")));
         buttonList.add(new GuiButton(7,split()+6,height-30,Math.max(60,width-split()-12),18,QuestText.tr("Tasks / start")));
-        search=new GuiTextField(fontRendererObj,8,36,Math.min(240,split()-16),18); search.setMaxStringLength(128);
+        buttonList.add(new GuiButton(10,split()-84,35,76,20,QuestText.tr("Help items")));
+        search=new GuiTextField(fontRendererObj,8,36,Math.min(240,split()-104),18); search.setMaxStringLength(128);
         refresh();
     }
     public void refresh() {
@@ -38,7 +40,8 @@ public final class QuestBookScreen extends GuiScreen {
             GuiButton b=(GuiButton)object;
             if(b.id==2) b.displayString=chapter.isEmpty()?QuestText.tr("All chapters"):chapter+" ["+ClientProxy.snapshot.chapterStates.get(chapter)+"]";
             String state=ClientProxy.snapshot.states.get(selected);
-            if(b.id==8) { QuestCore.Quest q=find(selected); b.enabled=q!=null && (!q.pages.isEmpty() || !q.uri.isEmpty()); }
+            if(b.id==10) b.enabled=!ClientProxy.snapshot.book.emergencyItems.isEmpty() && ClientProxy.snapshot.emergencyWait==0;
+            if(b.id==8) { QuestCore.Quest q=find(selected); b.enabled=q!=null && (!q.pages.isEmpty() || !q.richPages.isEmpty() || !q.uri.isEmpty()); }
             if(b.id==4) b.enabled="available".equals(state);
             if(b.id==5) b.enabled="complete".equals(state);
             if(b.id==6) { QuestCore.Quest q=find(selected); b.enabled="claimed".equals(state) && q!=null && q.repeatable; }
@@ -124,6 +127,8 @@ public final class QuestBookScreen extends GuiScreen {
     @Override protected void actionPerformed(GuiButton button) {
         QuestNetwork.Action action=new QuestNetwork.Action(); action.id=selected;
         switch(button.id) {
+            case 10: action.action="emergency"; ClientProxy.send(action); return;
+            case 9: mc.displayGuiScreen(new QuestTeamScreen(this)); return;
             case 0: mc.displayGuiScreen(null); return;
             case 1: ClientProxy.send(action); return;
             case 2:

@@ -20,7 +20,7 @@ public class QuestSystemsTest {
     private QuestService service;
     private QuestProgress data;
     private QuestCore.Quest quest;
-    @BeforeClass public static void boot() { Bootstrap.func_151354_b(); }
+    @BeforeClass public static void boot() { Bootstrap.func_151354_b(); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestDevice.class,"sigmarixquests:test-device-base"); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestStorage.class,"sigmarixquests:test-storage"); }
     @Before public void setup() {
         player=mock(EntityPlayerMP.class);
         when(player.getUniqueID()).thenReturn(UUID.randomUUID());
@@ -501,5 +501,136 @@ public class QuestSystemsTest {
     }
     @Test public void readOnlyEmcTaskDoesNotDebitWallet() {
         double[] value=wallet(100); task("emc",null,64,false); assertTrue(service.check(player,quest,true)); assertEquals(100,value[0],0); verify(service,never()).setEmc(eq(player),anyDouble());
+    }
+    @Test public void nativeStagesAndSkillsSurviveSaveWithoutBecomingTeamOwned() {
+        UUID id=player.getUniqueID(),other=UUID.randomUUID();
+        data.stage(id,"pack:bronze",true); data.skill(id,"pack:mining",12);
+        data.createTeam(id,"Native markers"); data.invite(id,other); data.join(other,id);
+        assertFalse(data.stage(other,"pack:bronze")); assertEquals(0,data.skill(other,"pack:mining"));
+        NBTTagCompound saved=new NBTTagCompound(); data.writeToNBT(saved); QuestProgress reloaded=new QuestProgress(); reloaded.readFromNBT(saved);
+        assertTrue(reloaded.stage(id,"pack:bronze")); assertEquals(12,reloaded.skill(id,"pack:mining"));
+        reloaded.disband(id); assertTrue(reloaded.stage(id,"pack:bronze")); assertFalse(reloaded.stage(other,"pack:bronze"));
+    }
+    @Test public void stageAndSkillTasksRequireActualPersonalState() {
+        task("gamestage","pack:bronze",1,false).sticky=false; task("skill","pack:mining",10,false).sticky=false;
+        assertFalse(service.check(player,quest,false)); data.stage(player.getUniqueID(),"pack:bronze",true);
+        assertFalse(service.check(player,quest,false)); data.skill(player.getUniqueID(),"pack:mining",10);
+        assertTrue(service.check(player,quest,false)); data.stage(player.getUniqueID(),"pack:bronze",false);
+        assertFalse(service.check(player,quest,false));
+    }
+    @Test public void markerRewardsAddRemoveAndSetLevels() {
+        task("check",null,1,false); QuestCore.Reward stage=new QuestCore.Reward(); stage.type="gamestage"; stage.target="pack:unlocked";
+        QuestCore.Reward skill=new QuestCore.Reward(); skill.type="skill"; skill.target="pack:mining"; skill.points=10;
+        quest.rewards.add(stage); quest.rewards.add(skill); assertTrue(service.finish(player,quest)); service.claim(player,quest,Collections.<Integer>emptyList());
+        assertTrue(data.stage(player.getUniqueID(),stage.target)); assertEquals(10,data.skill(player.getUniqueID(),skill.target));
+        data.reset(player.getUniqueID(),quest.id); stage.remove=true; skill.add=false; skill.points=3;
+        assertTrue(service.finish(player,quest)); service.claim(player,quest,Collections.<Integer>emptyList());
+        assertFalse(data.stage(player.getUniqueID(),stage.target)); assertEquals(3,data.skill(player.getUniqueID(),skill.target));
+    }
+    @Test public void lifecycleEventsFireOncePerTransitionAndAgainAfterRepeat() {
+        List<String> events=new ArrayList<String>(); java.util.function.Consumer<QuestEvents.Event> listener=e->events.add(e.type+":"+e.task);
+        for(String type:QuestEvents.TYPES) QuestEvents.on(type,listener);
+        try {
+            QuestCore.Task manual=task("check",null,1,false); manual.manual=true;
+            service.start(player,quest); service.start(player,quest); service.confirm(player,quest,manual.id); service.detect(player);
+            assertTrue(service.finish(player,quest)); service.claim(player,quest,Collections.<Integer>emptyList());
+            assertEquals(Arrays.asList("quest_started:","task_started:"+manual.id,"task_completed:"+manual.id,"quest_completed:"),events);
+            data.reset(player.getUniqueID(),quest.id); service.confirm(player,quest,manual.id); assertTrue(service.finish(player,quest));
+            assertEquals(2,Collections.frequency(events,"quest_completed:")); assertEquals(2,Collections.frequency(events,"task_started:"+manual.id));
+        } finally { for(String type:QuestEvents.TYPES) QuestEvents.off(type,listener); }
+    }
+    @Test public void profilesIsolateCompletionCountersAndPersonalRewardsAcrossSave() {
+        UUID id=player.getUniqueID(); data.complete(id,"same"); data.add(id,"same","task",5,10); data.claimReward(id,"same","root",true);
+        data.profile("expert"); assertFalse(data.completed(id).contains("same")); assertEquals(0,data.value(id,"same","task")); assertFalse(data.rewardClaimed(id,"same","root",true));
+        data.add(id,"same","task",2,10); NBTTagCompound saved=new NBTTagCompound(); data.writeToNBT(saved);
+        QuestProgress reloaded=new QuestProgress(); reloaded.readFromNBT(saved); assertEquals("expert",reloaded.profile()); assertEquals(2,reloaded.value(id,"same","task"));
+        reloaded.profile("default"); assertTrue(reloaded.completed(id).contains("same")); assertEquals(5,reloaded.value(id,"same","task")); assertTrue(reloaded.rewardClaimed(id,"same","root",true));
+    }
+    @Test public void teamCreateAndDisbandMergeEveryProfileWithoutMixingTheirProgress() {
+        UUID id=player.getUniqueID(),other=UUID.randomUUID();
+        data.add(id,"quest","task",3,10); data.profile("expert"); data.add(id,"quest","task",7,10);
+        data.createTeam(id,"Across modes"); data.invite(id,other); data.join(other,id); assertEquals(7,data.value(other,"quest","task"));
+        data.profile("default"); assertEquals(3,data.value(other,"quest","task")); data.add(other,"quest","task",1,10);
+        data.disband(id); assertEquals(4,data.value(other,"quest","task")); data.profile("expert"); assertEquals(7,data.value(other,"quest","task")); assertEquals(7,data.value(id,"quest","task"));
+    }
+    @Test public void overflowingSkillRewardsFailBeforeClaimStateChanges() {
+        task("check",null,1,false); data.skill(player.getUniqueID(),"pack:mining",Integer.MAX_VALUE-2);
+        for(int i=0;i<2;i++) { QuestCore.Reward reward=new QuestCore.Reward(); reward.id="r"+i; reward.type="skill"; reward.target="pack:mining"; reward.points=2; quest.rewards.add(reward); }
+        assertTrue(service.finish(player,quest)); try { service.claim(player,quest,Collections.<Integer>emptyList()); fail(); } catch(ArithmeticException expected) {}
+        assertFalse(service.claimed(player.getUniqueID(),quest)); assertEquals(Integer.MAX_VALUE-2,data.skill(player.getUniqueID(),"pack:mining"));
+    }
+    @Test public void interactionsRespectBlockMetadataAndTileNbt() {
+        QuestCore.Task click=task("interaction","minecraft:furnace",2,false); click.meta=2; click.nbtMode="subset"; click.nbt="{BurnTime:7s}";
+        net.minecraft.tileentity.TileEntityFurnace furnace=new net.minecraft.tileentity.TileEntityFurnace(); furnace.furnaceBurnTime=7;
+        when(player.worldObj.getBlock(1,2,3)).thenReturn(Blocks.furnace); when(player.worldObj.getTileEntity(1,2,3)).thenReturn(furnace); when(player.worldObj.getBlockMetadata(1,2,3)).thenReturn(3);
+        service.interact(player,player.worldObj,1,2,3); assertEquals(0,data.value(player.getUniqueID(),quest.id,click.id));
+        when(player.worldObj.getBlockMetadata(1,2,3)).thenReturn(2); service.interact(player,player.worldObj,1,2,3); assertEquals(1,data.value(player.getUniqueID(),quest.id,click.id));
+        furnace.furnaceBurnTime=0; service.interact(player,player.worldObj,1,2,3); assertEquals(1,data.value(player.getUniqueID(),quest.id,click.id));
+        click.matchType="block_entity_id"; click.target="Furnace"; click.nbt=""; service.interact(player,player.worldObj,1,2,3); assertEquals(2,data.value(player.getUniqueID(),quest.id,click.id));
+    }
+    @Test public void interactionEntityClassesRemainSeparateFromBlockMatchers() {
+        net.minecraft.entity.passive.EntityPig pig=mock(net.minecraft.entity.passive.EntityPig.class);
+        QuestCore.Task click=task("interaction",pig.getClass().getName(),1,false); click.matchType="entity_class";
+        service.interact(player,pig); assertEquals(1,data.value(player.getUniqueID(),quest.id,click.id));
+        QuestCore.Task block=task("interaction","minecraft:stone",1,false); block.matchType="block_id"; service.interact(player,pig); assertEquals(0,data.value(player.getUniqueID(),quest.id,block.id));
+    }
+    @Test public void leaderboardCountsKnownQuestsAndRanksTeamsOncePerMode() {
+        UUID id=player.getUniqueID(),other=UUID.randomUUID(); data.complete(id,"known"); data.complete(id,"old-removed");
+        data.createTeam(id,"Players"); data.invite(id,other); data.join(other,id);
+        List<QuestNetwork.Rank> board=data.leaderboard(Collections.singleton("known")); assertEquals(1,board.size()); assertEquals("Players",board.get(0).name); assertEquals(1,board.get(0).completed);
+        data.profile("expert"); assertTrue(data.leaderboard(Collections.singleton("known")).isEmpty());
+    }
+    @Test public void buildCraftBridgeSimulatesAndBoundsMicroMjProgress() {
+        QuestCore.Task energy=task("buildcraft_mj",null,1600001,false);
+        QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=energy.id; tile.setWorldObj(player.worldObj);
+        doReturn(player).when(tile).player(); QuestsMod.service=service;
+        try {
+            assertEquals(17,tile.receiveEnergy(ForgeDirection.NORTH,100,true)); assertEquals(0,data.value(tile.owner,quest.id,energy.id));
+            assertEquals(16,tile.receiveEnergy(ForgeDirection.NORTH,16,false)); assertEquals(1600000,data.value(tile.owner,quest.id,energy.id));
+            assertEquals(1,tile.receiveEnergy(ForgeDirection.NORTH,10,false)); assertEquals(1600001,data.value(tile.owner,quest.id,energy.id));
+            assertEquals(0,tile.receiveEnergy(ForgeDirection.NORTH,1,false));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void screenAssemblyRejectsAnotherOwnerBeforeChangingAnyPart() {
+        QuestDevice root=spy(new QuestDevice()),part=spy(new QuestDevice()); net.minecraft.block.Block frame=new QuestBlocks.DeviceBlock(1,"test_frame");
+        root.setWorldObj(player.worldObj); part.setWorldObj(player.worldObj); root.facing=part.facing=3; part.xCoord=1;
+        root.owner=player.getUniqueID(); part.owner=UUID.randomUUID(); doReturn(frame).when(root).getBlockType(); doReturn(frame).when(part).getBlockType();
+        when(player.worldObj.getTileEntity(0,0,0)).thenReturn(root); when(player.worldObj.getTileEntity(1,0,0)).thenReturn(part);
+        try { QuestScreens.configure(root,2,1); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(1,root.screenWidth); assertFalse(part.screenLinked);
+        part.owner=root.owner; root.quest=quest.id; QuestScreens.configure(root,2,1);
+        assertEquals(root,QuestScreens.core(part)); assertTrue(QuestScreens.synchronize(part)); assertEquals(quest.id,part.quest);
+        NBTTagCompound saved=new NBTTagCompound(); part.writeToNBT(saved); QuestDevice restored=new QuestDevice(); restored.readFromNBT(saved); assertTrue(restored.screenLinked); assertEquals(root.xCoord,restored.coreX);
+        when(player.worldObj.blockExists(0,0,0)).thenReturn(true); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(null);
+        assertFalse(QuestScreens.synchronize(part)); assertFalse(part.screenLinked); assertEquals("",part.quest);
+    }
+    @Test public void emergencyItemsHavePersistentPersonalCooldownAcrossModes() {
+        QuestCore.Reward item=new QuestCore.Reward(); item.item="minecraft:stick"; item.count=2; service.book.emergencyItems.add(item); service.book.emergencyCooldownSeconds=10;
+        service.emergency(player); assertEquals(2,player.inventory.mainInventory[0].stackSize); assertEquals(10,service.emergencyWait(player));
+        try { service.emergency(player); fail(); } catch(IllegalArgumentException expected) {}
+        data.profile("expert"); assertEquals(10,service.emergencyWait(player));
+        NBTTagCompound saved=new NBTTagCompound(); data.writeToNBT(saved); QuestProgress reloaded=new QuestProgress(); reloaded.readFromNBT(saved);
+        assertEquals(200,reloaded.emergencyWait(player.getUniqueID(),100,200));
+        when(player.worldObj.getTotalWorldTime()).thenReturn(300L); service.emergency(player); assertEquals(4,player.inventory.mainInventory[0].stackSize);
+    }
+    @Test public void crateDropsUseCreatureCategoriesAndNoDropWeights() {
+        net.minecraft.entity.passive.EntityPig pig=mock(net.minecraft.entity.passive.EntityPig.class); net.minecraft.entity.monster.EntityZombie zombie=mock(net.minecraft.entity.monster.EntityZombie.class);
+        QuestCore.LootSettings settings=new QuestCore.LootSettings(); settings.drops.passive=1; service.book.lootSettings.put("rare",settings); service.book.lootTables.put("rare",Collections.<QuestCore.Reward>emptyList()); service.book.dropLootCrates=true; service.book.noDrop=new QuestLoot.Weights(0,1,0);
+        assertEquals("rare",QuestLoot.choose(service.book,pig,new Random(1))); assertNull(QuestLoot.choose(service.book,zombie,new Random(1)));
+        service.book.dropLootCrates=false; assertNull(QuestLoot.choose(service.book,pig,new Random(1)));
+    }
+    @Test public void physicalStoragePreservesEveryInventorySlotAcrossSave() {
+        QuestStorage storage=new QuestStorage(false); storage.setInventorySlotContents(0,new ItemStack(Items.iron_ingot,17)); storage.setInventorySlotContents(26,new ItemStack(Items.diamond,4));
+        NBTTagCompound tag=new NBTTagCompound(); storage.writeToNBT(tag); QuestStorage reloaded=new QuestStorage(); reloaded.readFromNBT(tag);
+        assertEquals(27,reloaded.getSizeInventory()); assertEquals(17,reloaded.getStackInSlot(0).stackSize); assertEquals(4,reloaded.decrStackSize(26,64).stackSize); assertNull(reloaded.getStackInSlot(26));
+        QuestStorage crates=new QuestStorage(true); assertFalse(crates.isItemValidForSlot(0,new ItemStack(Items.iron_ingot))); assertEquals(54,crates.getSizeInventory());
+    }
+    @Test public void teammateLookingElsewhereDoesNotResetAnotherPlayersObservationTimer() {
+        EntityPlayerMP other=teammate(); QuestCore.Task observe=task("observation","minecraft:stone",1,false); observe.lookTicks=3; observe.ignoreDamage=true;
+        when(player.rayTrace(anyDouble(),anyFloat())).thenReturn(new net.minecraft.util.MovingObjectPosition(1,2,3,1,net.minecraft.util.Vec3.createVectorHelper(1,2,3)));
+        when(player.worldObj.getBlock(1,2,3)).thenReturn(Blocks.stone);
+        service.observe(player); service.observe(other); service.observe(player); assertFalse(service.check(player,quest,false));
+        service.clearObservations(player.getUniqueID()); service.observe(player); assertFalse(service.check(player,quest,false));
+        service.observe(player); service.observe(other); service.observe(player); assertTrue(service.check(player,quest,false)); assertTrue(service.check(other,quest,false));
     }
 }

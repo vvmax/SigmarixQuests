@@ -113,7 +113,7 @@ public final class QuestObjectScreen extends GuiScreen {
         @Override public void initGui() {
             Keyboard.enableRepeatEvents(true); input=new GuiTextField(fontRendererObj,16,62,width-32,20); input.setMaxStringLength(32768); input.setText(initial.isJsonNull()?"":initial.getAsString().replace("\\","\\\\").replace("\n","\\n")); input.setFocused(true);
             buttonList.clear(); buttonList.add(new GuiButton(0,16,height-34,80,20,QuestText.tr("Apply"))); buttonList.add(new GuiButton(1,104,height-34,80,20,QuestText.tr("Cancel")));
-            if(label.equals("type") || label.equals("shape") || label.equals("mode") || label.equals("rewardMode") || label.equals("dependencyState") || label.equals("nbtMode") || label.equals("auto")) buttonList.add(new GuiButton(2,192,height-34,100,20,QuestText.tr("Next value")));
+            if(label.equals("type") || label.equals("shape") || label.equals("mode") || label.equals("rewardMode") || label.equals("dependencyState") || label.equals("nbtMode") || label.equals("auto") || label.equals("matchType") || label.equals("comparison")) buttonList.add(new GuiButton(2,192,height-34,100,20,QuestText.tr("Next value")));
         }
         @Override protected void actionPerformed(GuiButton b) {
             if(b.id==1) { mc.displayGuiScreen(parent); return; }
@@ -124,9 +124,12 @@ public final class QuestObjectScreen extends GuiScreen {
             } catch(RuntimeException ex) { message=ex.getMessage(); }
         }
         private void cycle() {
-            if(!Arrays.asList("type","shape","mode","rewardMode","dependencyState","nbtMode","auto").contains(label)) return;
+            if(!Arrays.asList("type","shape","mode","rewardMode","dependencyState","nbtMode","auto","matchType","comparison").contains(label)) return;
             List<String> values;
-            if(label.equals("type")) { values=new ArrayList<String>(parent.node.isJsonObject() && parent.node.getAsJsonObject().has("children")?QuestItemFilter.TYPES:parent.field.equals("tasks") || parent.path.contains(" / tasks / ")?QuestCore.TASK_TYPES:QuestCore.REWARD_TYPES); Collections.sort(values); }
+            if(label.equals("type") && parent.node.isJsonObject() && parent.node.getAsJsonObject().has("resource")) values=Arrays.asList("text","image","item","link");
+            else if(label.equals("matchType")) { values=new ArrayList<String>(QuestRayMatcher.TYPES); Collections.sort(values); }
+            else if(label.equals("comparison")) values=Arrays.asList("at_least","at_most","equals","not_equals","greater","less");
+            else if(label.equals("type")) { values=new ArrayList<String>(parent.node.isJsonObject() && parent.node.getAsJsonObject().has("children")?QuestItemFilter.TYPES:parent.field.equals("tasks") || parent.path.contains(" / tasks / ")?QuestCore.TASK_TYPES:QuestCore.REWARD_TYPES); Collections.sort(values); }
             else if(label.equals("shape")) { values=new ArrayList<String>(QuestPresentation.SHAPES); Collections.sort(values); }
             else if(label.equals("mode")) values=Arrays.asList("inherit","team","individual");
             else if(label.equals("rewardMode")) values=Arrays.asList("team","individual");

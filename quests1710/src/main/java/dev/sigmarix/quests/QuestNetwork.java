@@ -93,11 +93,15 @@ public final class QuestNetwork {
         public int x,y,z;
         public QuestCore.Book book;
     }
+    public static final class Rank { public String name; public int completed,total; }
     public static final class Snapshot {
         public QuestCore.Book book;
         public long revision;
-        public boolean canEdit;
-        public String message="", team="";
+        public long emergencyWait;
+        public boolean canEdit,teamLeader;
+        public java.util.List<String> teamMembers=new java.util.ArrayList<String>(),teamInvites=new java.util.ArrayList<String>();
+        public java.util.List<Rank> leaderboard=new java.util.ArrayList<Rank>();
+        public String message="", team="", profile="default";
         public java.util.Map<String,String> states=new java.util.LinkedHashMap<String,String>();
         public java.util.Map<String,String> chapterStates=new java.util.LinkedHashMap<String,String>();
         public java.util.Map<String,Boolean> rewardStates=new java.util.LinkedHashMap<String,Boolean>();

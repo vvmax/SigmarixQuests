@@ -35,4 +35,12 @@ public class QuestPresentationTest {
         QuestCore.Book b=book(); b.quests.get(0).size=Double.NaN; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
         b=book(); b.quests.get(0).size=9; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
     }
+    @Test public void richGuidesValidateImagesLinksAndBoundedLayouts() {
+        QuestCore.Book b=book(); QuestPresentation.GuidePage page=new QuestPresentation.GuidePage(); b.quests.get(0).richPages.add(page);
+        QuestPresentation.GuideElement image=new QuestPresentation.GuideElement(); image.type="image"; image.resource="minecraft:textures/blocks/stone.png"; page.elements.add(image); b.validate();
+        image.resource="minecraft:../secret"; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
+        image.resource="minecraft:textures/blocks/stone.png"; image.width=513; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
+        image.width=64; QuestPresentation.GuideElement link=new QuestPresentation.GuideElement(); link.type="link"; link.uri="javascript:alert(1)"; page.elements.add(link); try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
+        link.uri="https://example.org/guide"; b.validate();
+    }
 }

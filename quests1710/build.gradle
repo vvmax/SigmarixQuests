@@ -2,8 +2,9 @@ plugins {
     id 'java'
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.6'
 }
+def previewConfigBackups=[:]
 group = 'dev.sigmarix'
-version = '0.6.0'
+version = '0.7.0'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }
@@ -13,6 +14,19 @@ minecraft {
 }
 repositories {
     mavenCentral()
+    maven { url=uri('https://chickenbones.net/maven/'); metadataSources { artifact() }; content { includeGroup 'codechicken' } }
+    ivy {
+        url = uri('https://edge.forgecdn.net/files/2502/739')
+        patternLayout { artifact 'buildcraft-7.1.23.jar' }
+        metadataSources { artifact() }
+        content { includeModule 'classicMods', 'BuildCraft' }
+    }
+    ivy {
+        url = uri('https://edge.forgecdn.net/files/2495/406')
+        patternLayout { artifact 'CustomNPCs_1.7.10d(29oct17).jar' }
+        metadataSources { artifact() }
+        content { includeModule 'classicMods', 'CustomNPCs' }
+    }
     ivy {
         url = uri('https://edge.forgecdn.net/files/2340/786')
         patternLayout { artifact 'ProjectE-1.7.10-PE1.10.1.jar' }
@@ -36,6 +50,11 @@ repositories {
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+    compileOnly rfg.deobf('classicMods:CustomNPCs:1.7.10d')
+    compileOnly rfg.deobf('classicMods:BuildCraft:7.1.23')
+    compileOnly rfg.deobf('codechicken:NotEnoughItems:1.7.10-1.0.5.120:universal')
+    compileOnly rfg.deobf('codechicken:CodeChickenCore:1.7.10-1.0.7.47:universal')
+    compileOnly rfg.deobf('codechicken:CodeChickenLib:1.7.10-1.1.3.138:universal')
     compileOnly rfg.deobf('testMods:ProjectE:1.7.10-PE1.10.1')
     compileOnly 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:api@jar'
     testImplementation 'net.industrial-craft:industrialcraft-2:2.2.828-experimental:api@jar'
@@ -88,18 +107,25 @@ if (providers.gradleProperty('questPreview').isPresent()) {
     tasks.named('runClient') {
         dependsOn 'previewJar'
         doFirst {
+            ['quests.json','quests.json.bak'].each { name -> def target=file('run/config/sigmarixquests/'+name); previewConfigBackups[target]=target.exists()?target.bytes:null }
             copy { from tasks.named('previewJar'); into 'run/mods' }
             def expected = []
             if (providers.gradleProperty('questIC2').isPresent()) expected.add('IC2')
             if (providers.gradleProperty('questBotania').isPresent()) expected.add('Botania')
             if (providers.gradleProperty('questProjectE').isPresent()) expected.add('ProjectE')
+            if (providers.gradleProperty('questNPCs').isPresent()) expected.add('customnpcs')
+            if (providers.gradleProperty('questBuildCraft').isPresent()) expected.add('BuildCraft|Core')
+            if (providers.gradleProperty('questNEI').isPresent()) expected.add('NotEnoughItems')
             file('build/preview/expected-mods.txt').text = expected.join('\n')
         }
         finalizedBy 'cleanPreviewFixture'
     }
 }
 
-tasks.register('cleanPreviewFixture', Delete) { delete 'run/mods/quests-preview-fixture.jar' }
+tasks.register('cleanPreviewFixture', Delete) {
+    delete 'run/mods/quests-preview-fixture.jar'
+    doLast { previewConfigBackups.each { target,bytes -> if(bytes==null) target.delete(); else { target.parentFile.mkdirs(); target.bytes=bytes } } }
+}
 
 dependencies {
     compileOnly rfg.deobf('classicMods:Baubles:1.0.1.10')
@@ -129,5 +155,61 @@ if (providers.gradleProperty('questProjectE').isPresent()) {
             }
         }
         finalizedBy 'cleanProjectEPreview'
+    }
+}
+
+if (providers.gradleProperty('questNPCs').isPresent()) {
+    tasks.register('cleanNPCPreview', Delete) { delete 'run/mods/quests-test-customnpcs.jar' }
+    tasks.named('runClient') {
+        doFirst { copy {
+            from configurations.compileClasspath.filter { it.name.toLowerCase().contains('customnpcs') }
+            into 'run/mods'
+            rename { 'quests-test-customnpcs.jar' }
+        } }
+        finalizedBy 'cleanNPCPreview'
+    }
+}
+
+if (providers.gradleProperty('questBuildCraft').isPresent()) {
+    tasks.register('cleanBuildCraftPreview', Delete) { delete 'run/mods/quests-test-buildcraft.jar' }
+    tasks.named('runClient') {
+        doFirst { copy {
+            from configurations.compileClasspath.filter { it.name.toLowerCase().contains('buildcraft') }
+            into 'run/mods'
+            rename { 'quests-test-buildcraft.jar' }
+        } }
+        finalizedBy 'cleanBuildCraftPreview'
+    }
+}
+
+configurations { neiMappings }
+repositories { maven { url=uri('https://maven.minecraftforge.net/'); content { includeGroup 'net.minecraftforge' } } }
+dependencies { neiMappings 'net.minecraftforge:forge:1.7.10-10.13.4.1614-1.7.10:userdev@jar' }
+if (providers.gradleProperty('questNEI').isPresent()) {
+    tasks.register('cleanNEIPreview', Delete) { delete 'run/mods/quests-test-nei.jar', 'run/mods/quests-test-codechickencore.jar', 'run/mods/1.7.10/CodeChickenLib-1.7.10-1.1.3.138-dev.jar' }
+    tasks.named('runClient') {
+        doFirst {
+            // This project uses Forge's embedded 1.7.10 mappings. Legacy CCL
+            // requires those same CSVs to map its ASM patches in the dev runtime.
+            copy {
+                from zipTree(configurations.neiMappings.singleFile)
+                include 'conf/fields.csv', 'conf/methods.csv', 'conf/packaged.srg'
+                eachFile { details -> details.path=details.name }
+                includeEmptyDirs=false
+                into 'build/unpacked/conf'
+            }
+
+            copy {
+                from configurations.compileClasspath.filter { it.name.toLowerCase().contains('notenoughitems') || it.name.toLowerCase().contains('codechickencore') }
+                into 'run/mods'
+                rename { String name -> name.toLowerCase().contains('notenoughitems')?'quests-test-nei.jar':'quests-test-codechickencore.jar' }
+            }
+            copy {
+                from configurations.compileClasspath.filter { it.name.toLowerCase().contains('codechickenlib') }
+                into 'run/mods/1.7.10'
+                rename { 'CodeChickenLib-1.7.10-1.1.3.138-dev.jar' }
+            }
+        }
+        finalizedBy 'cleanNEIPreview'
     }
 }

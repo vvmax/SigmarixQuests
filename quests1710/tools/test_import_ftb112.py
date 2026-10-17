@@ -17,7 +17,7 @@ class ImportTests(unittest.TestCase):
 
     def test_unsupported_types_fail_instead_of_becoming_checkmarks(self):
         with self.assertRaises(ValueError):
-            convert_task({'type': 'ftbquests:npc_quest'}, 0)
+            convert_task({'type': 'ftbquests:missing_integration'}, 0)
         with self.assertRaises(ValueError):
             convert_reward({'type': 'ftbquests:command', 'command': 'give @s diamond'})
 

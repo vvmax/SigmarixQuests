@@ -17,15 +17,7 @@ public final class QuestDeviceContainer extends Container {
     @Override public boolean canInteractWith(EntityPlayer player) { return tile.isUseableByPlayer(player); }
     @Override public void detectAndSendChanges() {
         super.detectAndSendChanges(); int next=0;
-        QuestService s=QuestsMod.service;
-        if(s!=null && tile.owner!=null) {
-            QuestCore.Quest q=s.quests.get(tile.quest);
-            if(q!=null) {
-                double total=0;
-                for(QuestCore.Task t:q.tasks) { double value=s.dependencies(tile.owner).satisfied("task:"+q.id+"/"+t.id,false)?1:Math.min(1,s.progress().value(tile.owner,q.id,t.id)/(double)t.count); total=q.anyTask?Math.max(total,value):total+value; }
-                next=s.progress().completed(tile.owner).contains(q.id)?100:(int)Math.round(100*total/(q.anyTask?1:Math.max(1,q.tasks.size())));
-            }
-        }
+        next=tile.percent();
         percent=next; signal=tile.signal?1:0;
         for(Object raw:crafters) { ICrafting viewer=(ICrafting)raw; viewer.sendProgressBarUpdate(this,0,percent); viewer.sendProgressBarUpdate(this,1,signal); }
     }

@@ -6,6 +6,11 @@ import java.util.*;
 /** Portable presentation schema; resource locations are resolved from installed resource packs. */
 public final class QuestPresentation {
     public static final Set<String> SHAPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("square","circle","diamond","hexagon","octagon","pentagon")));
+    public static final class GuidePage { public String title=""; public List<GuideElement> elements=new ArrayList<GuideElement>(); }
+    public static final class GuideElement {
+        public String type="text",text="",resource="",item="minecraft:book",nbt="",uri="",color="FFEEEEEE";
+        public int width=128,height=64,meta,count=1;
+    }
     public static final class Theme {
         public String background="EE17202A",panel="EE26313D",text="FFEEEEEE",edge="FF738CA6",selected="FFFFFFFF";
         public String available="FF397CB2",complete="FFB28B29",claimed="FF3A784E",locked="FF50545A";
@@ -38,6 +43,15 @@ public final class QuestPresentation {
         for(QuestCore.Quest q:book.quests) {
             if(!Double.isFinite(q.size) || q.size<0.0625 || q.size>8 || q.iconMeta<0 || q.iconNbt==null || q.tags==null || q.tags.size()>64 || q.pages==null || q.pages.size()>64 || !SHAPES.contains(q.shape) || !link(q.uri)) throw new IllegalArgumentException("Invalid quest presentation: "+q.id);
             for(String tag:q.tags) if(!QuestCore.validId(tag)) throw new IllegalArgumentException("Invalid quest tag");
+            if(q.richPages==null || q.richPages.size()>64) throw new IllegalArgumentException("Invalid rich guide pages");
+            for(GuidePage page:q.richPages) {
+                if(page==null || page.title==null || page.title.length()>256 || page.elements==null || page.elements.size()>128) throw new IllegalArgumentException("Invalid rich guide page");
+                for(GuideElement element:page.elements) {
+                    if(element==null || !Arrays.asList("text","image","item","link").contains(element.type) || element.text==null || element.text.length()>32768 || element.nbt==null || element.width<1 || element.width>512 || element.height<1 || element.height>512 || element.meta<0 || element.count<1 || element.count>64 || !resource(element.resource) || !link(element.uri)) throw new IllegalArgumentException("Invalid rich guide element");
+                    color(element.color);
+                    if(element.type.equals("image") && element.resource.isEmpty() || element.type.equals("link") && element.uri.isEmpty() || element.type.equals("item") && (element.item==null || element.item.isEmpty())) throw new IllegalArgumentException("Missing guide element value");
+                }
+            }
             for(String page:q.pages) if(page==null || page.length()>32768) throw new IllegalArgumentException("Invalid guide page");
         }
     }
