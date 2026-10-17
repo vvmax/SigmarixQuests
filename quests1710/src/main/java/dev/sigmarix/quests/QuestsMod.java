@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.7.0", acceptableRemoteVersions="[0.7.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.8.0", acceptableRemoteVersions="[0.8.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -49,12 +49,24 @@ public final class QuestsMod {
         QuestBlocks.register();
     }
     @Mod.EventHandler public void init(FMLInitializationEvent event) { proxy.init(); QuestBlocks.recipes(); }
+    private final java.util.function.Consumer<QuestEvents.Event> taskToast=event -> {
+        if(service==null || MinecraftServer.getServer()==null) return;
+        QuestCore.Quest quest=service.quests.get(event.quest); if(quest==null || quest.disableToast) return;
+        for(QuestCore.Task task:quest.tasks) if(task.id.equals(event.task) && !task.disableToast) {
+            for(Object raw:MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
+                EntityPlayerMP player=(EntityPlayerMP)raw;
+                if(service.progress().group(event.player).equals(service.progress().group(player.getUniqueID()))) QuestNetwork.toast(player,QuestPresentation.title(task),"Task complete",task.icon.isEmpty()?quest.icon:task.icon,task.icon.isEmpty()?quest.iconMeta:task.iconMeta,task.icon.isEmpty()?quest.iconNbt:task.iconNbt);
+            }
+            break;
+        }
+    };
     @Mod.EventHandler public void starting(FMLServerStartingEvent event) throws IOException {
         QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); ticks=0;
+        QuestEvents.off("task_completed",taskToast); QuestEvents.on("task_completed",taskToast);
         QuestScripts.load(new File(config.getParentFile(),"scripts"));
         service=new QuestService(config); service.loadActiveProfile(); event.registerServerCommand(new QuestCommand());
     }
-    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { service=null; QuestScripts.clear(); QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
+    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { QuestEvents.off("task_completed",taskToast); service=null; QuestScripts.clear(); QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
     @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void onDeath(LivingDeathEvent event) {
         if(service!=null && !event.entity.worldObj.isRemote && event.source.getEntity() instanceof EntityPlayerMP)
             service.credit((EntityPlayerMP)event.source.getEntity(),"kill",EntityList.getEntityString(event.entityLiving),1);
@@ -79,7 +91,7 @@ public final class QuestsMod {
                 service.interact(player,event.world,event.x,event.y,event.z);
         }
     }
-    @SubscribeEvent public void login(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) { if(service!=null) service.clearObservations(event.player.getUniqueID()); }
+    @SubscribeEvent public void login(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) { if(service!=null) { service.clearObservations(event.player.getUniqueID()); PENDING_VIEWS.add(event.player.getUniqueID()); } }
     @SubscribeEvent public void logout(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent event) { UUID id=event.player.getUniqueID(); if(service!=null) service.clearObservations(id); LAST_REQUEST.remove(id); LAST_VIEW.remove(id); PENDING_VIEWS.remove(id); LAST_MESSAGE.remove(id); }
     @SubscribeEvent public void serverTick(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END || service==null) return;
@@ -111,22 +123,25 @@ public final class QuestsMod {
     }
     private static boolean editor(EntityPlayerMP player) { return player.canCommandSenderUseCommand(2,"quests.edit"); }
     private void handle(EntityPlayerMP player,String json) {
-        String message=""; boolean counted=false;
+        String message=""; boolean counted=false; String actionName="";
         try {
             QuestNetwork.Action action=QuestService.JSON.fromJson(json,QuestNetwork.Action.class);
+            if(action!=null) actionName=action.action;
             if(action==null || action.action==null || action.id==null || action.choices==null || action.choices.length>128) throw new IllegalArgumentException("Invalid action");
-            if(action.action.equals("view")) { PENDING_VIEWS.add(player.getUniqueID()); return; }
+            if(action.action.equals("view") || action.action.equals("refresh")) { if(action.action.equals("refresh")) LAST_MESSAGE.remove(player.getUniqueID()); PENDING_VIEWS.add(player.getUniqueID()); return; }
             Long last=LAST_REQUEST.get(player.getUniqueID());
             if(last!=null && ticks-last<2) {
                 QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message="Error: Please wait before another action"; error.revision=service.revision;
+                if("icon_edit".equals(actionName)) QuestService.say(player,error.message);
                 QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return;
             }
             LAST_REQUEST.put(player.getUniqueID(),(long)ticks); counted=true;
-            if(action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
+            if(!action.action.equals("icon_edit") && action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
             QuestCore.Quest quest=service.quests.get(action.id);
             List<Integer> choices=new ArrayList<Integer>(); for(int c:action.choices) choices.add(c);
             switch(action.action) {
                 case "view": break;
+                case "icon_edit": QuestIcons.edit(player,action.text,action.id,action.x,action.y); message="Icon updated"; QuestService.say(player,message); break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
                 case "bind_device": case "unbind_device": case "screen_size": case "detector_mode":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
@@ -140,7 +155,11 @@ public final class QuestsMod {
                     if(device.screenLinked) throw new IllegalArgumentException("Bind the core of this screen assembly");
                     if(action.action.equals("unbind_device")) { device.quest=""; device.task=""; }
                     else {
-                        if(quest==null) throw new IllegalArgumentException("Unknown quest");
+                        int mode=((QuestBlocks.DeviceBlock)device.getBlockType()).mode;
+                        if(mode==1 || mode==2 || mode==9) {
+                            service.validateProgressReference(action.id); if(!editor(player) && !service.bindable(player.getUniqueID(),action.id)) throw new IllegalArgumentException("Progress object is not visible"); device.quest=action.id; device.task=""; device.bindingChanged(); message="Device binding updated"; break;
+                        }
+                        if(quest==null || !editor(player) && !service.visible(player.getUniqueID(),quest)) throw new IllegalArgumentException("Unknown quest");
                         if(action.text==null || !action.text.isEmpty() && !quest.tasks.stream().anyMatch(t->t.id.equals(action.text))) throw new IllegalArgumentException("Unknown task");
                         device.quest=quest.id; device.task=action.text;
                     }
@@ -159,6 +178,7 @@ public final class QuestsMod {
             }
         } catch(Exception ex) {
             message="Error: "+ex.getMessage();
+            if("icon_edit".equals(actionName)) QuestService.say(player,message);
             if(!counted) { QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message=message; error.revision=service.revision; QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return; }
         }
         PENDING_VIEWS.remove(player.getUniqueID()); LAST_VIEW.put(player.getUniqueID(),(long)ticks); sendSnapshot(player,message);
@@ -176,10 +196,13 @@ public final class QuestsMod {
         snapshot.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(service.book),QuestCore.Book.class);
         if(!snapshot.canEdit) {
             Iterator<QuestCore.Quest> it=snapshot.book.quests.iterator();
-            while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !service.unlocked(id,q)) it.remove(); }
+            while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !service.unlocked(id,q) || !QuestPresentation.visibleChapter(service.book,q.chapter)) it.remove(); }
+            snapshot.book.chapters.removeIf(chapter->!QuestPresentation.visibleChapter(service.book,chapter.id));
+            for(QuestCore.Chapter chapter:snapshot.book.chapters) chapter.images.removeIf(image->image.dev);
+            snapshot.chapterStates.keySet().retainAll(snapshot.book.chapters.stream().map(chapter->chapter.id).collect(java.util.stream.Collectors.toSet()));
             // Command and custom implementation details are server-only for non-editors.
             for(List<QuestCore.Reward> table:snapshot.book.lootTables.values()) redact(table);
-            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
+            for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.subtitle=""; q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
         }
         for(QuestCore.Quest q:snapshot.book.quests) {
             snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");
@@ -243,7 +266,7 @@ public final class QuestsMod {
                 if(args.length==0 || args[0].equals("list")) {
                     for(QuestCore.Quest q:service.quests.values()) {
                         Set<String> done=data.completed(id); boolean unlocked=service.unlocked(id,q);
-                        if(q.hidden && !unlocked && !done.contains(q.id) && !editor(p)) continue;
+                        if(!editor(p) && !service.visible(id,q)) continue;
                         QuestService.say(sender,q.id+" - "+q.title+" ["+(done.contains(q.id)?service.claimed(id,q)?"claimed":"complete":unlocked?"available":"locked")+"]");
                     }
                     QuestService.say(sender,"GUI: /questbook (client mod), "+getCommandUsage(sender)); return;
@@ -257,10 +280,13 @@ public final class QuestsMod {
                     if(!(tile instanceof QuestDevice)) throw new IllegalArgumentException("Look at a quest device");
                     QuestDevice device=(QuestDevice)tile;
                     if(device.screenLinked) throw new IllegalArgumentException("Bind the core of this screen assembly");
-                    if(!id.equals(device.owner) && !editor(p)) throw new IllegalArgumentException("Only device owner or operator can bind");
+                    if(!device.isUseableByPlayer(p)) throw new IllegalArgumentException("Only device owner, team member or operator can bind");
                     if(args[0].equals("unbind")) { device.quest=""; device.task=""; }
                     else {
+                        int mode=((QuestBlocks.DeviceBlock)device.getBlockType()).mode;
+                        if((mode==1 || mode==2 || mode==9) && args.length==2) { service.validateProgressReference(args[1]); if(!editor(p) && !service.bindable(id,args[1])) throw new IllegalArgumentException("Progress object is not visible"); device.quest=args[1]; device.task=""; device.bindingChanged(); QuestService.say(sender,"Device binding updated"); return; }
                         if(args.length<2 || args.length>3 || !service.quests.containsKey(args[1])) throw new IllegalArgumentException("/quests bind <quest> [task]");
+                        if(!editor(p) && !service.visible(id,service.quests.get(args[1]))) throw new IllegalArgumentException("Unknown quest");
                         String task=args.length==3?args[2]:"";
                         if(!task.isEmpty()) { boolean found=false; for(QuestCore.Task t:service.quests.get(args[1]).tasks) if(t.id.equals(task)) found=true; if(!found) throw new IllegalArgumentException("Unknown task ID"); }
                         device.quest=args[1]; device.task=task;
@@ -271,7 +297,7 @@ public final class QuestsMod {
                 QuestCore.Quest q=service.quests.get(args[1]); if(q==null) throw new IllegalArgumentException("Unknown quest");
                 switch(args[0]) {
                     case "show":
-                        if(q.hidden && !service.unlocked(id,q) && !data.completed(id).contains(q.id) && !editor(p)) throw new IllegalArgumentException("Unknown quest");
+                        if(!editor(p) && !service.visible(id,q)) throw new IllegalArgumentException("Unknown quest");
                         QuestService.say(sender,q.title+": "+q.description); QuestService.say(sender,"Dependencies: "+q.dependencies);
                         for(QuestCore.Task t:q.tasks) QuestService.say(sender,t.type+" "+t.target+" x"+t.count+" ["+service.counter(p,q,t)+"]");
                         for(QuestCore.Reward r:q.rewards) QuestService.say(sender,"Reward: "+r.type+" "+(r.item==null?"":r.item)+" x"+r.count); break;

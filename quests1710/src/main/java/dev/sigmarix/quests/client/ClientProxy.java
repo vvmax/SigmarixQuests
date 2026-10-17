@@ -17,11 +17,13 @@ public final class ClientProxy extends CommonProxy {
     private final ArrayBlockingQueue<String> queue=new ArrayBlockingQueue<String>(16);
     private final KeyBinding key=new KeyBinding("key.sigmarixquests.open",Keyboard.KEY_GRAVE,"key.categories.misc");
     private boolean opening;
+    private int syncTicks;
     private long neiRevision=Long.MIN_VALUE;
     public static QuestNetwork.Snapshot snapshot;
     @Override public void init() {
         if(cpw.mods.fml.common.Loader.isModLoaded("NotEnoughItems")) try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("register").invoke(null); }
         catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI integration registration failed",ex); }
+        net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon"),new QuestIconRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(QuestDevice.class,new QuestScreenRenderer());
         FMLCommonHandler.instance().bus().register(new QuestToasts());
         ClientRegistry.registerKeyBinding(key); FMLCommonHandler.instance().bus().register(this);
@@ -34,6 +36,7 @@ public final class ClientProxy extends CommonProxy {
     }
     @Override public Object deviceScreen(net.minecraft.entity.player.EntityPlayer player,QuestDevice tile) { return tile instanceof QuestStorage?new net.minecraft.client.gui.inventory.GuiChest(player.inventory,tile):new QuestDeviceScreen(player,tile); }
     public static void send(QuestNetwork.Action action) { if(!action.action.equals("save") && snapshot!=null) action.revision=snapshot.revision; QuestNetwork.channel.sendToServer(new QuestNetwork.Request(QuestService.JSON.toJson(action))); }
+    @Override public void openIcon() { opening=false; Minecraft.getMinecraft().displayGuiScreen(new QuestIconScreen()); }
     @Override public void open() { if(Minecraft.getMinecraft().thePlayer==null) return; opening=true; send(new QuestNetwork.Action()); }
     @Override public void receive(String json) { queue.offer(json); }
     @Override public void notice(String json) { QuestToasts.enqueue(json); }
@@ -41,7 +44,8 @@ public final class ClientProxy extends CommonProxy {
     @SubscribeEvent public void tick(TickEvent.ClientTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
         Minecraft mc=Minecraft.getMinecraft();
-        if(mc.theWorld==null) { QuestToasts.clear(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; opening=false; return; }
+        if(mc.theWorld==null) { QuestToasts.clear(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; opening=false; return; }
+        if(snapshot==null && mc.thePlayer!=null && ++syncTicks%20==0) send(new QuestNetwork.Action());
         String json;
         while((json=queue.poll())!=null) {
             try {
@@ -58,7 +62,7 @@ public final class ClientProxy extends CommonProxy {
                     try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("refresh").invoke(null); neiRevision=received.revision; }
                     catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI quest variants refresh failed",ex); }
                 }
-                if(opening) { opening=false; mc.displayGuiScreen(new QuestBookScreen()); }
+                if(opening) { opening=false; if(received.book.disableGui && !received.canEdit) mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText("Quest GUI is disabled by this book")); else mc.displayGuiScreen(new QuestBookScreen()); }
                 else if(mc.currentScreen instanceof QuestBookScreen) ((QuestBookScreen)mc.currentScreen).refresh();
                 else if(mc.currentScreen instanceof QuestEditorScreen) ((QuestEditorScreen)mc.currentScreen).saved(snapshot);
                 else if(mc.currentScreen instanceof QuestObjectScreen) ((QuestObjectScreen)mc.currentScreen).saved(snapshot);

@@ -10,6 +10,9 @@ public final class QuestCore {
         "item", "xp", "xp_levels", "command", "choice", "random", "loot", "achievement", "toast", "npc_quest", "npc_faction", "npc_mail", "gamestage", "skill", "custom")));
     public static final class Book {
         public int format = 2;
+        public boolean disableGui,hideFromItemBrowser;
+        public double gridScale=.5;
+        public String defaultQuestShape="square";
         public List<Reward> emergencyItems=new ArrayList<Reward>();
         public int emergencyCooldownSeconds=300;
         public boolean dropLootCrates;
@@ -32,11 +35,22 @@ public final class QuestCore {
                 if (c == null || !validId(c.id) || c.title == null || c.title.length() > 256 || !chapterIds.add(c.id))
                     throw new IllegalArgumentException("Invalid chapter");
             }
+            for(Chapter chapter:chapters) {
+                if(chapter.parent==null || chapter.description==null || chapter.description.length()>16384) throw new IllegalArgumentException("Invalid chapter metadata");
+                Set<String> parents=new HashSet<String>(); Chapter current=chapter;
+                while(current!=null) {
+                    if(current.parent==null) throw new IllegalArgumentException("Invalid chapter parent");
+                    if(!parents.add(current.id) || parents.size()>64) throw new IllegalArgumentException("Chapter group cycle/depth");
+                    if(current.parent.isEmpty()) break;
+                    if(!chapterIds.contains(current.parent)) throw new IllegalArgumentException("Unknown parent chapter: "+current.parent);
+                    current=QuestPresentation.chapter(this,current.parent);
+                }
+            }
             Map<String, Quest> byId = new LinkedHashMap<String, Quest>();
             for (Quest q : quests) {
                 if (q == null || !validId(q.id) || byId.put(q.id, q) != null) throw new IllegalArgumentException("Invalid or duplicate quest id");
-                if (q.title == null || q.title.length() > 256 || q.description == null || q.description.length() > 16384 ||
-                    q.dependencies == null || q.dependencyState==null || !Arrays.asList("completed","started").contains(q.dependencyState) || q.rewardMode==null || !Arrays.asList("team","individual").contains(q.rewardMode) || q.tasks == null || q.rewards == null || q.tasks.isEmpty() || q.tasks.size() > 128 || q.rewards.size() > 128 ||
+                if (q.title == null || q.title.length() > 256 || q.description == null || q.description.length() > 16384 || q.subtitle==null || q.subtitle.length()>1024 || q.minWidth<0 || q.minWidth>4096 ||
+                    q.dependencies == null || q.dependencyState==null || !Arrays.asList("completed","started").contains(q.dependencyState) || q.rewardMode==null || !Arrays.asList("team","individual").contains(q.rewardMode) || q.tasks == null || q.rewards == null || q.tasks.size() > 128 || q.rewards.size() > 128 ||
                     q.chapter == null || (!q.chapter.isEmpty() && !chapterIds.contains(q.chapter)) ||
                     !Double.isFinite(q.x) || !Double.isFinite(q.y) || Math.abs(q.x) > 100000 || Math.abs(q.y) > 100000 || q.cooldownSeconds < 0 || q.minDependencies<0 || q.minDependencies>q.dependencies.size())
                     throw new IllegalArgumentException("Incomplete or invalid quest: " + q.id);
@@ -45,6 +59,7 @@ public final class QuestCore {
                     Task t = q.tasks.get(i);
                     if (t == null || t.type == null || !TASK_TYPES.contains(t.type) || t.count < 1 || t.type.equals("emc") && t.count>QuestProjectE.MAX_EXACT || t.type.equals("skill") && t.count>Integer.MAX_VALUE || t.energyTier<1 || t.energyTier>8 || t.type.equals("xp") && t.count > Integer.MAX_VALUE || t.meta < 0 || t.radius < 0 || t.radius > 4096 || !Double.isFinite(t.radius) || !Double.isFinite(t.x) || !Double.isFinite(t.y) || !Double.isFinite(t.z))
                         throw new IllegalArgumentException("Invalid task: " + q.id);
+                    QuestPresentation.metadata(t.title,t.description,t.icon,t.iconMeta,t.iconNbt);
                     if (t.id == null) t.id = "t" + i;
                     if (!validId(t.id) || !taskIds.add(t.id)) throw new IllegalArgumentException("Invalid task id: " + q.id);
                     if (Arrays.asList("item", "kill", "biome", "stat", "achievement", "observation", "interaction", "fluid", "custom", "npc_quest", "npc_dialog", "npc_faction", "gamestage", "skill").contains(t.type) && (t.target == null || t.target.isEmpty()) && !(t.type.equals("item") && (t.targets!=null && !t.targets.isEmpty() || t.filter!=null)))
@@ -69,9 +84,11 @@ public final class QuestCore {
                 if (!validId(e.getKey()) || e.getValue() == null || e.getValue().isEmpty() && (!lootSettings.containsKey(e.getKey()) || lootSettings.get(e.getKey())==null || lootSettings.get(e.getKey()).emptyWeight<=0) || e.getValue().size() > 128) throw new IllegalArgumentException("Invalid loot table");
                 for (Reward r : e.getValue()) validateReward(r, 0, true);
             }
+            Set<String> aliases=new HashSet<String>();
             for(Map.Entry<String,LootSettings> e:lootSettings.entrySet()) {
                 LootSettings settings=e.getValue();
                 if(settings!=null && (settings.drops==null || settings.name==null || settings.name.length()>256)) throw new IllegalArgumentException("Invalid crate presentation");
+                if(settings!=null && (settings.alias==null || !settings.alias.isEmpty() && (!settings.alias.matches("[a-zA-Z0-9_.:/-]{1,128}") || !aliases.add(settings.alias) || lootTables.containsKey(settings.alias) && !settings.alias.equals(e.getKey())))) throw new IllegalArgumentException("Invalid or duplicate crate alias");
                 if(settings!=null) { settings.drops.validate(); QuestPresentation.color(settings.color); }
                 if(!lootTables.containsKey(e.getKey()) || settings==null || settings.rolls<1 || settings.rolls>64 || settings.emptyWeight<0 || settings.emptyWeight>1000000)
                     throw new IllegalArgumentException("Invalid loot settings: "+e.getKey());
@@ -86,6 +103,7 @@ public final class QuestCore {
         private void validateReward(Reward r, int depth, boolean randomContext) {
             if (depth > 16 || r == null || r.type == null || !REWARD_TYPES.contains(r.type) || r.count < 1 || r.count > 4096 || r.meta < 0 || r.weight < 1 || r.weight > 1000000 || r.options == null || r.options.size() > 128 || r.mode==null || !Arrays.asList("inherit","team","individual").contains(r.mode) || r.nbt == null || r.text==null || r.text.length()>8192 || r.randomBonus<0 || r.randomBonus>4096 || r.count+r.randomBonus>4096)
                 throw new IllegalArgumentException("Invalid reward");
+            QuestPresentation.metadata(r.title,r.description,r.icon,r.iconMeta,r.iconNbt);
             if(r.type.equals("gamestage") || r.type.equals("skill")) QuestAttributes.validateKey(r.target);
             if((r.type.equals("skill") || r.type.equals("npc_faction")) && r.points<0) throw new IllegalArgumentException("Negative skill level");
             if(r.type.equals("npc_quest") || r.type.equals("npc_faction")) QuestNPCs.id(r.target);
@@ -121,15 +139,19 @@ public final class QuestCore {
         }
     }
     public static boolean validId(String id) { return id != null && id.matches("[a-zA-Z0-9_.-]{1,64}"); }
-    public static final class LootSettings { public int rolls=1, emptyWeight; public String name="",color="FFFFFF"; public boolean glow; public QuestLoot.Weights drops=new QuestLoot.Weights(); }
-    public static final class Chapter { public String id, title, description = "", image=""; }
+    public static final class LootSettings { public int rolls=1, emptyWeight; public String name="",color="FFFFFF",alias=""; public boolean glow; public QuestLoot.Weights drops=new QuestLoot.Weights(); }
+    public static final class Chapter {
+        public String id,title,description="",image="",parent="",defaultQuestShape="";
+        public boolean alwaysInvisible;
+        public List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
+    }
     public static final class Quest {
-        public String id, title, description = "", chapter = "", icon = "minecraft:book";
-        public String dependencyState="completed", rewardMode="team", shape="square", uri="";
+        public String id, title, description = "", subtitle="", chapter = "", icon = "minecraft:book";
+        public String dependencyState="completed", rewardMode="team", shape="", uri="",itemBrowser="inherit";
         public List<QuestPresentation.GuidePage> richPages=new ArrayList<QuestPresentation.GuidePage>();
         public List<String> tags=new ArrayList<String>(),pages=new ArrayList<String>();
         public double x, y, size=1;
-        public int iconMeta;
+        public int iconMeta,minWidth;
         public String iconNbt="";
         public boolean hideDependencyLines,hideTextUntilComplete,disableToast;
         public boolean hidden, optional, repeatable, autoComplete, autoClaim, anyDependency, anyTask;
@@ -140,6 +162,9 @@ public final class QuestCore {
         public List<Reward> rewards = new ArrayList<Reward>();
     }
     public static final class Task {
+        public String title="",description="",icon="",iconNbt="";
+        public int iconMeta;
+        public boolean disableToast;
         public String id, type, target, nbt = "", nbtMode = "exact";
         public QuestItemFilter filter;
         public List<String> targets = new ArrayList<String>();
@@ -156,6 +181,8 @@ public final class QuestCore {
     }
     public static final class MailItem { public String item,nbt=""; public int count=1,meta,slot; }
     public static final class Reward {
+        public String title="",description="",icon="",iconNbt="";
+        public int iconMeta;
         public String id, mode="inherit", auto="inherit";
         public String type = "item", item, target, nbt = "", text = "";
         public boolean asPlayer, onlyOne, remove;

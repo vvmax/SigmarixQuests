@@ -28,10 +28,10 @@ public final class QuestItemFilter {
             case "all": for(QuestItemFilter child:children) if(!child.matches(stack)) return false; return true;
             case "any": for(QuestItemFilter child:children) if(child.matches(stack)) return true; return false;
             case "not": return !children.get(0).matches(stack);
-            case "item": return stack.getItem()==QuestService.item(value) && (meta<0 || meta==stack.getItemDamage()) && QuestService.nbtMatches(nbt,nbtMode,stack.getTagCompound());
-            case "ore": for(ItemStack ore:OreDictionary.getOres(value)) if(OreDictionary.itemMatches(ore,stack,false)) return QuestService.nbtMatches(nbt,nbtMode,stack.getTagCompound()); return false;
+            case "item": return stack.getItem()==QuestService.item(value) && (meta<0 || meta==stack.getItemDamage()) && QuestService.stackNbtMatches(nbt,nbtMode,stack);
+            case "ore": for(ItemStack ore:OreDictionary.getOres(value)) if(OreDictionary.itemMatches(ore,stack,false)) return QuestService.stackNbtMatches(nbt,nbtMode,stack); return false;
             case "mod": String name=Item.itemRegistry.getNameForObject(stack.getItem()); return name!=null && name.startsWith(value+":");
-            case "nbt": return QuestService.nbtMatches(nbt,nbtMode,stack.getTagCompound());
+            case "nbt": return QuestService.stackNbtMatches(nbt,nbtMode,stack);
             case "food": return stack.getItem() instanceof ItemFood;
             case "block": return stack.getItem() instanceof ItemBlock;
             case "damage": return stack.getItemDamage()>=min && stack.getItemDamage()<=max;

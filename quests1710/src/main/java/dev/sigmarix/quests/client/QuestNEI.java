@@ -24,18 +24,18 @@ public final class QuestNEI extends TemplateRecipeHandler {
     private QuestCore.Book book() { return ClientProxy.snapshot==null?null:ClientProxy.snapshot.book; }
     @Override public void loadCraftingRecipes(String id,Object... results) {
         if(id.equals("sigmarixquests")) {
-            QuestCore.Book book=book(); if(book!=null) for(QuestCore.Quest quest:book.quests) arecipes.add(row(quest));
+            QuestCore.Book book=book(); if(book!=null) for(QuestCore.Quest quest:book.quests) if(QuestPresentation.itemBrowser(book,quest)) arecipes.add(row(quest));
         } else super.loadCraftingRecipes(id,results);
     }
     @Override public void loadCraftingRecipes(ItemStack result) {
         QuestCore.Book book=book(); if(book==null) return;
-        for(QuestCore.Quest quest:book.quests) { Row row=row(quest); if(contains(row.outputs,result)) arecipes.add(row); }
+        for(QuestCore.Quest quest:book.quests) if(QuestPresentation.itemBrowser(book,quest)) { Row row=row(quest); if(contains(row.outputs,result)) arecipes.add(row); }
     }
     @Override public void loadUsageRecipes(ItemStack ingredient) {
         QuestCore.Book book=book(); if(book==null) return;
-        for(QuestCore.Quest quest:book.quests) { Row row=row(quest); if(contains(row.inputs,ingredient)) arecipes.add(row); }
+        for(QuestCore.Quest quest:book.quests) if(QuestPresentation.itemBrowser(book,quest)) { Row row=row(quest); if(contains(row.inputs,ingredient)) arecipes.add(row); }
         if(ingredient.getItem()==cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","loot_crate")) {
-            String selected=ingredient.hasTagCompound()?ingredient.getTagCompound().getString("table"):"";
+            String selected=QuestLoot.resolve(ClientProxy.snapshot.book,QuestLoot.table(ingredient.getTagCompound()));
             for(Map.Entry<String,List<QuestCore.Reward>> table:book.lootTables.entrySet()) if(selected.isEmpty() || selected.equals(table.getKey())) {
                 QuestCore.LootSettings settings=book.lootSettings.get(table.getKey()); int total=settings==null?0:settings.emptyWeight;
                 for(QuestCore.Reward reward:table.getValue()) total+=reward.weight;

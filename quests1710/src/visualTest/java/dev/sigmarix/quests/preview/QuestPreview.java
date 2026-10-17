@@ -16,7 +16,7 @@ import net.minecraft.util.ScreenShotHelper;
 public final class QuestPreview {
     private QuestNetwork.Snapshot fixture;
     private int ticks,stage,waiting;
-    private boolean testing,teamPassed,neiPassed;
+    private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
     private QuestCore.Book original;
     private long oldRevision;
@@ -25,6 +25,8 @@ public final class QuestPreview {
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
     private volatile boolean bcRequested,bcPassed;
+    private volatile boolean iconRequested,iconReady;
+    private boolean iconPassed;
     private boolean bcRunning;
     private boolean emcRunning;
     private boolean manaRunning;
@@ -48,6 +50,13 @@ public final class QuestPreview {
     }
     @SubscribeEvent public void server(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
+        if(iconRequested) {
+            net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            owner.inventory.setInventorySlotContents(8,new net.minecraft.item.ItemStack(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon")));
+            owner.inventory.currentItem=8; owner.inventoryContainer.detectAndSendChanges();
+            owner.playerNetServerHandler.sendPacket(new net.minecraft.network.play.server.S09PacketHeldItemChange(8));
+            iconRequested=false; iconReady=true;
+        }
         if(nativeRequested || nativeVerify) {
             try {
                 net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
@@ -160,7 +169,7 @@ public final class QuestPreview {
         if(mc.thePlayer==null || mc.theWorld==null || waiting%5!=0) return;
         QuestNetwork.Snapshot snap=ClientProxy.snapshot;
         switch(stage) {
-            case 0: if(waiting<20) return;
+            case 0: if(waiting<20 || snap==null || snap.book==null) return;
                 if(!nativePassed && !restarted) { nativeRequested=true; stage=26; break; }
                 if(cpw.mods.fml.common.Loader.isModLoaded("customnpcs") && !npcPassed && !restarted) { npcRequested=true; stage=25; break; }
                 action("view"); stage=1; break;
@@ -187,13 +196,20 @@ public final class QuestPreview {
                     if(npcPassed && !npcVerified) { npcVerify=true; return; }
                     if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
                     mc.shutdown(); return;
                 }
                 if(!teamPassed) {
                     QuestTeamScreen teams=new QuestTeamScreen(new QuestBookScreen()); mc.displayGuiScreen(teams);
                     java.lang.reflect.Field input=QuestTeamScreen.class.getDeclaredField("input"); input.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)input.get(teams)).setText("Fixture team");
                     press(teams,10); stage=27; return;
+                }
+                if(!iconPassed) { iconRequested=true; stage=39; return; }
+                if(!bookPrepared) {
+                    QuestNetwork.Action prepare=new QuestNetwork.Action(); prepare.action="save"; prepare.revision=snap.revision; prepare.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(snap.book),QuestCore.Book.class);
+                    if(QuestPresentation.chapter(prepare.book,"start")==null) { QuestCore.Chapter startChapter=new QuestCore.Chapter(); startChapter.id="start"; startChapter.title="Start"; prepare.book.chapters.add(startChapter); }
+                    for(QuestCore.Quest entry:prepare.book.quests) if(entry.id.equals("welcome") || entry.id.equals("stone")) entry.chapter="start";
+                    ClientProxy.send(prepare); stage=38; return;
                 }
                 if(cpw.mods.fml.common.Loader.isModLoaded("NotEnoughItems") && !neiPassed) {
                     Class.forName("dev.sigmarix.quests.preview.NEIQuestSmoke").getMethod("run").invoke(null); stage=31; waiting=0; return;
@@ -225,15 +241,20 @@ public final class QuestPreview {
                     QuestCore.Quest mj=new QuestCore.Quest(); mj.id="smoke-mj"; mj.title="BuildCraft MJ bridge";
                     QuestCore.Task charge=new QuestCore.Task(); charge.id="charge"; charge.type="buildcraft_mj"; charge.count=1600000; mj.tasks.add(charge); edit.book.quests.add(mj);
                 }
+                QuestCore.Chapter group=new QuestCore.Chapter(); group.id="smoke-group"; group.title="Grouped quests"; group.defaultQuestShape="hexagon"; edit.book.chapters.add(group);
+                QuestCore.Chapter start=QuestPresentation.chapter(edit.book,"start"); start.parent=group.id;
+                for(QuestCore.Quest entry:edit.book.quests) if(entry.chapter.equals("start")) entry.shape="";
+                QuestPresentation.MapImage illustration=new QuestPresentation.MapImage(); illustration.x=1.5; illustration.y=.5; illustration.width=1.5; illustration.height=1.5; illustration.rotation=15; illustration.resource="minecraft:textures/blocks/diamond_block.png"; illustration.uri="https://example.org/map-guide"; illustration.hover.add("Map illustration"); start.images.add(illustration);
+                QuestCore.Quest empty=new QuestCore.Quest(); empty.id="smoke-empty"; empty.title="Dependency-only"; empty.subtitle="Empty quests still require their dependencies"; empty.minWidth=240; empty.chapter="start"; empty.x=6; empty.y=3; empty.dependencies.add("welcome"); edit.book.quests.add(empty);
                 QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.GuidePage rich=new QuestPresentation.GuidePage(); rich.title="Rich guide page";
                 QuestPresentation.GuideElement text=new QuestPresentation.GuideElement(); text.text="Formatted text, resource images, item illustrations and confirmed links."; rich.elements.add(text);
                 QuestPresentation.GuideElement image=new QuestPresentation.GuideElement(); image.type="image"; image.resource="minecraft:textures/blocks/diamond_block.png"; image.width=64; image.height=64; rich.elements.add(image);
-                QuestPresentation.GuideElement illustration=new QuestPresentation.GuideElement(); illustration.type="item"; illustration.item="minecraft:diamond"; rich.elements.add(illustration);
+                QuestPresentation.GuideElement itemIllustration=new QuestPresentation.GuideElement(); itemIllustration.type="item"; itemIllustration.item="minecraft:diamond"; rich.elements.add(itemIllustration);
                 QuestPresentation.GuideElement link=new QuestPresentation.GuideElement(); link.type="link"; link.text="Open the guide"; link.uri="https://example.org/guide"; rich.elements.add(link); manual.richPages.add(rich);
                 QuestPresentation.Style style=new QuestPresentation.Style(); style.selector=".important state:available"; style.color="FF9B59B6"; edit.book.styles.add(style);
                 QuestCore.Reward toast=new QuestCore.Reward(); toast.type="toast"; toast.target="Graphical reward"; toast.text="Native quest notification"; manual.rewards.add(toast);
-                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; manual.tasks.add(check); edit.book.quests.add(manual);
+                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:\"minecraft:textures/items/diamond.png\",color:16763972}"; manual.tasks.add(check); edit.book.quests.add(manual);
                 QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
                 QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
                 ClientProxy.send(edit); stage=5; break;
@@ -243,7 +264,11 @@ public final class QuestPreview {
                 QuestNetwork.Action stale=new QuestNetwork.Action(); stale.action="save"; stale.revision=oldRevision; stale.book=original;
                 ClientProxy.send(stale); stage=6; break;
             case 6:
-                if(snap==null || !snap.message.startsWith("Error: Book changed")) return;
+                if(!presentationPassed) {
+                    if(snap==null || !snap.message.startsWith("Error: Book changed")) return;
+                    QuestToasts.clear(); QuestBookScreen map=new QuestBookScreen(); mc.displayGuiScreen(map); press(map,11); press(map,2);
+                    java.lang.reflect.Field chosen=QuestBookScreen.class.getDeclaredField("selected"); chosen.setAccessible(true); chosen.set(map,"smoke-empty"); map.refresh(); press(map,1); stage=36; waiting=0; return;
+                }
                 if(cpw.mods.fml.common.Loader.isModLoaded("IC2")) { euRequested=true; stage=20; break; }
                 if(cpw.mods.fml.common.Loader.isModLoaded("Botania")) { manaRequested=true; stage=21; break; }
                 if(cpw.mods.fml.common.Loader.isModLoaded("ProjectE")) { emcRequested=true; stage=22; break; }
@@ -282,7 +307,7 @@ public final class QuestPreview {
             case 11:
                 if(snap==null || !snap.message.equals("Task confirmed")) return;
                 if(!Boolean.TRUE.equals(snap.taskStates.get("smoke-manual:confirm")) || !"available".equals(snap.states.get("smoke-dependent"))) throw new IllegalStateException("Task dependency did not unlock");
-                mc.displayGuiScreen(new QuestTaskScreen(null,snap.book.quests.get(snap.book.quests.size()-2))); stage=12; waiting=0; break;
+                QuestToasts.clear(); mc.displayGuiScreen(new QuestTaskScreen(null,snap.book.quests.get(snap.book.quests.size()-2))); stage=12; waiting=0; break;
             case 12:
                 if(waiting<15) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-tasks.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
@@ -298,6 +323,34 @@ public final class QuestPreview {
                 if(waiting<20) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-guide-toast.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 java.lang.reflect.Field guideScroll=QuestGuideScreen.class.getDeclaredField("scroll"); guideScroll.setAccessible(true); guideScroll.setInt(mc.currentScreen,50); stage=35; waiting=0; break;
+            case 39:
+                if(!iconReady || mc.thePlayer.getHeldItem()==null || !(mc.thePlayer.getHeldItem().getItem() instanceof QuestBlocks.CustomIconItem)) return;
+                QuestIconScreen iconEditor=new QuestIconScreen(); mc.displayGuiScreen(iconEditor);
+                for(String[] field:new String[][]{{"resource","minecraft:textures/items/diamond.png"},{"name","Native icon"},{"color","FFCC44"}}) {
+                    java.lang.reflect.Field input=QuestIconScreen.class.getDeclaredField(field[0]); input.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)input.get(iconEditor)).setText(field[1]);
+                }
+                stage=40; break;
+            case 40:
+                QuestToasts.clear();
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-custom-icon.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                press(mc.currentScreen,0); stage=41; break;
+            case 41:
+                net.minecraft.item.ItemStack icon=mc.thePlayer.getHeldItem();
+                if(icon==null || !icon.hasTagCompound() || !"Native icon".equals(icon.getTagCompound().getString("name"))) return;
+                if(!QuestIcons.resource(icon).equals("minecraft:textures/items/diamond.png") || QuestIcons.color(icon)!=0xFFCC44) throw new IllegalStateException("Custom icon edit was not synchronized");
+                iconPassed=true; stage=1; break;
+            case 38: if(QuestPresentation.chapter(snap.book,"start")!=null && snap.book.quests.stream().anyMatch(q->q.id.equals("welcome") && q.chapter.equals("start"))) { bookPrepared=true; stage=1; } break;
+            case 36:
+                if(waiting<15) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-grouped-map.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                QuestBookScreen map=(QuestBookScreen)mc.currentScreen; QuestPresentation.MapImage mapImage=QuestPresentation.chapter(snap.book,"start").images.get(0);
+                java.lang.reflect.Method imageX=QuestBookScreen.class.getDeclaredMethod("imageX",QuestPresentation.MapImage.class),imageY=QuestBookScreen.class.getDeclaredMethod("imageY",QuestPresentation.MapImage.class); imageX.setAccessible(true); imageY.setAccessible(true);
+                java.lang.reflect.Method mapClick=QuestBookScreen.class.getDeclaredMethod("mouseClicked",int.class,int.class,int.class); mapClick.setAccessible(true); mapClick.invoke(map,((Double)imageX.invoke(map,mapImage)).intValue(),((Double)imageY.invoke(map,mapImage)).intValue(),0);
+                if(!(mc.currentScreen instanceof net.minecraft.client.gui.GuiConfirmOpenLink)) throw new IllegalStateException("Map illustration skipped link confirmation"); map.confirmClicked(false,1000);
+                QuestNetwork.Action emptyCheck=new QuestNetwork.Action(); emptyCheck.action="check"; emptyCheck.id="smoke-empty"; ClientProxy.send(emptyCheck); stage=37; break;
+            case 37:
+                if(!"complete".equals(snap.states.get("smoke-empty"))) return;
+                presentationPassed=true; mc.displayGuiScreen(null); stage=6; break;
             case 35:
                 if(waiting<10) return;
                 QuestGuideScreen richGuide=(QuestGuideScreen)mc.currentScreen; java.lang.reflect.Field regions=QuestGuideScreen.class.getDeclaredField("links"); regions.setAccessible(true);
@@ -328,9 +381,12 @@ public final class QuestPreview {
             case 18:
                 if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || snap==null) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-device.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                java.lang.reflect.Field progressReference=QuestDeviceScreen.class.getDeclaredField("quest"); progressReference.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)progressReference.get(mc.currentScreen)).setText("chapter:start");
                 java.lang.reflect.Method bind=QuestDeviceScreen.class.getDeclaredMethod("actionPerformed",net.minecraft.client.gui.GuiButton.class); bind.setAccessible(true); bind.invoke(mc.currentScreen,new net.minecraft.client.gui.GuiButton(0,0,0,"Bind")); stage=19; break;
             case 19:
                 if(snap==null || !snap.message.equals("Device binding updated")) return;
+                QuestDeviceContainer progressContainer=(QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots;
+                if(!progressContainer.tile.quest.equals("chapter:start") || progressContainer.percent!=50) return;
                 mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=8; waiting=0; break;
             case 8:
                 if(waiting<30) return;

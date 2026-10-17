@@ -43,4 +43,23 @@ public class QuestPresentationTest {
         image.width=64; QuestPresentation.GuideElement link=new QuestPresentation.GuideElement(); link.type="link"; link.uri="javascript:alert(1)"; page.elements.add(link); try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
         link.uri="https://example.org/guide"; b.validate();
     }
+    @Test public void chapterGroupsInheritShapesAndRejectCycles() {
+        QuestCore.Book b=book(); QuestCore.Chapter parent=new QuestCore.Chapter(); parent.id="parent"; parent.title="Parent"; parent.defaultQuestShape="circle";
+        QuestCore.Chapter child=new QuestCore.Chapter(); child.id="child"; child.title="Child"; child.parent="parent"; b.chapters.add(parent); b.chapters.add(child); QuestCore.Quest q=b.quests.get(0); q.chapter="child"; b.validate();
+        assertEquals("circle",QuestPresentation.shape(b,q)); assertTrue(QuestPresentation.within(b,"child","parent"));
+        child.defaultQuestShape="diamond"; assertEquals("diamond",QuestPresentation.shape(b,q)); q.shape="pentagon"; assertEquals("pentagon",QuestPresentation.shape(b,q));
+        parent.alwaysInvisible=true; assertFalse(QuestPresentation.visibleChapter(b,"child")); parent.parent="child";
+        try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
+    }
+    @Test public void mapIllustrationsValidateResourcesLinksAndFiniteGeometry() {
+        QuestCore.Book b=book(); QuestCore.Chapter c=new QuestCore.Chapter(); c.id="map"; c.title="Map"; b.chapters.add(c); QuestPresentation.MapImage image=new QuestPresentation.MapImage(); c.images.add(image); b.validate();
+        image.width=Double.NaN; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
+        image.width=1; image.uri="file:///secret"; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
+        image.uri="https://example.org/guide"; b.validate();
+        assertTrue(QuestPresentation.itemBrowser(b,b.quests.get(0))); b.hideFromItemBrowser=true; assertFalse(QuestPresentation.itemBrowser(b,b.quests.get(0))); b.quests.get(0).itemBrowser="enabled"; assertTrue(QuestPresentation.itemBrowser(b,b.quests.get(0)));
+    }
+    @Test public void gridScaleSnapsMovementWithoutChangingStoredMapCoordinates() {
+        QuestCore.Book b=book(); b.gridScale=.25; b.validate(); assertEquals(.75,QuestPresentation.snap(b,.7,1),0); assertEquals(1,QuestPresentation.snap(b,.8,2),0);
+        b.gridScale=1D/32; b.validate(); assertFalse(QuestPresentation.resource("https://example.org/texture.png"));
+    }
 }

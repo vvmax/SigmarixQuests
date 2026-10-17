@@ -3,10 +3,38 @@ import unittest
 import uuid
 from pathlib import Path
 from nbt_codec import IntTag, FloatTag, TypedArray, read_nbt, write_nbt
-from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights
+from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights, convert_map_image, item
 from migrate_progress import migrate
 
 class MigrationTests(unittest.TestCase):
+    def test_task_and_reward_labels_icons_and_task_toast_flags_survive_import(self):
+        icon = {'id': 'ftbquests:custom_icon', 'tag': {'icon': 'minecraft:textures/items/diamond.png'}}
+        raw = {'type': 'checkmark', 'title': 'Named task', 'description': ['First', 'Second'], 'icon': icon, 'disable_toast': True}
+        converted = convert_task(raw, 0)
+        self.assertEqual('Named task', converted['title'])
+        self.assertEqual('First\nSecond', converted['description'])
+        self.assertTrue(converted['disableToast'])
+        self.assertEqual('sigmarixquests:custom_icon', converted['icon'])
+        reward = convert_reward({'type': 'item', 'item': 'minecraft:diamond', 'title': 'Prize', 'icon': icon})
+        self.assertEqual('Prize', reward['title'])
+        self.assertEqual(converted['iconNbt'], reward['iconNbt'])
+
+    def test_native_item_aliases_preserve_icon_nbt_and_leave_external_items_alone(self):
+        self.assertEqual('sigmarixquests:quest_book', item('ftbquests:book')['item'])
+        self.assertEqual('sigmarixquests:task_screen', item('ftbquests:screen')['item'])
+        self.assertEqual('sigmarixquests:redstone_detector', item('ftbquests:detector')['item'])
+        self.assertEqual('sigmarixquests:player_detector', item({'id': 'ftbquests:detector', 'Damage': 1})['item'])
+        value = item({'id': 'ftbquests:custom_icon', 'Count': 2, 'tag': {'icon': 'minecraft:textures/items/diamond.png'}})
+        self.assertEqual('sigmarixquests:custom_icon', value['item'])
+        self.assertEqual(2, value['count'])
+        self.assertIn('minecraft:textures/items/diamond.png', value['nbt'])
+        self.assertEqual('Botania:manaResource', item('Botania:manaResource')['item'])
+        self.assertEqual('sigmarixquests:loot_crate', item('ftbquests:lootcrate')['item'])
+
+    def test_map_illustrations_preserve_geometry_hover_and_links(self):
+        image = convert_map_image({'image': 'minecraft:textures/blocks/stone.png', 'x': 2, 'y': -1, 'width': 3, 'height': 2, 'rotation': 45, 'hover': ['Image'], 'click': 'https://example.org/guide'})
+        self.assertEqual(image['rotation'], 45); self.assertEqual(image['hover'], ['Image']); self.assertEqual(image['uri'], 'https://example.org/guide')
+        with self.assertRaises(ValueError): convert_map_image({'image': 'https://example.org/image.png'})
     def test_emergency_durations_and_creature_weights(self):
         self.assertEqual(seconds('5m'), 300); self.assertEqual(seconds('1m20t'), 61); self.assertEqual(seconds('21t'), 2)
         with self.assertRaises(ValueError): seconds('tomorrow')

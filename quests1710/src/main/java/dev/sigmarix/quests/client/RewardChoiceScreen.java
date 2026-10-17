@@ -32,7 +32,7 @@ public final class RewardChoiceScreen extends GuiScreen {
         buttonList.clear(); int rows=Math.max(1,(height-94)/26); scroll=Math.max(0,Math.min(scroll,Math.max(0,entries.size()-rows)));
         for(int i=scroll;i<entries.size() && i<scroll+rows;i++) {
             Entry entry=entries.get(i); int pick=selected(entry); QuestCore.Reward option=entry.reward.options.get(pick);
-            String label="Choice "+(i+1)+": "+pick+" / "+(entry.reward.options.size()-1)+" - "+option.type+" "+(option.item==null?"":option.item)+" x"+option.count;
+            String label="Choice "+(i+1)+": "+pick+" / "+(entry.reward.options.size()-1)+" - "+QuestPresentation.title(option);
             buttonList.add(new GuiButton(100+i,16,42+(i-scroll)*26,width-32,22,fontRendererObj.trimStringToWidth(label,width-48)));
         }
         buttonList.add(new GuiButton(0,16,height-36,130,22,QuestText.tr("Claim selected")));

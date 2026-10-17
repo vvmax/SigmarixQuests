@@ -24,7 +24,7 @@ public final class QuestToasts extends Gui {
         if(current!=null && now-since>5000) current=null;
         if(current==null) {
             String json=QUEUE.poll(); if(json==null) return;
-            try { current=QuestService.JSON.fromJson(json,QuestNetwork.Toast.class); if(current==null || current.title==null || current.text==null || current.title.length()>8192 || current.text.length()>8192) { current=null; return; } }
+            try { current=QuestService.JSON.fromJson(json,QuestNetwork.Toast.class); if(current==null || current.title==null || current.text==null || current.title.length()>8192 || current.text.length()>8192 || current.iconMeta<0 || current.iconNbt==null || current.iconNbt.length()>65536) { current=null; return; } }
             catch(RuntimeException e) { return; } since=now;
         }
         int x=new net.minecraft.client.gui.ScaledResolution(mc,mc.displayWidth,mc.displayHeight).getScaledWidth()-224,y=36;
@@ -33,7 +33,7 @@ public final class QuestToasts extends Gui {
         mc.entityRenderer.setupOverlayRendering(); GL11.glDisable(GL11.GL_DEPTH_TEST);
         drawRect(x,y,x+220,y+46,0xEF18212B); drawRect(x,y,x+3,y+46,0xFF60B978);
         Item item=(Item)Item.itemRegistry.getObject(current.icon==null?"minecraft:book":current.icon);
-        if(item!=null) { RenderHelper.enableGUIStandardItemLighting(); new net.minecraft.client.renderer.entity.RenderItem().renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),new ItemStack(item),x+10,y+13); RenderHelper.disableStandardItemLighting(); }
+        if(item!=null) { ItemStack stack=new ItemStack(item,1,current.iconMeta); try { stack.setTagCompound(QuestService.tag(current.iconNbt)); } catch(RuntimeException invalid) {} RenderHelper.enableGUIStandardItemLighting(); new net.minecraft.client.renderer.entity.RenderItem().renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,x+10,y+13); RenderHelper.disableStandardItemLighting(); }
         mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(current.title,174),x+36,y+10,0xFFFFCC66);
         mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(QuestText.tr(current.text),174),x+36,y+26,0xFFEEEEEE);
         GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPopMatrix(); GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glPopMatrix(); GL11.glMatrixMode(GL11.GL_MODELVIEW); GL11.glPopAttrib();

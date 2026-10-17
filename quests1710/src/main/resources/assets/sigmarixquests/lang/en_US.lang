@@ -70,3 +70,10 @@ tile.sigmarixquests.loot_crate_storage.name=Loot Crate Storage
 tile.sigmarixquests.progress_detector.name=Quest Progress Detector
 container.sigmarixquests.quest_chest=Quest Chest
 container.sigmarixquests.loot_crate_storage=Loot Crate Storage
+
+item.sigmarixquests.custom_icon.name=Custom icon
+quests.ui.custom_icon=Custom icon
+quests.ui.texture_resource=Texture resource
+quests.ui.invalid_icon_texture_or_color=Invalid icon texture or color
+quests.ui.all_groups=All groups
+quests.ui.group=Group

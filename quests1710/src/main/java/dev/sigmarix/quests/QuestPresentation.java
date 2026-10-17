@@ -6,6 +6,12 @@ import java.util.*;
 /** Portable presentation schema; resource locations are resolved from installed resource packs. */
 public final class QuestPresentation {
     public static final Set<String> SHAPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("square","circle","diamond","hexagon","octagon","pentagon")));
+    public static final class MapImage {
+        public String resource="minecraft:textures/blocks/stone.png",uri="";
+        public List<String> hover=new ArrayList<String>();
+        public double x,y,width=1,height=1,rotation,opacity=1;
+        public boolean dev;
+    }
     public static final class GuidePage { public String title=""; public List<GuideElement> elements=new ArrayList<GuideElement>(); }
     public static final class GuideElement {
         public String type="text",text="",resource="",item="minecraft:book",nbt="",uri="",color="FFEEEEEE";
@@ -23,13 +29,19 @@ public final class QuestPresentation {
         String hex=value.startsWith("#")?value.substring(1):value;
         return (int)Long.parseLong(hex.length()==6?"FF"+hex:hex,16);
     }
-    public static boolean resource(String value) { return value!=null && (value.isEmpty() || value.matches("[a-z0-9_.-]+:[a-zA-Z0-9_./-]+") && !value.contains("..")); }
+    public static boolean resource(String value) { return value!=null && (value.isEmpty() || value.matches("[a-z0-9_.-]+:[a-zA-Z0-9_./-]+") && !value.contains("..") && !value.contains("://")); }
     public static boolean link(String value) {
         if(value==null) return false; if(value.isEmpty()) return true;
         try { URI uri=new URI(value); return value.length()<=2048 && ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) && uri.getHost()!=null && uri.getUserInfo()==null; }
         catch(Exception e) { return false; }
     }
+    public static void metadata(String title,String description,String icon,int meta,String nbt) {
+        if(title==null || title.length()>256 || description==null || description.length()>16384 || icon==null || icon.length()>256 || meta<0 || nbt==null || nbt.length()>65536) throw new IllegalArgumentException("Invalid task/reward presentation");
+    }
+    public static String title(QuestCore.Task task) { return task.title.isEmpty()?task.id+" - "+task.type:task.title; }
+    public static String title(QuestCore.Reward reward) { return reward.title.isEmpty()?reward.type+" "+(reward.item!=null?reward.item:reward.target==null?"":reward.target)+" x"+reward.count:reward.title; }
     public static void validate(QuestCore.Book book) {
+        if(!Double.isFinite(book.gridScale) || book.gridScale<1D/32 || book.gridScale>8 || !SHAPES.contains(book.defaultQuestShape)) throw new IllegalArgumentException("Invalid map scale or default shape");
         if(book.theme==null || book.styles==null || book.styles.size()>128) throw new IllegalArgumentException("Invalid theme");
         Theme t=book.theme;
         for(String value:Arrays.asList(t.background,t.panel,t.text,t.edge,t.selected,t.available,t.complete,t.claimed,t.locked)) color(value);
@@ -39,9 +51,15 @@ public final class QuestPresentation {
             if(style.color==null || style.textColor==null || style.shape==null || !style.shape.isEmpty() && !SHAPES.contains(style.shape)) throw new IllegalArgumentException("Invalid style");
             if(!style.color.isEmpty()) color(style.color); if(!style.textColor.isEmpty()) color(style.textColor);
         }
-        for(QuestCore.Chapter chapter:book.chapters) if(!resource(chapter.image)) throw new IllegalArgumentException("Invalid chapter image resource");
+        for(QuestCore.Chapter chapter:book.chapters) {
+            if(!resource(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !SHAPES.contains(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
+            for(MapImage image:chapter.images) {
+                if(image==null || !resource(image.resource) || image.resource.isEmpty() || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");
+                for(String line:image.hover) if(line==null || line.length()>1024) throw new IllegalArgumentException("Invalid map illustration hover");
+            }
+        }
         for(QuestCore.Quest q:book.quests) {
-            if(!Double.isFinite(q.size) || q.size<0.0625 || q.size>8 || q.iconMeta<0 || q.iconNbt==null || q.tags==null || q.tags.size()>64 || q.pages==null || q.pages.size()>64 || !SHAPES.contains(q.shape) || !link(q.uri)) throw new IllegalArgumentException("Invalid quest presentation: "+q.id);
+            if(!Double.isFinite(q.size) || q.size<0.0625 || q.size>8 || q.iconMeta<0 || q.iconNbt==null || q.tags==null || q.tags.size()>64 || q.pages==null || q.pages.size()>64 || q.shape==null || !q.shape.isEmpty() && !SHAPES.contains(q.shape) || !Arrays.asList("inherit","enabled","disabled").contains(q.itemBrowser) || !link(q.uri)) throw new IllegalArgumentException("Invalid quest presentation: "+q.id);
             for(String tag:q.tags) if(!QuestCore.validId(tag)) throw new IllegalArgumentException("Invalid quest tag");
             if(q.richPages==null || q.richPages.size()>64) throw new IllegalArgumentException("Invalid rich guide pages");
             for(GuidePage page:q.richPages) {
@@ -54,6 +72,24 @@ public final class QuestPresentation {
             }
             for(String page:q.pages) if(page==null || page.length()>32768) throw new IllegalArgumentException("Invalid guide page");
         }
+    }
+    public static double snap(QuestCore.Book book,double position,double size) { double step=book.gridScale*size; return Math.round(position/step)*step; }
+    public static QuestCore.Chapter chapter(QuestCore.Book book,String id) { for(QuestCore.Chapter chapter:book.chapters) if(chapter.id.equals(id)) return chapter; return null; }
+    public static boolean within(QuestCore.Book book,String id,String parent) {
+        if(parent.isEmpty()) return true;
+        for(int depth=0;depth<64;depth++) { if(id.equals(parent)) return true; QuestCore.Chapter chapter=chapter(book,id); if(chapter==null || chapter.parent.isEmpty()) return false; id=chapter.parent; }
+        return false;
+    }
+    public static boolean visibleChapter(QuestCore.Book book,String id) {
+        for(int depth=0;depth<64;depth++) { QuestCore.Chapter chapter=chapter(book,id); if(chapter==null) return true; if(chapter.alwaysInvisible) return false; if(chapter.parent.isEmpty()) return true; id=chapter.parent; }
+        return false;
+    }
+    public static boolean itemBrowser(QuestCore.Book book,QuestCore.Quest quest) { return quest.itemBrowser.equals("enabled") || quest.itemBrowser.equals("inherit") && !book.hideFromItemBrowser; }
+    public static String shape(QuestCore.Book book,QuestCore.Quest quest) {
+        if(!quest.shape.isEmpty()) return quest.shape;
+        QuestCore.Chapter current=chapter(book,quest.chapter);
+        for(int depth=0;current!=null && depth<64;depth++) { if(!current.defaultQuestShape.isEmpty()) return current.defaultQuestShape; current=chapter(book,current.parent); }
+        return book.defaultQuestShape;
     }
     public static boolean matches(String selector,QuestCore.Quest q,String state) {
         for(String token:selector.trim().split("\\s+")) {
@@ -68,7 +104,7 @@ public final class QuestPresentation {
     }
     public static String[] resolve(QuestCore.Book book,QuestCore.Quest q,String state) {
         Theme t=book.theme; String base="claimed".equals(state)?t.claimed:"complete".equals(state)?t.complete:"available".equals(state)?t.available:t.locked;
-        String[] result={base,t.text,q.shape};
+        String[] result={base,t.text,shape(book,q)};
         for(Style style:book.styles) if(matches(style.selector,q,state)) {
             if(!style.color.isEmpty()) result[0]=style.color; if(!style.textColor.isEmpty()) result[1]=style.textColor; if(!style.shape.isEmpty()) result[2]=style.shape;
         }

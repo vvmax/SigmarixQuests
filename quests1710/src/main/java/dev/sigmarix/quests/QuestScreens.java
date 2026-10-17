@@ -9,6 +9,7 @@ public final class QuestScreens {
         TileEntity tile=core.getWorldObj().getTileEntity(core.xCoord+dx(core)*column,core.yCoord+row,core.zCoord+dz(core)*column);
         return tile instanceof QuestDevice?(QuestDevice)tile:null;
     }
+    private static boolean sameOwner(QuestDevice first,QuestDevice second) { return Objects.equals(first.owner,second.owner) || first.owner!=null && second.owner!=null && QuestsMod.service!=null && QuestsMod.service.progress().group(first.owner).equals(QuestsMod.service.progress().group(second.owner)); }
     private static boolean belongs(QuestDevice part,QuestDevice core) { return part.screenLinked && part.coreX==core.xCoord && part.coreY==core.yCoord && part.coreZ==core.zCoord; }
     public static QuestDevice core(QuestDevice tile) {
         if(!tile.screenLinked) return tile;
@@ -25,7 +26,7 @@ public final class QuestScreens {
         List<QuestDevice> next=new ArrayList<QuestDevice>();
         for(int row=0;row<height;row++) for(int column=0;column<width;column++) {
             QuestDevice part=at(core,column,row);
-            if(part==null || part.getBlockType()!=core.getBlockType() || !Objects.equals(part.owner,core.owner) || part.facing!=core.facing || part.screenLinked && !belongs(part,core) || part!=core && (part.screenWidth!=1 || part.screenHeight!=1)) throw new IllegalArgumentException("Fill the rectangle upward and to the right with screens of the same type, owner and facing");
+            if(part==null || part.getBlockType()!=core.getBlockType() || !sameOwner(part,core) || part.facing!=core.facing || part.screenLinked && !belongs(part,core) || part!=core && (part.screenWidth!=1 || part.screenHeight!=1)) throw new IllegalArgumentException("Fill the rectangle upward and to the right with screens of the same type, owner and facing");
             next.add(part);
         }
         for(int row=0;row<core.screenHeight;row++) for(int column=0;column<core.screenWidth;column++) {
@@ -34,7 +35,7 @@ public final class QuestScreens {
         }
         core.screenWidth=width; core.screenHeight=height;
         for(QuestDevice part:next) {
-            if(part!=core) { part.screenLinked=true; part.coreX=core.xCoord; part.coreY=core.yCoord; part.coreZ=core.zCoord; copy(core,part); }
+            if(part!=core) { part.owner=core.owner; part.screenLinked=true; part.coreX=core.xCoord; part.coreY=core.yCoord; part.coreZ=core.zCoord; copy(core,part); }
             changed(part);
         }
     }

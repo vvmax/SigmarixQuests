@@ -5,4 +5,5 @@ public class CommonProxy {
     public void receive(String json) {}
     public void notice(String json) {}
     public void open() {}
+    public void openIcon() {}
 }

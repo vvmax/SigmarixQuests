@@ -18,11 +18,13 @@ public final class QuestBlocks {
         GameRegistry.registerTileEntity(QuestDevice.class,"sigmarixquests:device");
         GameRegistry.registerTileEntity(QuestStorage.class,"sigmarixquests:storage");
         GameRegistry.registerItem(new LootCrateItem(),"loot_crate");
+        GameRegistry.registerItem(new CustomIconItem(),"custom_icon");
         QuestHooks.TASKS.put("sigmarix:redstone",(player,task)->false);
         QuestHooks.TASKS.put("sigmarix:player",(player,task)->false);
         QuestHooks.REWARDS.put("sigmarix:notice",(player,reward)->QuestService.say(player,reward.text));
     }
     public static void recipes() {
+        GameRegistry.addShapelessRecipe(new ItemStack(GameRegistry.findItem("sigmarixquests","custom_icon")),net.minecraft.init.Items.paper,net.minecraft.init.Items.redstone);
         Item book=GameRegistry.findItem("sigmarixquests","quest_book");
         GameRegistry.addShapelessRecipe(new ItemStack(book),net.minecraft.init.Items.book);
         GameRegistry.addShapelessRecipe(new ItemStack(devices[0]),net.minecraft.init.Items.book,net.minecraft.init.Items.iron_ingot,net.minecraft.init.Items.iron_ingot,net.minecraft.init.Items.iron_ingot,net.minecraft.init.Items.iron_ingot,net.minecraft.init.Blocks.glass,net.minecraft.init.Items.redstone);
@@ -71,11 +73,16 @@ public final class QuestBlocks {
             TileEntity tile=world.getTileEntity(x,y,z); if(mode==9 && tile instanceof QuestDevice) return ((QuestDevice)tile).redstoneOutput; return (mode==1 || mode==5) && tile instanceof QuestDevice && ((QuestDevice)tile).signal?15:0;
         }
     }
+    public static final class CustomIconItem extends Item {
+        CustomIconItem() { setUnlocalizedName("sigmarixquests.custom_icon"); setTextureName("minecraft:paper"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
+        @Override public String getItemStackDisplayName(ItemStack stack) { return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
+        @Override public ItemStack onItemRightClick(ItemStack stack,World world,EntityPlayer player) { if(world.isRemote) QuestsMod.proxy.openIcon(); return stack; }
+    }
     public static final class LootCrateItem extends Item {
         LootCrateItem() { setUnlocalizedName("sigmarixquests.loot_crate"); setTextureName("minecraft:minecart_chest"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
-        @Override public String getItemStackDisplayName(ItemStack stack) { return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
-        @Override public int getColorFromItemStack(ItemStack stack,int pass) { return stack.hasTagCompound() && stack.getTagCompound().hasKey("color")?stack.getTagCompound().getInteger("color"):0xFFFFFF; }
-        @Override public boolean hasEffect(ItemStack stack,int pass) { return stack.hasTagCompound() && stack.getTagCompound().getBoolean("glow"); }
+        @Override public String getItemStackDisplayName(ItemStack stack) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null && !settings.name.isEmpty()) return settings.name; return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
+        @Override public int getColorFromItemStack(ItemStack stack,int pass) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null) return QuestPresentation.color(settings.color); return stack.hasTagCompound() && stack.getTagCompound().hasKey("color")?stack.getTagCompound().getInteger("color"):0xFFFFFF; }
+        @Override public boolean hasEffect(ItemStack stack,int pass) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null) return settings.glow; return stack.hasTagCompound() && stack.getTagCompound().getBoolean("glow"); }
         @Override public void getSubItems(Item item,net.minecraft.creativetab.CreativeTabs tab,java.util.List list) {
             if(QuestLoot.clientBook!=null) for(String table:QuestLoot.clientBook.lootTables.keySet()) list.add(QuestLoot.crate(QuestLoot.clientBook,table));
             else list.add(new ItemStack(item));
@@ -85,7 +92,7 @@ public final class QuestBlocks {
             if(!(p instanceof EntityPlayerMP) || stack==null || !(stack.getItem() instanceof LootCrateItem) || QuestsMod.service==null) return false;
             try {
                 if(!stack.hasTagCompound()) throw new IllegalArgumentException("Loot crate needs NBT {table:table_id}");
-                QuestsMod.service.openLoot((EntityPlayerMP)p,stack.getTagCompound().getString("table"),stack);
+                QuestsMod.service.openLoot((EntityPlayerMP)p,QuestLoot.table(stack.getTagCompound()),stack);
             } catch(RuntimeException ex) { QuestService.say(p,"Loot crate: "+ex.getMessage()); }
             return true;
         }

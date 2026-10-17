@@ -79,11 +79,15 @@ public final class QuestNetwork {
         @Override public IMessage onMessage(Notice message,MessageContext context) { QuestsMod.proxy.notice(message.json); return null; }
     }
     public static final class Toast {
-        public String title="",text="",icon="minecraft:book";
+        public String title="",text="",icon="minecraft:book",iconNbt="";
+        public int iconMeta;
     }
     public static void toast(EntityPlayerMP player,String title,String text,String icon) {
+        toast(player,title,text,icon,0,"");
+    }
+    public static void toast(EntityPlayerMP player,String title,String text,String icon,int meta,String nbt) {
         if(channel==null) return;
-        Toast toast=new Toast(); toast.title=title; toast.text=text; toast.icon=icon;
+        Toast toast=new Toast(); toast.title=title; toast.text=text; toast.icon=icon; toast.iconMeta=meta; toast.iconNbt=nbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
     public static final class Action {

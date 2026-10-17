@@ -81,6 +81,7 @@ public class QuestService {
             item(q.icon); tag(q.iconNbt);
             for(QuestPresentation.GuidePage page:q.richPages) for(QuestPresentation.GuideElement element:page.elements) if(element.type.equals("item")) { item(element.item); tag(element.nbt); }
             for (QuestCore.Task t : q.tasks) {
+                if(!t.icon.isEmpty()) item(t.icon); tag(t.iconNbt);
                 switch (t.type) {
                     case "item":
                         if(t.target!=null && !t.target.isEmpty()) validateItemTarget(t.target);
@@ -112,6 +113,7 @@ public class QuestService {
         return result;
     }
     private void validateReward(QuestCore.Reward r) {
+        if(!r.icon.isEmpty()) item(r.icon); tag(r.iconNbt);
         if (r.type.startsWith("npc_")) QuestNPCs.validate(r);
         if (r.type.equals("item")) { item(r.item); tag(r.nbt); }
         if (r.type.equals("achievement")) stat(r.target, true);
@@ -174,6 +176,55 @@ public class QuestService {
         QuestDependencies graph=dependencies(id);
         return graph.chapter(chapter,false)?"complete":graph.chapter(chapter,true)?"started":"not_started";
     }
+    public boolean visible(UUID viewer,QuestCore.Quest quest) { return QuestPresentation.visibleChapter(book,quest.chapter) && (!quest.hidden || progress().completed(viewer).contains(quest.id) || unlocked(viewer,quest)); }
+    public boolean bindable(UUID viewer,String reference) {
+        validateProgressReference(reference);
+        if(reference.equals("book:")) return true;
+        if(reference.startsWith("chapter:")) return QuestPresentation.visibleChapter(book,reference.substring(8));
+        for(String owner:QuestDependencies.owners(book,quests,reference)) if(!visible(viewer,quests.get(owner))) return false;
+        return true;
+    }
+    public void validateProgressReference(String reference) {
+        if(reference==null || reference.length()>160) throw new IllegalArgumentException("Invalid progress reference");
+        if(!reference.equals("book:")) QuestDependencies.owners(book,quests,reference);
+    }
+    public double objectProgress(UUID owner,String reference) {
+        try { validateProgressReference(reference); } catch(IllegalArgumentException missing) { return 0; }
+        if(reference.equals("book:") || reference.startsWith("chapter:")) {
+            String chapter=reference.startsWith("chapter:")?reference.substring(8):""; double sum=0; int count=0;
+            for(QuestCore.Quest quest:quests.values()) if(!quest.optional && (chapter.isEmpty() || QuestPresentation.within(book,quest.chapter,chapter))) { sum+=questProgress(owner,quest); count++; }
+            return count==0?1:sum/count;
+        }
+        if(reference.startsWith("task:")) {
+            String[] parts=reference.substring(5).split("/",-1); QuestCore.Quest quest=quests.get(parts[0]);
+            for(QuestCore.Task task:quest.tasks) if(task.id.equals(parts[1])) return taskProgress(owner,quest,task);
+            return 0;
+        }
+        return questProgress(owner,quests.get(reference.startsWith("quest:")?reference.substring(6):reference));
+    }
+    private double questProgress(UUID owner,QuestCore.Quest quest) {
+        if(progress().completed(owner).contains(quest.id)) return 1;
+        double result=0;
+        for(QuestCore.Task task:quest.tasks) { double value=taskProgress(owner,quest,task); result=quest.anyTask?Math.max(result,value):result+value; }
+        return quest.anyTask?result:result/Math.max(1,quest.tasks.size());
+    }
+    private double taskProgress(UUID owner,QuestCore.Quest quest,QuestCore.Task task) {
+        if(dependencies(owner).satisfied("task:"+quest.id+"/"+task.id,false)) return 1;
+        long count=progress().value(owner,quest.id,task.id); if(count==0 && task.type.equals("kill")) count=progress().kills(owner,quest.id,quest.tasks.indexOf(task));
+        return Math.min(1,Math.max(0,count/(double)task.count));
+    }
+    public boolean objectComplete(UUID owner,String reference) {
+        try { validateProgressReference(reference); } catch(IllegalArgumentException missing) { return false; }
+        if(!reference.equals("book:")) return dependencies(owner).satisfied(reference,false);
+        for(QuestCore.Quest quest:quests.values()) if(!quest.optional && !progress().completed(owner).contains(quest.id)) return false;
+        return true;
+    }
+    public String objectTitle(String reference) {
+        if(reference.equals("book:")) return book.title;
+        if(reference.startsWith("chapter:")) { QuestCore.Chapter chapter=QuestPresentation.chapter(book,reference.substring(8)); return chapter==null?"Quest screen":chapter.title; }
+        if(reference.startsWith("task:")) { String[] parts=reference.substring(5).split("/",-1); QuestCore.Quest quest=parts.length==2?quests.get(parts[0]):null; return quest==null?"Quest screen":quest.title+" / "+parts[1]; }
+        QuestCore.Quest quest=quests.get(reference.startsWith("quest:")?reference.substring(6):reference); return quest==null?"Quest screen":quest.title;
+    }
     public void start(EntityPlayerMP p,QuestCore.Quest q) {
         if(!active(p,q)) throw new IllegalArgumentException("Quest is locked or complete"); progress().start(p.getUniqueID(),q.id);
     }
@@ -230,7 +281,14 @@ public class QuestService {
             } else if(stack.getItem()==item(target) && (t.ignoreDamage || stack.getItemDamage()==t.meta)) matched=true;
         }
         if(!matched || t.filter!=null && !t.filter.matches(stack)) return false;
-        return nbtMatches(t.nbt,t.nbtMode,stack.getTagCompound());
+        return stackNbtMatches(t.nbt,t.nbtMode,stack);
+    }
+    public static boolean stackNbtMatches(String nbt,String mode,ItemStack stack) {
+        if(!(stack.getItem() instanceof QuestBlocks.LootCrateItem) || nbt.isEmpty() || mode.equals("ignore")) return nbtMatches(nbt,mode,stack.getTagCompound());
+        QuestCore.Book book=QuestsMod.service==null?QuestLoot.clientBook:QuestsMod.service.book;
+        NBTTagCompound expected=QuestLoot.canonical(tag(nbt),book),actual=QuestLoot.canonical(stack.getTagCompound(),book);
+        if(actual!=null) for(String key:Arrays.asList("name","color","glow")) if(!expected.hasKey(key)) actual.removeTag(key);
+        return mode.equals("subset")?subset(expected,actual):expected.equals(actual);
     }
     public static boolean nbtMatches(String nbt,String mode,NBTTagCompound actual) {
         if(nbt.isEmpty() || mode.equals("ignore")) return true;
@@ -320,7 +378,7 @@ public class QuestService {
     /** Preflight on copies; no consumption if any requirement is incomplete. */
     public boolean check(EntityPlayerMP p, QuestCore.Quest q, boolean commit) {
         if (!active(p,q)) return false;
-        if(q.anyTask) {
+        if(q.anyTask && !q.tasks.isEmpty()) {
             for(QuestCore.Task t:q.tasks) {
                 QuestCore.Quest single=JSON.fromJson(JSON.toJson(q),QuestCore.Quest.class);
                 single.anyTask=false; single.tasks=Collections.singletonList(t);
@@ -365,7 +423,7 @@ public class QuestService {
             for (ItemStack empty : containers) give(p,empty);
             p.inventory.markDirty(); p.inventoryContainer.detectAndSendChanges();
             for(QuestCore.Task t:q.tasks) progress().markTask(p.getUniqueID(),q.id,t.id);
-            progress().complete(p.getUniqueID(),q.id); if(!q.disableToast) QuestNetwork.toast(p,q.title,"Quest complete",q.icon); progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime());
+            progress().complete(p.getUniqueID(),q.id); if(!q.disableToast) QuestNetwork.toast(p,q.title,"Quest complete",q.icon,q.iconMeta,q.iconNbt); progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime());
         }
         return true;
     }
@@ -465,6 +523,7 @@ public class QuestService {
         progress().emergency(player.getUniqueID(),player.worldObj.getTotalWorldTime()); applyRewards(player,book.emergencyItems,null);
     }
     public void openLoot(EntityPlayerMP p,String table,ItemStack crate) {
+        table=QuestLoot.resolve(book,table);
         if(!book.lootTables.containsKey(table)) throw new IllegalArgumentException("Unknown loot table");
         QuestCore.Reward roll=new QuestCore.Reward(); roll.type="loot"; roll.target=table;
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>();

@@ -156,16 +156,35 @@ def code(value):
     return 'ftb_' + format(int(value) & 0xffffffff, '08x')
 
 
+# Independent equivalents. Native crate resolution preserves legacy type aliases.
+ITEM_ALIASES = {
+    'book': 'quest_book', 'lootcrate': 'loot_crate', 'custom_icon': 'custom_icon', 'screen': 'task_screen',
+    'progress_screen': 'progress_screen', 'progress_detector': 'progress_detector',
+    'detector': 'redstone_detector', 'chest': 'quest_chest', 'barrier': 'quest_barrier',
+    'reward_collector': 'reward_collector', 'loot_crate_storage': 'loot_crate_storage',
+    'loot_crate_opener': 'loot_crate_opener',
+}
+
+def item_id(value):
+    if value.startswith('ftbquests:') and value[10:] in ITEM_ALIASES:
+        return 'sigmarixquests:' + ITEM_ALIASES[value[10:]]
+    return value
+
+
 def item(value):
     if isinstance(value, str):
         # The supported compact form is a registry ID, with optional " count".
         parts = value.split()
         if not parts or len(parts) > 2:
             raise ValueError('Unsupported compact item: ' + value)
-        return {'item': parts[0], 'count': int(parts[1]) if len(parts) == 2 else 1}
+        return {'item': item_id(parts[0]), 'count': int(parts[1]) if len(parts) == 2 else 1}
     if not isinstance(value, dict) or 'id' not in value:
         raise ValueError('Missing item registry ID')
-    result = {'item': value['id'], 'count': int(value.get('Count', 1)), 'meta': int(value.get('Damage', 0))}
+    result = {'item': item_id(value['id']), 'count': int(value.get('Count', 1)), 'meta': int(value.get('Damage', 0))}
+    if value['id'] == 'ftbquests:detector':
+        if result['meta'] not in (0, 1): raise ValueError('Unknown FTB detector variant')
+        result['item'] = 'sigmarixquests:' + ('player_detector' if result['meta'] == 1 else 'redstone_detector')
+        result['meta'] = 0
     if value.get('tag'):
         result['nbt'] = snbt(value['tag'])
     return result
@@ -194,11 +213,20 @@ def entity_id(value):
         raise ValueError('Entity registry mapping needed: ' + str(value))
     return VANILLA_ENTITIES[value]
 
+def object_presentation(raw):
+    result = {'title': text(raw.get('title', '')), 'description': text(raw.get('description', ''))}
+    if raw.get('icon'):
+        value = item(raw['icon'])
+        result.update(icon=value['item'], iconMeta=value.get('meta', 0), iconNbt=value.get('nbt', ''))
+    return result
+
+
 def convert_task(raw, index, defaults=None, repeat=False):
     defaults = defaults or {}
     kind = raw.get('type', '').removeprefix('ftbquests:')
     result = {'id': code(raw['uid']) if raw.get('uid') else 't' + str(index)}
-    refuse_fields(raw, ('disable_toast',))
+    result.update(object_presentation(raw))
+    result['disableToast'] = bool(raw.get('disable_toast', False))
     if kind == 'checkmark':
         result.update(type='check', manual=True)
     elif kind == 'item':
@@ -283,7 +311,7 @@ def convert_task(raw, index, defaults=None, repeat=False):
 def convert_reward(raw, defaults=None, repeat=False, nested=False):
     defaults = defaults or {}
     kind = raw.get('type', '').removeprefix('ftbquests:')
-    result = {}
+    result = object_presentation(raw)
     if not nested:
         if raw.get('uid'):
             result['id'] = code(raw['uid'])
@@ -391,9 +419,21 @@ def seconds(value):
     ticks = sum(int(number) * {'t': 1, 's': 20, 'm': 1200, 'h': 72000, 'd': 1728000}[unit] for number, unit in chunks)
     return (ticks + 19) // 20
 
+def text(value):
+    return value if isinstance(value, str) else '\n'.join(str(line) for line in (value or []))
+
+def convert_map_image(raw):
+    resource = raw.get('image', '')
+    if not isinstance(resource, str) or '://' in resource or not re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', resource) or '..' in resource:
+        raise ValueError('Map illustration needs a resource-pack texture: ' + str(resource))
+    click = raw.get('click', '')
+    if click and not re.match(r'https?://', click): raise ValueError('Map illustration click needs a supported http/https URI')
+    return dict(resource=resource, x=float(raw.get('x', 0)), y=float(raw.get('y', 0)), width=float(raw.get('width', 1)), height=float(raw.get('height', 1)), rotation=float(raw.get('rotation', 0)), hover=[raw['hover']] if isinstance(raw.get('hover'), str) else raw.get('hover', []), uri=click, dev=bool(raw.get('dev', False)))
+
 def convert(folder):
     defaults = document(folder, 'file', True)
     book = {'format': 2, 'title': defaults.get('title') or 'Imported FTB 1.12 book', 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
+    book.update(disableGui=bool(defaults.get('disable_gui', False)), gridScale=float(defaults.get('grid_scale', .5) or .5), defaultQuestShape=defaults.get('default_quest_shape') or 'square', hideFromItemBrowser=bool(defaults.get('default_quest_disable_jei', False)))
     book['emergencyItems'] = [dict(item(stack), type='item') for stack in defaults.get('emergency_items', [])]
     book['emergencyCooldownSeconds'] = seconds(defaults.get('emergency_items_cooldown'))
     book['dropLootCrates'] = bool(defaults.get('drop_loot_crates', False))
@@ -409,7 +449,7 @@ def convert(folder):
             book['lootSettings'][name] = {'rolls': max(1, int(raw.get('loot_size', 1))), 'emptyWeight': int(raw.get('empty_weight', 0))}
             if raw.get('loot_crate'):
                 crate = raw['loot_crate']
-                book['lootSettings'][name].update(name=crate.get('item_name', ''), color=format(int(crate.get('color', 0xffffff)) & 0xffffff, '06X'), glow=bool(crate.get('glow', False)), drops=weights(crate.get('drops', {})))
+                book['lootSettings'][name].update(alias=crate.get('string_id', ''), name=crate.get('item_name', ''), color=format(int(crate.get('color', 0xffffff)) & 0xffffff, '06X'), glow=bool(crate.get('glow', False)), drops=weights(crate.get('drops', {})))
         except (ValueError, OSError, TypeError, KeyError) as error:
             errors.append(str(path) + ': ' + str(error))
     chapter_dirs = sorted(p for p in (folder / 'chapters').iterdir() if p.is_dir())
@@ -424,24 +464,25 @@ def convert(folder):
     for chapter_dir in chapter_dirs:
         try:
             chapter = document(chapter_dir, 'chapter'); chapter_id = code(chapter_dir.name)
-            refuse_fields(chapter, ('images',))
-            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': '\n'.join(chapter.get('description', []))})
+            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': text(chapter.get('description', [])), 'parent': code(chapter['group']) if chapter.get('group') else '', 'defaultQuestShape': chapter.get('default_quest_shape') or '', 'alwaysInvisible': bool(chapter.get('always_invisible', False)), 'images': [convert_map_image(image) for image in chapter.get('images', [])]})
             register(chapter_id, 'chapter:' + chapter_id)
         except (ValueError, OSError, TypeError) as error:
             errors.append(str(chapter_dir) + ': ' + str(error)); continue
         for path in documents(chapter_dir, ('chapter',)):
             try:
                 raw = read_document(path)
-                refuse_fields(raw, ('custom_click', 'guide_page', 'min_width'))
+                refuse_fields(raw, ('guide_page',))
+                if raw.get('custom_click') and not re.match(r'https?://', raw['custom_click']): raise ValueError('Quest custom click needs a supported http/https URI')
                 requirement = raw.get('dependency_requirement', 'all_completed')
                 if requirement not in ('all_completed', 'one_completed', 'all_started', 'one_started'):
                     raise ValueError('Unknown dependency requirement: ' + str(requirement))
                 repeat = bool(raw.get('can_repeat', False))
                 title = raw.get('title') or path.stem
                 quest = {'id': code(path.stem), 'chapter': chapter_id, 'title': title,
-                         'description': '\n'.join([raw.get('description', '')] + raw.get('text', [])),
+                         'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': raw.get('custom_click', ''),
+                         'itemBrowser': 'inherit' if raw.get('disable_jei') in (None, 'default') else 'disabled' if tristate(raw['disable_jei']) else 'enabled',
                          'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)), 'tags': raw.get('tags', []),
-                         'shape': raw.get('shape') or 'square', 'size': float(raw.get('size', 1)),
+                         'shape': raw.get('shape') or '', 'size': float(raw.get('size', 1)),
                          'hideDependencyLines': bool(raw.get('hide_dependency_lines', False)), 'hideTextUntilComplete': bool(raw.get('hide_text_until_complete', False)), 'disableToast': bool(raw.get('disable_toast', False)),
                          'rewardMode': 'team' if repeat or defaults.get('default_reward_team') else 'individual',
                          'hidden': bool(raw.get('hide', False)), 'optional': bool(raw.get('optional', False)),
@@ -452,8 +493,6 @@ def convert(folder):
                          'rewards': [convert_reward(r, defaults, repeat) for r in raw.get('rewards', [])]}
                 if raw.get('icon'):
                     icon = item(raw['icon']); quest['icon'] = icon['item']; quest['iconMeta'] = icon.get('meta', 0); quest['iconNbt'] = icon.get('nbt', '')
-                if not quest['tasks']:
-                    raise ValueError('Empty quest needs manual conversion')
                 register(quest['id'], quest['id'])
                 for task in quest['tasks']:
                     if task['id'].startswith('ftb_'):

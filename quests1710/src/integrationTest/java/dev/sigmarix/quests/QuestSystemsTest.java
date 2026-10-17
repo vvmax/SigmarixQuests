@@ -633,4 +633,65 @@ public class QuestSystemsTest {
         service.clearObservations(player.getUniqueID()); service.observe(player); assertFalse(service.check(player,quest,false));
         service.observe(player); service.observe(other); service.observe(player); assertTrue(service.check(player,quest,false)); assertTrue(service.check(other,quest,false));
     }
+    @Test public void emptyQuestsCompleteNormallyButStillRequireDependencies() {
+        quest.anyTask=true; quest.dependencies.add("earlier"); assertFalse(service.finish(player,quest));
+        data.complete(player.getUniqueID(),"earlier"); assertTrue(service.finish(player,quest)); service.claim(player,quest,Collections.<Integer>emptyList()); assertTrue(service.claimed(player.getUniqueID(),quest));
+    }
+    @Test public void progressReferencesCoverTasksNestedChaptersAndTheWholeBook() {
+        QuestCore.Chapter parent=new QuestCore.Chapter(); parent.id="parent"; parent.title="Parent"; QuestCore.Chapter child=new QuestCore.Chapter(); child.id="child"; child.title="Child"; child.parent="parent"; service.book.chapters.add(parent); service.book.chapters.add(child); quest.chapter="child";
+        QuestCore.Task input=task("item","minecraft:iron_ingot",10,true); service.book.quests.add(quest);
+        QuestCore.Quest other=new QuestCore.Quest(); other.id="other"; other.title="Other"; QuestCore.Task check=new QuestCore.Task(); check.id="check"; check.type="check"; other.tasks.add(check); service.quests.put(other.id,other); service.book.quests.add(other); service.book.validate();
+        data.add(player.getUniqueID(),quest.id,input.id,5,10);
+        assertEquals(.5,service.objectProgress(player.getUniqueID(),"task:test/"+input.id),0); assertEquals(.5,service.objectProgress(player.getUniqueID(),"chapter:parent"),0); assertEquals(.25,service.objectProgress(player.getUniqueID(),"book:"),0);
+        assertFalse(service.objectComplete(player.getUniqueID(),"chapter:parent")); data.add(player.getUniqueID(),quest.id,input.id,5,10); assertTrue(service.objectComplete(player.getUniqueID(),"task:test/"+input.id)); assertFalse(service.objectComplete(player.getUniqueID(),quest.id));
+        assertTrue(service.finish(player,quest)); assertTrue(service.objectComplete(player.getUniqueID(),"chapter:parent")); assertFalse(service.objectComplete(player.getUniqueID(),"book:"));
+        assertTrue(service.finish(player,other)); assertTrue(service.objectComplete(player.getUniqueID(),"book:")); assertEquals("Parent",service.objectTitle("chapter:parent")); assertFalse(service.objectComplete(player.getUniqueID(),"chapter:missing"));
+    }
+    @Test public void teamMembersCanUseDevicesAndSupplyTasksWhilePersonalCollectorsWaitForOwner() {
+        EntityPlayerMP other=teammate(); QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.setWorldObj(player.worldObj); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(tile);
+        doReturn(new QuestBlocks.DeviceBlock(0,"test_team_terminal")).when(tile).getBlockType(); QuestsMod.service=service;
+        try {
+            assertTrue(tile.isUseableByPlayer(other)); assertEquals(other,tile.onlineOwner(Collections.singletonList(other)));
+            doReturn(new QuestBlocks.DeviceBlock(3,"test_personal_collector")).when(tile).getBlockType(); assertNull(tile.onlineOwner(Collections.singletonList(other))); assertEquals(player,tile.onlineOwner(Arrays.asList(player,other)));
+            data.kick(player.getUniqueID(),other.getUniqueID()); assertFalse(tile.isUseableByPlayer(other));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void hiddenChapterAndLockedHiddenQuestCannotBeBoundByARegularViewer() {
+        QuestCore.Chapter hidden=new QuestCore.Chapter(); hidden.id="hidden"; hidden.title="Hidden"; hidden.alwaysInvisible=true; service.book.chapters.add(hidden); quest.chapter="hidden";
+        assertFalse(service.visible(player.getUniqueID(),quest)); assertFalse(service.bindable(player.getUniqueID(),"chapter:hidden"));
+        hidden.alwaysInvisible=false; quest.hidden=true; quest.dependencies.add("earlier"); assertFalse(service.bindable(player.getUniqueID(),quest.id)); data.complete(player.getUniqueID(),"earlier"); assertTrue(service.bindable(player.getUniqueID(),quest.id));
+    }
+    @Test public void customIconEditsAreCosmeticAndRejectInvalidOrMovedItemsAtomically() {
+        ItemStack icon=new ItemStack(new QuestBlocks.CustomIconItem()); player.inventory.mainInventory[0]=icon;
+        when(player.getHeldItem()).thenReturn(icon);
+        NBTTagCompound original=new NBTTagCompound(); original.setInteger("privateData",42); icon.setTagCompound(original);
+        for(String resource:Arrays.asList("https://example.com/icon.png","","../private.png")) {
+            try { QuestIcons.edit(player,resource,"Name",0xFFCC44,0); fail(resource); } catch(IllegalArgumentException expected) {}
+            assertEquals(original,icon.getTagCompound());
+        }
+        try { QuestIcons.edit(player,"minecraft:textures/items/diamond.png","Name",0xFFCC44,1); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(original,icon.getTagCompound());
+        QuestIcons.edit(player,"minecraft:textures/items/diamond.png","Native icon",0xFFCC44,0);
+        assertEquals(42,icon.getTagCompound().getInteger("privateData")); assertEquals("Native icon",icon.getTagCompound().getString("name"));
+        assertEquals("minecraft:textures/items/diamond.png",QuestIcons.resource(icon)); assertEquals(0xFFCC44,QuestIcons.color(icon));
+        assertFalse(original.hasKey("icon")); verify(player.inventoryContainer).detectAndSendChanges();
+    }
+
+    @Test public void legacyCrateAliasesMatchNativeCratesWithoutIgnoringRealTaskNbt() {
+        QuestCore.LootSettings settings=new QuestCore.LootSettings(); settings.alias="rare"; settings.name="Rare prize"; settings.color="FFCC44"; settings.glow=true;
+        service.book.lootSettings.put("table",settings); service.book.lootTables.put("table",Collections.singletonList(new QuestCore.Reward()));
+        ItemStack actual=new ItemStack(new QuestBlocks.LootCrateItem()); NBTTagCompound tag=new NBTTagCompound(); tag.setString("table","table"); tag.setString("name",settings.name); tag.setInteger("color",0xFFCC44); tag.setBoolean("glow",true); actual.setTagCompound(tag);
+        QuestsMod.service=service;
+        try {
+            assertEquals("table",QuestLoot.resolve(service.book,"rare")); assertEquals("rare",QuestLoot.table(QuestService.tag("{type:rare}")));
+            assertTrue(QuestService.stackNbtMatches("{type:rare}","exact",actual));
+            assertFalse(QuestService.stackNbtMatches("{type:other}","exact",actual));
+            assertFalse(QuestService.stackNbtMatches("{type:rare,color:0}","exact",actual));
+            tag.setInteger("quality",1); assertFalse(QuestService.stackNbtMatches("{type:rare}","exact",actual)); assertTrue(QuestService.stackNbtMatches("{type:rare}","subset",actual));
+            assertEquals("Rare prize",actual.getDisplayName()); assertTrue(actual.getItem().hasEffect(actual,0));
+            QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=3; service.book.lootTables.put("table",Collections.singletonList(xp));
+            ItemStack imported=new ItemStack(actual.getItem()); imported.setTagCompound(QuestService.tag("{type:rare}")); service.openLoot(player,"rare",imported); assertEquals(0,imported.stackSize); verify(player).addExperience(3);
+        } finally { QuestsMod.service=null; }
+    }
+
 }

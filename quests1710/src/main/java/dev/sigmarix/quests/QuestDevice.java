@@ -31,8 +31,14 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     public EntityPlayerMP player() {
         if(!QuestScreens.synchronize(this)) return null;
         if(worldObj==null || worldObj.isRemote || owner==null || QuestsMod.service==null || !bindingProfile.equals(QuestsMod.service.progress().profile())) return null;
-        for(Object p:MinecraftServer.getServer().getConfigurationManager().playerEntityList)
-            if(((EntityPlayerMP)p).getUniqueID().equals(owner)) return (EntityPlayerMP)p;
+        return onlineOwner(MinecraftServer.getServer().getConfigurationManager().playerEntityList);
+    }
+    public EntityPlayerMP onlineOwner(Iterable<?> online) {
+        for(Object raw:online) if(((EntityPlayerMP)raw).getUniqueID().equals(owner)) return (EntityPlayerMP)raw;
+        int mode=getBlockType() instanceof QuestBlocks.DeviceBlock?((QuestBlocks.DeviceBlock)getBlockType()).mode:0;
+        if(mode==3 || mode==6 || owner==null || QuestsMod.service==null) return null;
+        String group=QuestsMod.service.progress().group(owner);
+        for(Object raw:online) if(group.equals(QuestsMod.service.progress().group(((EntityPlayerMP)raw).getUniqueID()))) return (EntityPlayerMP)raw;
         return null;
     }
     public QuestCore.Task definition(String type) {
@@ -49,14 +55,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     }
     public int percent() {
         QuestService service=QuestsMod.service; if(service==null || owner==null || !bindingProfile.equals(service.progress().profile())) return 0;
-        QuestCore.Quest definition=service.quests.get(quest); if(definition==null) return 0;
-        if(service.progress().completed(owner).contains(quest)) return 100;
-        double total=0;
-        for(QuestCore.Task task:definition.tasks) {
-            double value=service.dependencies(owner).satisfied("task:"+quest+"/"+task.id,false)?1:Math.min(1,service.progress().value(owner,quest,task.id)/(double)task.count);
-            total=definition.anyTask?Math.max(total,value):total+value;
-        }
-        return (int)Math.round(100*total/(definition.anyTask?1:Math.max(1,definition.tasks.size())));
+        return (int)Math.round(100*service.objectProgress(owner,quest));
     }
     @Override public void updateEntity() {
         if(worldObj.isRemote) return;
@@ -70,9 +69,9 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         QuestService s=QuestsMod.service; EntityPlayerMP player=player();
         QuestCore.Quest q=bindingProfile.equals(s.progress().profile())?s.quests.get(quest):null; boolean next=false;
         int mode=((QuestBlocks.DeviceBlock)getBlockType()).mode;
-        String title=q==null?"Quest screen":q.title; int percent=percent();
+        String title=bindingProfile.equals(s.progress().profile())?s.objectTitle(quest):"Quest screen"; int percent=percent();
         if(!screenTitle.equals(title) || screenPercent!=percent) { screenTitle=title; screenPercent=percent; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); }
-        if(owner!=null && q!=null) next=s.progress().completed(owner).contains(quest);
+        if(owner!=null && bindingProfile.equals(s.progress().profile())) next=s.objectComplete(owner,quest);
         if(mode==9) {
             int output=analog?(int)Math.round(percent*15/100D):next?15:0;
             if(redstoneOutput!=output) { redstoneOutput=output; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); worldObj.notifyBlocksOfNeighborChange(xCoord,yCoord,zCoord,getBlockType()); }
@@ -186,7 +185,11 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public String getInventoryName() { return "Quest terminal"; }
     @Override public boolean hasCustomInventoryName() { return true; }
     @Override public int getInventoryStackLimit() { return 64; }
-    @Override public boolean isUseableByPlayer(net.minecraft.entity.player.EntityPlayer p) { return worldObj!=null && worldObj.getTileEntity(xCoord,yCoord,zCoord)==this && (owner!=null && owner.equals(p.getUniqueID()) || p.canCommandSenderUseCommand(2,"quests.edit")) && p.getDistanceSq(xCoord+.5,yCoord+.5,zCoord+.5)<=64; }
+    @Override public boolean isUseableByPlayer(net.minecraft.entity.player.EntityPlayer player) {
+        if(worldObj==null || worldObj.getTileEntity(xCoord,yCoord,zCoord)!=this || player.getDistanceSq(xCoord+.5,yCoord+.5,zCoord+.5)>64) return false;
+        if(worldObj.isRemote) return true; // The server already authorizes opening and every configuration action.
+        return owner!=null && (owner.equals(player.getUniqueID()) || QuestsMod.service!=null && QuestsMod.service.progress().group(owner).equals(QuestsMod.service.progress().group(player.getUniqueID()))) || player.canCommandSenderUseCommand(2,"quests.edit");
+    }
     @Override public void openInventory() {}
     @Override public void closeInventory() {}
     @Override public boolean isItemValidForSlot(int slot,net.minecraft.item.ItemStack stack) {

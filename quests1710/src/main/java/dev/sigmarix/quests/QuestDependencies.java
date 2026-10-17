@@ -25,7 +25,7 @@ public final class QuestDependencies {
             for(QuestCore.Chapter c:book.chapters) if(c.id.equals(id)) exists=true;
             if(!exists) throw new IllegalArgumentException("Unknown chapter dependency: "+id);
             List<String> result=new ArrayList<String>();
-            for(QuestCore.Quest q:quests.values()) if(q.chapter.equals(id) && (started || !q.optional)) result.add(q.id);
+            for(QuestCore.Quest q:quests.values()) if(QuestPresentation.within(book,q.chapter,id) && (started || !q.optional)) result.add(q.id);
             return result;
         }
         String id=reference.startsWith("quest:")?reference.substring(6):reference;
@@ -43,7 +43,7 @@ public final class QuestDependencies {
         boolean exists=false;
         for(QuestCore.Chapter c:book.chapters) if(c.id.equals(id)) exists=true;
         if(!exists) return false;
-        for(QuestCore.Quest q:quests.values()) if(q.chapter.equals(id)) {
+        for(QuestCore.Quest q:quests.values()) if(QuestPresentation.within(book,q.chapter,id)) {
             if(started && progress.started(q.id)) return true;
             if(!started && !q.optional) { if(!progress.completed(q.id)) return false; }
         }

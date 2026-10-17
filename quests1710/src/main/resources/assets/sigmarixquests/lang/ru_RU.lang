@@ -70,3 +70,10 @@ tile.sigmarixquests.loot_crate_storage.name=Хранилище лут-кейсо
 tile.sigmarixquests.progress_detector.name=Детектор прогресса
 container.sigmarixquests.quest_chest=Квестовый сундук
 container.sigmarixquests.loot_crate_storage=Хранилище лут-кейсов
+
+item.sigmarixquests.custom_icon.name=Пользовательская иконка
+quests.ui.custom_icon=Пользовательская иконка
+quests.ui.texture_resource=Путь к текстуре
+quests.ui.invalid_icon_texture_or_color=Некорректная текстура или цвет
+quests.ui.all_groups=Все группы
+quests.ui.group=Группа
