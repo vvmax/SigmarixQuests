@@ -19,7 +19,7 @@ public final class QuestIconScreen extends GuiScreen {
     }
     @Override protected void actionPerformed(GuiButton button) {
         if(button.id==1) { mc.displayGuiScreen(null); return; }
-        if(!color.getText().matches("[a-fA-F0-9]{6}") || !QuestPresentation.resource(resource.getText()) || resource.getText().isEmpty()) { message=QuestText.tr("Invalid icon texture or color"); return; }
+        if(!color.getText().matches("[a-fA-F0-9]{6}") || !QuestPresentation.image(resource.getText()) || resource.getText().isEmpty()) { message=QuestText.tr("Invalid icon texture or color"); return; }
         QuestNetwork.Action action=new QuestNetwork.Action(); action.action="icon_edit"; action.text=resource.getText(); action.id=name.getText(); action.x=Integer.parseInt(color.getText(),16); action.y=slot; ClientProxy.send(action); mc.displayGuiScreen(null);
     }
     @Override public void drawScreen(int x,int y,float partial) {

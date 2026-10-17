@@ -73,12 +73,12 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         net.minecraft.client.gui.ScaledResolution scaled=new net.minecraft.client.gui.ScaledResolution(mc,mc.displayWidth,mc.displayHeight);
         int factor=scaled.getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST); GL11.glScissor(0,8*factor,split()*factor,Math.max(0,height-68)*factor);
-        for(QuestCore.Chapter c:ClientProxy.snapshot.book.chapters) if(c.id.equals(chapter) && !c.image.isEmpty()) { mc.getTextureManager().bindTexture(new net.minecraft.util.ResourceLocation(c.image)); GL11.glColor4f(1,1,1,.5f); func_152125_a(0,60,0,0,256,256,split(),height-68,256,256); GL11.glColor4f(1,1,1,1); }
+        for(QuestCore.Chapter c:ClientProxy.snapshot.book.chapters) if(c.id.equals(chapter) && !c.image.isEmpty()) { mc.getTextureManager().bindTexture(QuestImages.texture(c.image)); GL11.glColor4f(1,1,1,.5f); func_152125_a(0,60,0,0,256,256,split(),height-68,256,256); GL11.glColor4f(1,1,1,1); }
         QuestPresentation.MapImage imageHover=null;
         for(QuestPresentation.MapImage image:images()) {
             int iw=Math.max(1,(int)(image.width*48*zoom)),ih=Math.max(1,(int)(image.height*48*zoom));
             GL11.glPushMatrix(); GL11.glTranslated(imageX(image),imageY(image),0); GL11.glRotatef((float)image.rotation,0,0,1); GL11.glColor4f(1,1,1,(float)image.opacity); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
-            mc.getTextureManager().bindTexture(new net.minecraft.util.ResourceLocation(image.resource)); func_152125_a(-iw/2,-ih/2,0,0,256,256,iw,ih,256,256); GL11.glPopMatrix(); GL11.glColor4f(1,1,1,1);
+            mc.getTextureManager().bindTexture(QuestImages.texture(image.resource)); func_152125_a(-iw/2,-ih/2,0,0,256,256,iw,ih,256,256); GL11.glPopMatrix(); GL11.glColor4f(1,1,1,1);
             if(imageContains(image,mouseX,mouseY)) imageHover=image;
         }
         GL11.glDisable(GL11.GL_TEXTURE_2D); int edge=QuestPresentation.color(theme.edge); GL11.glColor4f((edge>>16&255)/255f,(edge>>8&255)/255f,(edge&255)/255f,(edge>>>24)/255f); GL11.glBegin(GL11.GL_LINES);

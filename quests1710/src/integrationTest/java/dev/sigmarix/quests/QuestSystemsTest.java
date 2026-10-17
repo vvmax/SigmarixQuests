@@ -666,7 +666,7 @@ public class QuestSystemsTest {
         ItemStack icon=new ItemStack(new QuestBlocks.CustomIconItem()); player.inventory.mainInventory[0]=icon;
         when(player.getHeldItem()).thenReturn(icon);
         NBTTagCompound original=new NBTTagCompound(); original.setInteger("privateData",42); icon.setTagCompound(original);
-        for(String resource:Arrays.asList("https://example.com/icon.png","","../private.png")) {
+        for(String resource:Arrays.asList("file:///tmp/icon.png","http://user:pass@example.com/icon.png","","../private.png")) {
             try { QuestIcons.edit(player,resource,"Name",0xFFCC44,0); fail(resource); } catch(IllegalArgumentException expected) {}
             assertEquals(original,icon.getTagCompound());
         }

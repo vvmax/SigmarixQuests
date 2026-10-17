@@ -8,6 +8,7 @@ import argparse
 import json
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 from nbt_codec import IntTag as Number, FloatTag as Decimal, TypedArray, read_nbt
@@ -422,12 +423,21 @@ def seconds(value):
 def text(value):
     return value if isinstance(value, str) else '\n'.join(str(line) for line in (value or []))
 
+def http_uri(value):
+    if not isinstance(value, str) or len(value) > 2048 or re.search(r'\s', value): return False
+    try:
+        parsed = urlsplit(value)
+        return parsed.scheme in ('http', 'https') and bool(parsed.hostname) and parsed.username is None and parsed.password is None
+    except ValueError:
+        return False
+
+
 def convert_map_image(raw):
     resource = raw.get('image', '')
-    if not isinstance(resource, str) or '://' in resource or not re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', resource) or '..' in resource:
-        raise ValueError('Map illustration needs a resource-pack texture: ' + str(resource))
+    if not isinstance(resource, str) or not ((re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', resource) and '..' not in resource and '://' not in resource) or http_uri(resource)):
+        raise ValueError('Map illustration needs a texture or http/https image: ' + str(resource))
     click = raw.get('click', '')
-    if click and not re.match(r'https?://', click): raise ValueError('Map illustration click needs a supported http/https URI')
+    if click and not http_uri(click): raise ValueError('Map illustration click needs a supported http/https URI')
     return dict(resource=resource, x=float(raw.get('x', 0)), y=float(raw.get('y', 0)), width=float(raw.get('width', 1)), height=float(raw.get('height', 1)), rotation=float(raw.get('rotation', 0)), hover=[raw['hover']] if isinstance(raw.get('hover'), str) else raw.get('hover', []), uri=click, dev=bool(raw.get('dev', False)))
 
 def convert(folder):

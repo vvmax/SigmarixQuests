@@ -53,7 +53,7 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
                 switch(element.type) {
                     case "text": fontRendererObj.drawSplitString(element.text,18,y,available,color); break;
                     case "image":
-                        mc.getTextureManager().bindTexture(new net.minecraft.util.ResourceLocation(element.resource)); GL11.glColor4f(1,1,1,1);
+                        mc.getTextureManager().bindTexture(QuestImages.texture(element.resource)); GL11.glColor4f(1,1,1,1);
                         int w=Math.min(available,element.width),h=Math.max(1,element.height*w/element.width);
                         func_152125_a(18,y,0,0,256,256,w,h,256,256); break;
                     case "item":

@@ -19,6 +19,7 @@ public final class QuestPreview {
     private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
     private QuestCore.Book original;
+    private String remoteImage;
     private long oldRevision;
     private boolean restarted;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
@@ -34,6 +35,7 @@ public final class QuestPreview {
     private boolean euRunning;
     private int deviceDelay,deviceX,deviceY,deviceZ;
     @Mod.EventHandler public void init(FMLInitializationEvent event) throws Exception {
+        remoteImage=PreviewImageServer.start();
         java.util.List<String> expected=java.nio.file.Files.readAllLines(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/expected-mods.txt").toPath(),StandardCharsets.UTF_8);
         String[][] optional={{"IC2","ic2.api.energy.tile.IEnergySink"},{"Botania","vazkii.botania.api.mana.IManaReceiver"},{"ProjectE","moze_intel.projecte.playerData.Transmutation"},{"customnpcs","noppes.npcs.scripted.ScriptPlayer"},{"BuildCraft|Core","buildcraft.BuildCraftCore"},{"NotEnoughItems","codechicken.nei.api.API"}};
         for(String[] mod:optional) {
@@ -211,8 +213,8 @@ public final class QuestPreview {
                     if(npcPassed && !npcVerified) { npcVerify=true; return; }
                     if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
-                    mc.shutdown(); return;
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
+                    PreviewImageServer.stop(); mc.shutdown(); return;
                 }
                 if(!teamPassed) {
                     QuestTeamScreen teams=new QuestTeamScreen(new QuestBookScreen()); mc.displayGuiScreen(teams);
@@ -259,17 +261,17 @@ public final class QuestPreview {
                 QuestCore.Chapter group=new QuestCore.Chapter(); group.id="smoke-group"; group.title="Grouped quests"; group.defaultQuestShape="hexagon"; edit.book.chapters.add(group);
                 QuestCore.Chapter start=QuestPresentation.chapter(edit.book,"start"); start.parent=group.id;
                 for(QuestCore.Quest entry:edit.book.quests) if(entry.chapter.equals("start")) entry.shape="";
-                QuestPresentation.MapImage illustration=new QuestPresentation.MapImage(); illustration.x=1.5; illustration.y=.5; illustration.width=1.5; illustration.height=1.5; illustration.rotation=15; illustration.resource="minecraft:textures/blocks/diamond_block.png"; illustration.uri="https://example.org/map-guide"; illustration.hover.add("Map illustration"); start.images.add(illustration);
+                QuestPresentation.MapImage illustration=new QuestPresentation.MapImage(); illustration.x=1.5; illustration.y=.5; illustration.width=1.5; illustration.height=1.5; illustration.rotation=15; illustration.resource=remoteImage; illustration.uri="https://example.org/map-guide"; illustration.hover.add("Map illustration"); start.images.add(illustration);
                 QuestCore.Quest empty=new QuestCore.Quest(); empty.id="smoke-empty"; empty.title="Dependency-only"; empty.subtitle="Empty quests still require their dependencies"; empty.minWidth=240; empty.chapter="start"; empty.x=6; empty.y=3; empty.dependencies.add("welcome"); edit.book.quests.add(empty);
                 QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.GuidePage rich=new QuestPresentation.GuidePage(); rich.title="Rich guide page";
                 QuestPresentation.GuideElement text=new QuestPresentation.GuideElement(); text.text="Formatted text, resource images, item illustrations and confirmed links."; rich.elements.add(text);
-                QuestPresentation.GuideElement image=new QuestPresentation.GuideElement(); image.type="image"; image.resource="minecraft:textures/blocks/diamond_block.png"; image.width=64; image.height=64; rich.elements.add(image);
+                QuestPresentation.GuideElement image=new QuestPresentation.GuideElement(); image.type="image"; image.resource=remoteImage; image.width=64; image.height=64; rich.elements.add(image);
                 QuestPresentation.GuideElement itemIllustration=new QuestPresentation.GuideElement(); itemIllustration.type="item"; itemIllustration.item="minecraft:diamond"; rich.elements.add(itemIllustration);
                 QuestPresentation.GuideElement link=new QuestPresentation.GuideElement(); link.type="link"; link.text="Open the guide"; link.uri="https://example.org/guide"; rich.elements.add(link); manual.richPages.add(rich);
                 QuestPresentation.Style style=new QuestPresentation.Style(); style.selector=".important state:available"; style.color="FF9B59B6"; edit.book.styles.add(style);
                 QuestCore.Reward toast=new QuestCore.Reward(); toast.type="toast"; toast.target="Graphical reward"; toast.text="Native quest notification"; manual.rewards.add(toast);
-                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:\"minecraft:textures/items/diamond.png\",color:16763972}"; manual.tasks.add(check); edit.book.quests.add(manual);
+                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:"+QuestService.JSON.toJson(remoteImage)+",color:16763972}"; manual.tasks.add(check); edit.book.quests.add(manual);
                 QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
                 QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
                 ClientProxy.send(edit); stage=5; break;
@@ -341,7 +343,7 @@ public final class QuestPreview {
             case 39:
                 if(!iconReady || mc.thePlayer.getHeldItem()==null || !(mc.thePlayer.getHeldItem().getItem() instanceof QuestBlocks.CustomIconItem)) return;
                 QuestIconScreen iconEditor=new QuestIconScreen(); mc.displayGuiScreen(iconEditor);
-                for(String[] field:new String[][]{{"resource","minecraft:textures/items/diamond.png"},{"name","Native icon"},{"color","FFCC44"}}) {
+                for(String[] field:new String[][]{{"resource",remoteImage},{"name","Native icon"},{"color","FFCC44"}}) {
                     java.lang.reflect.Field input=QuestIconScreen.class.getDeclaredField(field[0]); input.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)input.get(iconEditor)).setText(field[1]);
                 }
                 stage=40; break;
@@ -352,7 +354,11 @@ public final class QuestPreview {
             case 41:
                 net.minecraft.item.ItemStack icon=mc.thePlayer.getHeldItem();
                 if(icon==null || !icon.hasTagCompound() || !"Native icon".equals(icon.getTagCompound().getString("name"))) return;
-                if(!QuestIcons.resource(icon).equals("minecraft:textures/items/diamond.png") || QuestIcons.color(icon)!=0xFFCC44) throw new IllegalStateException("Custom icon edit was not synchronized");
+                if(!QuestIcons.resource(icon).equals(remoteImage) || QuestIcons.color(icon)!=0xFFCC44) throw new IllegalStateException("Custom icon edit was not synchronized");
+                if(!QuestImages.loaded(remoteImage)) return;
+                net.minecraft.util.ResourceLocation cached=QuestImages.texture(remoteImage);
+                int textureId=mc.getTextureManager().getTexture(cached).getGlTextureId(); QuestImages.clear();
+                if(mc.getTextureManager().getTexture(cached)!=net.minecraft.client.renderer.texture.TextureUtil.missingTexture || org.lwjgl.opengl.GL11.glIsTexture(textureId)) throw new IllegalStateException("Remote texture cache did not release CPU/GPU storage");
                 iconPassed=true; stage=1; break;
             case 38: if(QuestPresentation.chapter(snap.book,"start")!=null && snap.book.quests.stream().anyMatch(q->q.id.equals("welcome") && q.chapter.equals("start"))) { bookPrepared=true; stage=1; } break;
             case 36:

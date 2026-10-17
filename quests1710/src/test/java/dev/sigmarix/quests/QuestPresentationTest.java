@@ -55,7 +55,7 @@ public class QuestPresentationTest {
         QuestCore.Book b=book(); QuestCore.Chapter c=new QuestCore.Chapter(); c.id="map"; c.title="Map"; b.chapters.add(c); QuestPresentation.MapImage image=new QuestPresentation.MapImage(); c.images.add(image); b.validate();
         image.width=Double.NaN; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
         image.width=1; image.uri="file:///secret"; try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
-        image.uri="https://example.org/guide"; b.validate();
+        image.uri="https://example.org/guide"; image.resource="https://example.org/image.png"; b.validate();
         assertTrue(QuestPresentation.itemBrowser(b,b.quests.get(0))); b.hideFromItemBrowser=true; assertFalse(QuestPresentation.itemBrowser(b,b.quests.get(0))); b.quests.get(0).itemBrowser="enabled"; assertTrue(QuestPresentation.itemBrowser(b,b.quests.get(0)));
     }
     @Test public void gridScaleSnapsMovementWithoutChangingStoredMapCoordinates() {

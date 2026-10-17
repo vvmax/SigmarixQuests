@@ -15,7 +15,7 @@ public final class QuestIconRenderer implements IItemRenderer {
         try {
             boolean inventory=type==ItemRenderType.INVENTORY; double size=inventory?16:1;
             if(type==ItemRenderType.ENTITY) { GL11.glScalef(.5f,.5f,.5f); GL11.glTranslatef(-.5f,0,0); }
-            Minecraft.getMinecraft().getTextureManager().bindTexture(new ResourceLocation(QuestIcons.resource(stack)));
+            Minecraft.getMinecraft().getTextureManager().bindTexture(QuestImages.texture(QuestIcons.resource(stack)));
             int color=QuestIcons.color(stack); GL11.glColor4f((color>>16&255)/255f,(color>>8&255)/255f,(color&255)/255f,1);
             GL11.glDisable(GL11.GL_LIGHTING); GL11.glDisable(GL11.GL_CULL_FACE); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
             double top=inventory?0:1,bottom=inventory?1:0; Tessellator tessellator=Tessellator.instance; tessellator.startDrawingQuads();

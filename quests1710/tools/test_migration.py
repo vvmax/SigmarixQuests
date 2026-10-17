@@ -34,7 +34,8 @@ class MigrationTests(unittest.TestCase):
     def test_map_illustrations_preserve_geometry_hover_and_links(self):
         image = convert_map_image({'image': 'minecraft:textures/blocks/stone.png', 'x': 2, 'y': -1, 'width': 3, 'height': 2, 'rotation': 45, 'hover': ['Image'], 'click': 'https://example.org/guide'})
         self.assertEqual(image['rotation'], 45); self.assertEqual(image['hover'], ['Image']); self.assertEqual(image['uri'], 'https://example.org/guide')
-        with self.assertRaises(ValueError): convert_map_image({'image': 'https://example.org/image.png'})
+        self.assertEqual('https://example.org/image.png', convert_map_image({'image': 'https://example.org/image.png'})['resource'])
+        with self.assertRaises(ValueError): convert_map_image({'image': 'file:///tmp/image.png'})
     def test_emergency_durations_and_creature_weights(self):
         self.assertEqual(seconds('5m'), 300); self.assertEqual(seconds('1m20t'), 61); self.assertEqual(seconds('21t'), 2)
         with self.assertRaises(ValueError): seconds('tomorrow')

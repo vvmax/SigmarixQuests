@@ -30,6 +30,7 @@ public final class QuestPresentation {
         return (int)Long.parseLong(hex.length()==6?"FF"+hex:hex,16);
     }
     public static boolean resource(String value) { return value!=null && (value.isEmpty() || value.matches("[a-z0-9_.-]+:[a-zA-Z0-9_./-]+") && !value.contains("..") && !value.contains("://")); }
+    public static boolean image(String value) { return value!=null && !value.isEmpty() && (resource(value) || link(value)); }
     public static boolean link(String value) {
         if(value==null) return false; if(value.isEmpty()) return true;
         try { URI uri=new URI(value); return value.length()<=2048 && ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) && uri.getHost()!=null && uri.getUserInfo()==null; }
@@ -52,9 +53,9 @@ public final class QuestPresentation {
             if(!style.color.isEmpty()) color(style.color); if(!style.textColor.isEmpty()) color(style.textColor);
         }
         for(QuestCore.Chapter chapter:book.chapters) {
-            if(!resource(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !SHAPES.contains(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
+            if(chapter.image==null || !chapter.image.isEmpty() && !image(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !SHAPES.contains(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
             for(MapImage image:chapter.images) {
-                if(image==null || !resource(image.resource) || image.resource.isEmpty() || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");
+                if(image==null || !image(image.resource) || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");
                 for(String line:image.hover) if(line==null || line.length()>1024) throw new IllegalArgumentException("Invalid map illustration hover");
             }
         }
@@ -65,7 +66,7 @@ public final class QuestPresentation {
             for(GuidePage page:q.richPages) {
                 if(page==null || page.title==null || page.title.length()>256 || page.elements==null || page.elements.size()>128) throw new IllegalArgumentException("Invalid rich guide page");
                 for(GuideElement element:page.elements) {
-                    if(element==null || !Arrays.asList("text","image","item","link").contains(element.type) || element.text==null || element.text.length()>32768 || element.nbt==null || element.width<1 || element.width>512 || element.height<1 || element.height>512 || element.meta<0 || element.count<1 || element.count>64 || !resource(element.resource) || !link(element.uri)) throw new IllegalArgumentException("Invalid rich guide element");
+                    if(element==null || !Arrays.asList("text","image","item","link").contains(element.type) || element.text==null || element.text.length()>32768 || element.nbt==null || element.width<1 || element.width>512 || element.height<1 || element.height>512 || element.meta<0 || element.count<1 || element.count>64 || element.resource==null || !element.resource.isEmpty() && !image(element.resource) || !link(element.uri)) throw new IllegalArgumentException("Invalid rich guide element");
                     color(element.color);
                     if(element.type.equals("image") && element.resource.isEmpty() || element.type.equals("link") && element.uri.isEmpty() || element.type.equals("item") && (element.item==null || element.item.isEmpty())) throw new IllegalArgumentException("Missing guide element value");
                 }
