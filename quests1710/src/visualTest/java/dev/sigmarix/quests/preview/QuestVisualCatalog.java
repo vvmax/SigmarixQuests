@@ -14,6 +14,7 @@ final class QuestVisualCatalog extends GuiScreen {
             String name=ids[i].replace("loot_crate","crate").replace("progress","prog.").replace("redstone","red.").replace("reward","rew.").replace("player","play.").replace("_"," ");
             fontRendererObj.drawString(fontRendererObj.trimStringToWidth(name,Math.max(38,(width-28)/7-2)),x,y+36,0xFFFFFF);
         }
+        org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_ALPHA_TEST);
         String[] shapes={"square","rsquare","circle","diamond","pentagon","hexagon","octagon","heart","gear"};
         for(int i=0;i<shapes.length;i++)QuestNodeRenderer.node(mc,20+i*(width-40)/shapes.length,height-28,12,shapes[i],0xC856FF56);
     }

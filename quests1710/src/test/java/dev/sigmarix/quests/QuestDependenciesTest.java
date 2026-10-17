@@ -30,4 +30,28 @@ public class QuestDependenciesTest {
         QuestCore.Book b=book(); QuestCore.Quest q=b.quests.get(0); q.optional=true; q.dependencyState="started"; q.dependencies.add("chapter:first");
         try { b.validate(); fail(); } catch(IllegalArgumentException expected) {}
     }
+    @Test public void chapterStatesIgnoreOptionalProgressAndCountCompletedEmptyChildren() {
+        QuestCore.Book b=book(); QuestCore.Quest q=b.quests.get(0);
+        Set<String> started=new HashSet<String>(),complete=new HashSet<String>();
+        QuestDependencies graph=new QuestDependencies(b,b.validate(),new QuestDependencies.Progress(){
+            public boolean completed(String id){return complete.contains(id);}
+            public boolean started(String id){return started.contains(id);}
+            public boolean task(String q,String t,boolean s){return false;}
+        });
+        assertFalse(graph.chapter("first",true)); assertFalse(graph.chapter("first",false));
+        QuestCore.Chapter empty=new QuestCore.Chapter();empty.id="empty";empty.title="Empty";empty.parent="first";b.chapters.add(empty);
+        assertTrue(graph.chapter("empty",true));assertTrue(graph.chapter("empty",false));
+        assertTrue(graph.chapter("first",true));assertFalse(graph.chapter("first",false));
+        q.optional=true;
+        assertTrue(graph.chapter("first",false));assertTrue(graph.chapter("first",true));
+        empty.parent="";q.optional=false;empty.alwaysInvisible=true;
+        QuestCore.Quest hidden=new QuestCore.Quest();hidden.id="hidden";hidden.title="Hidden";hidden.chapter="empty";b.quests.add(hidden);
+        graph=new QuestDependencies(b,b.validate(),new QuestDependencies.Progress(){
+            public boolean completed(String id){return complete.contains(id);}
+            public boolean started(String id){return started.contains(id);}
+            public boolean task(String q,String t,boolean s){return false;}
+        });
+        assertTrue(graph.chapter("empty",false));assertTrue(graph.chapter("empty",true));
+        assertFalse(graph.chapter("missing",true));
+    }
 }

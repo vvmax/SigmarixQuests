@@ -1,0 +1,106 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 / FTBLib 5.4.7.2 standard theme, Russian locale with native Unicode locale font; panel classic font and native half-pixel Unicode shadows",
+  "resolution": [
+    854,
+    480
+  ],
+  "russian_file_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_valid_items_1_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_main_map_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_team_select_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_team_actions_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_team_disabled_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_team_leader_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_team_create_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "russian_team_create_hover_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  }
+}

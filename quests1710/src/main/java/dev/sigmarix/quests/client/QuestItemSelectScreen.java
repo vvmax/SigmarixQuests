@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.input.*;
 import org.lwjgl.opengl.GL11;
 /** Native FTBLib item picker geometry, with searchable variants and editable stack data. */
-final class QuestItemSelectScreen extends GuiScreen {
+final class QuestItemSelectScreen extends QuestLibraryScreen {
     private static boolean allItems=true;
     private final GuiScreen parent;private final boolean single;private final Predicate<ItemStack> filter;private final Consumer<ItemStack> accept;
     private final List<ItemStack> all=new ArrayList<ItemStack>(),visible=new ArrayList<ItemStack>();private ItemStack selected;private GuiTextField search;private int left,top,scroll;private boolean dragging;

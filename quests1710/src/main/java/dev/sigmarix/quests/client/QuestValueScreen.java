@@ -3,7 +3,7 @@ import java.util.function.Consumer;import java.util.function.Predicate;
 import net.minecraft.client.gui.*;
 import org.lwjgl.input.Keyboard;
 /** 230x54 FTBLib scalar editor, shared by all property windows. */
-final class QuestValueScreen extends GuiScreen {
+final class QuestValueScreen extends QuestLibraryScreen {
     private final GuiScreen parent;private final String value;private final int color,limit;private final Consumer<String> apply;private final Predicate<String> valid;private GuiTextField input;private int left,top;private String error="";
     QuestValueScreen(GuiScreen parent,String value,int color,int limit,Consumer<String> apply){this(parent,value,color,limit,text->true,apply);}
     QuestValueScreen(GuiScreen parent,String value,int color,int limit,Predicate<String> valid,Consumer<String> apply){this.parent=parent;this.value=value;this.color=color;this.limit=limit;this.valid=valid;this.apply=apply;}

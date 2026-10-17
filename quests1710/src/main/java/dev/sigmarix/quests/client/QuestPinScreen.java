@@ -3,7 +3,7 @@ import dev.sigmarix.quests.*;
 import net.minecraft.client.gui.*;
 import org.lwjgl.input.Mouse;
 /** All pins remain manageable when the HUD has room for fewer rows. */
-public final class QuestPinScreen extends GuiScreen {
+public final class QuestPinScreen extends QuestLibraryScreen {
     private final GuiScreen parent; private int scroll,ticks;
     public QuestPinScreen(GuiScreen parent) { this.parent=parent; }
     @Override public void initGui() { rebuild(); }

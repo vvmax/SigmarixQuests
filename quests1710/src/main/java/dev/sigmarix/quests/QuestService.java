@@ -107,8 +107,8 @@ public class QuestService {
         for(QuestCore.Reward reward:next.emergencyItems) validateReward(reward);
         for (List<QuestCore.Reward> table : next.lootTables.values()) for (QuestCore.Reward r : table) validateReward(r);
         QuestNetwork.Snapshot wire=new QuestNetwork.Snapshot(); wire.book=next;
-        for(QuestCore.Chapter c:next.chapters) wire.chapterStates.put(c.id,"not_started");
-        for(QuestCore.Quest q:next.quests) { wire.states.put(q.id,"available"); for(QuestCore.Reward r:q.rewards) wire.rewardStates.put(q.id+":"+r.id,false); for(QuestCore.Task t:q.tasks) { wire.counters.put(q.id+":"+t.id,Long.MAX_VALUE); wire.taskStates.put(q.id+":"+t.id,false); } }
+        for(QuestCore.Chapter c:next.chapters){wire.chapterStates.put(c.id,"not_started");wire.chapterPercentages.put(c.id,100);}
+        for(QuestCore.Quest q:next.quests) { wire.states.put(q.id,"available");wire.percentages.put(q.id,100); for(QuestCore.Reward r:q.rewards) wire.rewardStates.put(q.id+":"+r.id,false); for(QuestCore.Task t:q.tasks) { wire.counters.put(q.id+":"+t.id,Long.MAX_VALUE); wire.taskStates.put(q.id+":"+t.id,false); } }
         for(QuestCore.Quest q:next.quests) if(wire.pinned.size()<16) { wire.pinned.add(q.id); wire.percentages.put(q.id,100); }
         try { String payload=JSON.toJson(wire); if(payload.getBytes(StandardCharsets.UTF_8).length>QuestNetwork.MAX_BYTES-32768 || QuestNetwork.encode(payload).length>QuestNetwork.MAX_COMPRESSED-16384) throw new IOException("Book needs room for live snapshot metadata"); } catch(IOException e) { throw new IllegalArgumentException("Book cannot fit a safe network snapshot",e); }
         return result;

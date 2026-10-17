@@ -24,7 +24,7 @@ final class QuestLibraryUi extends Gui {
             } t.draw();
         } finally {GL11.glPopAttrib();}
     }
-    static void ghost(String text,int x,int y){GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);try{GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);Minecraft.getMinecraft().fontRenderer.drawString("\u00a7o"+text,x,y,0x78FFFFFF);}finally{GL11.glPopAttrib();}}
+    static void ghost(String text,int x,int y){GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);try{GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);QuestLibraryScreen.font(Minecraft.getMinecraft()).drawString("\u00a7o"+text,x,y,0x78FFFFFF);}finally{GL11.glPopAttrib();}}
     static void window(int x,int y,int w,int h) {patch("recipe_book",82,208,32,32,8,x,y,w,h);}
     static void slot(int x,int y,int w,int h) {patch("container_beacon",35,136,18,18,3,x-1,y-1,w+2,h+2);}
     static void textBox(int x,int y,int w,int h) {patch("container_enchanting_table",0,185,108,19,6,x,y,w,h);}
@@ -41,10 +41,10 @@ final class QuestLibraryUi extends Gui {
             patch("widgets",0,!enabled?46:field_146123_n?86:66,200,20,4,xPosition,yPosition,width,height);
             int color=!enabled?0xFFA0A0A0:field_146123_n?0xFFFFFFA0:0xFFFFFFFF;
             int off=(height-16)/2,tx=xPosition+4;
-            if(!icon.isEmpty()) {QuestClassicUi.libraryIcon(icon,xPosition+off,yPosition+off,16,color);tx+=off+16;}
-            String title=mc.fontRenderer.trimStringToWidth(displayString,width-(tx-xPosition)-4);
-            if(icon.isEmpty() && centered)tx=xPosition+(width-mc.fontRenderer.getStringWidth(title))/2;
-            mc.fontRenderer.drawStringWithShadow(title,tx,yPosition+(height-9+1)/2,color);
+            if(!icon.isEmpty()) {QuestClassicUi.libraryIcon(icon,xPosition+off,yPosition+off,16,0xFFFFFFFF);tx+=off+16;}
+            String title=QuestLibraryScreen.font(mc).trimStringToWidth(displayString,width-(tx-xPosition)-4);
+            if(icon.isEmpty() && centered)tx=xPosition+(width-QuestLibraryScreen.font(mc).getStringWidth(title))/2;
+            QuestLibraryScreen.font(mc).drawStringWithShadow(title,tx,yPosition+(height-9+1)/2,color);
         }
     }
     private QuestLibraryUi() {}

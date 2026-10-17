@@ -1,0 +1,124 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 original ManaTask and IC2EnergyTask configuration/render methods, with official Botania r1.10-364.4 and IC2 2.8.221-ex112 API classes available to the reference fixture; these API jars are not target mod dependencies",
+  "resolution": [
+    854,
+    480
+  ],
+  "task_botania_mana_config": {
+    "reference_image": "images/reference-task-botania_mana-config.png",
+    "port_image": "images/port-task-botania_mana-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "task_ic2_energy_config": {
+    "reference_image": "images/reference-task-ic2_energy-config.png",
+    "port_image": "images/port-task-ic2_energy-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_mana_empty_config": {
+    "reference_image": "images/reference-world-mana-empty-config.png",
+    "port_image": "images/port-world-mana-empty-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_mana_half_config": {
+    "reference_image": "images/reference-world-mana-half-config.png",
+    "port_image": "images/port-world-mana-half-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_mana_full_config": {
+    "reference_image": "images/reference-world-mana-full-config.png",
+    "port_image": "images/port-world-mana-full-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_mana_numbers_full_config": {
+    "reference_image": "images/reference-world-mana-numbers-full-config.png",
+    "port_image": "images/port-world-mana-numbers-full-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_eu_empty_config": {
+    "reference_image": "images/reference-world-eu-empty-config.png",
+    "port_image": "images/port-world-eu-empty-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_eu_half_config": {
+    "reference_image": "images/reference-world-eu-half-config.png",
+    "port_image": "images/port-world-eu-half-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  },
+  "world_eu_full_config": {
+    "reference_image": "images/reference-world-eu-full-config.png",
+    "port_image": "images/port-world-eu-full-config.png",
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  }
+}

@@ -4,7 +4,7 @@ import net.minecraft.client.gui.*;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 /** Common 1.12 list geometry: a 140px panel, 16px scrollbar, optional 12px search box. */
-abstract class QuestListScreen extends GuiScreen {
+abstract class QuestListScreen extends QuestLibraryScreen {
     static final class Row {
         int id;String title,icon="",playerId="",playerName="";int border=0xFF808080,height;boolean spacer,customIcon;boolean enabled=true,teamHead;List<String> tooltip=new ArrayList<String>();
         Row(int id,String title,String icon){this.id=id;this.title=title;this.icon=icon;}

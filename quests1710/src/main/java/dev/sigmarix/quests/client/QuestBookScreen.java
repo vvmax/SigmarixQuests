@@ -7,7 +7,7 @@ import org.lwjgl.input.*;
 import org.lwjgl.opengl.GL11;
 
 /** Fullscreen chapter tree and a centered, independently scrolling quest card. */
-public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback {
+public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesNoCallback {
     private static final QuestPresentation.Theme DEFAULT_THEME=new QuestPresentation.Theme();
     private GuiTextField search;
     private String selected="",chapter="",group="",pendingLink="",hoverChapter="",movingId="";

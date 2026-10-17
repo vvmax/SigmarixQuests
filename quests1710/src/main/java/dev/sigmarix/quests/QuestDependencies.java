@@ -40,15 +40,23 @@ public final class QuestDependencies {
         return Collections.singletonList(id);
     }
     public boolean chapter(String id,boolean started) {
-        boolean exists=false;
-        for(QuestCore.Chapter c:book.chapters) if(c.id.equals(id)) exists=true;
-        if(!exists) return false;
-        for(QuestCore.Quest q:quests.values()) if(QuestPresentation.within(book,q.chapter,id)) {
-            if(started && progress.started(q.id)) return true;
-            if(!started && QuestCore.required(q)) { if(!progress.completed(q.id)) return false; }
+        QuestCore.Chapter chapter=QuestPresentation.chapter(book,id);
+        if(chapter==null) return false;
+        if(chapter.alwaysInvisible) return true;
+        int count=0;
+        for(QuestCore.Quest q:quests.values()) if(q.chapter.equals(id) && QuestCore.required(q)) {
+            count++;
+            if(started && (progress.started(q.id) || progress.completed(q.id))) return true;
+            if(!started && !progress.completed(q.id)) return false;
         }
-        // An empty/optional-only chapter has no required unfinished quests.
-        return !started;
+        for(QuestCore.Chapter child:book.chapters) if(child.parent.equals(id)) {
+            count++;
+            boolean value=chapter(child.id,started);
+            if(started && value) return true;
+            if(!started && !value) return false;
+        }
+        // Native empty and optional-only groups are 100%, hence also started.
+        return !started || count==0;
     }
     public boolean satisfied(String reference,boolean started) {
         if(reference.startsWith("chapter:")) return chapter(reference.substring(8),started);

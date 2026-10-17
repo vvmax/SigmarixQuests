@@ -6,7 +6,7 @@ import net.minecraft.client.gui.*;
 import org.lwjgl.input.*;
 
 /** Multiline JSON editor for every schema field, with optimistic concurrency and server validation. */
-public final class QuestEditorScreen extends GuiScreen {
+public final class QuestEditorScreen extends QuestLibraryScreen {
     private final GuiScreen parent;
     private String text,undo="",message="Ctrl+A/C/V, Ctrl+Z; edit JSON; Save validates on server";
     private int cursor,scroll,horizontal;

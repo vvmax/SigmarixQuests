@@ -5,7 +5,7 @@ import net.minecraft.client.gui.*;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 /** Original reward overview geometry, backed by the bounded notification history. */
-public final class QuestNotificationsScreen extends GuiScreen {
+public final class QuestNotificationsScreen extends QuestLibraryScreen {
     private final GuiScreen parent;private int scroll;private final boolean sessionOnly;private final List<QuestNetwork.Toast> received=new ArrayList<QuestNetwork.Toast>();
     public QuestNotificationsScreen(GuiScreen parent){this(parent,false);}
     public QuestNotificationsScreen(GuiScreen parent,boolean sessionOnly){this.parent=parent;this.sessionOnly=sessionOnly;}

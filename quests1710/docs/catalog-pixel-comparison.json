@@ -1,0 +1,18 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 original item renderer and quest shape icons, original DARK_GRAY color, alpha-test state after native item overlays, barrier animation fixed at frame zero",
+  "resolution": [
+    854,
+    480
+  ],
+  "catalog_all_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0
+  }
+}

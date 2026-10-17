@@ -5,7 +5,7 @@ import net.minecraft.client.gui.*;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 /** Fullscreen FTBLib property editor: 20px title strip, 12px entries and group rows. */
-abstract class QuestConfigScreen extends GuiScreen {
+abstract class QuestConfigScreen extends QuestLibraryScreen {
     static final class Entry {
         boolean enabled=true;final String group,label;final Supplier<String> value;final IntSupplier color;final BiConsumer<Integer,GuiScreen> edit;final List<String> info=new ArrayList<String>();
         Entry(String group,String label,Supplier<String> value,IntSupplier color,BiConsumer<Integer,GuiScreen> edit){this.group=group;this.label=label;this.value=value;this.color=color;this.edit=edit;}

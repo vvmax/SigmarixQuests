@@ -2,7 +2,7 @@ package dev.sigmarix.quests.client;
 import java.util.*;import java.util.function.*;
 import net.minecraft.client.gui.*;import org.lwjgl.input.Mouse;import org.lwjgl.opengl.GL11;
 /** FTBLib's fullscreen list editor: 12px values, per-row delete, and a final Add row. */
-final class QuestValueListScreen<E> extends GuiScreen {
+final class QuestValueListScreen<E> extends QuestLibraryScreen {
     interface Editor<E>{void open(GuiScreen parent,E initial,Consumer<E> accept);}
     private final GuiScreen parent;private final String title;private final List<E> source,draft;private final Supplier<E> fresh;private final Function<E,String> display;private final Editor<E> edit;private final int color;private int scroll;private Runnable accepted=()->{};
     QuestValueListScreen<E> onAccepted(Runnable callback){accepted=callback;return this;}

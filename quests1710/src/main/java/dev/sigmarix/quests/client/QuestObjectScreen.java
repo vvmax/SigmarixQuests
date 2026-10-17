@@ -5,7 +5,7 @@ import java.util.*;
 import net.minecraft.client.gui.*;
 import org.lwjgl.input.*;
 /** Recursive typed object forms over a private draft. Nothing changes on the server until Save. */
-public final class QuestObjectScreen extends GuiScreen {
+public final class QuestObjectScreen extends QuestLibraryScreen {
     private static final class Session {
         JsonObject root; long revision; boolean pending; String message=QuestText.tr("Select a field to edit; nested lists open their own forms.");
         GuiScreen destination;
@@ -128,11 +128,11 @@ public final class QuestObjectScreen extends GuiScreen {
         @Override public void drawButton(net.minecraft.client.Minecraft mc,int x,int y){
             field_146123_n=x>=xPosition && x<xPosition+width && y>=yPosition && y<yPosition+height;
             if(field_146123_n)drawRect(xPosition,yPosition,xPosition+width,yPosition+height,0x21FFFFFF);
-            String text=mc.fontRenderer.trimStringToWidth(value,150);if(!text.equals(value))text+="...";
-            int vw=mc.fontRenderer.getStringWidth(text),vx=xPosition+width-vw-4;
+            String text=QuestLibraryScreen.font(mc).trimStringToWidth(value,150);if(!text.equals(value))text+="...";
+            int vw=QuestLibraryScreen.font(mc).getStringWidth(text),vx=xPosition+width-vw-4;
             int color=element.isJsonPrimitive()?(element.getAsJsonPrimitive().isBoolean()?(element.getAsBoolean()?0x33AA33:0xD52834):element.getAsJsonPrimitive().isNumber()?0xAA5AE8:0xFFAA49):0xAAAAAA;
-            mc.fontRenderer.drawString(mc.fontRenderer.trimStringToWidth(key,Math.max(0,vx-xPosition-12)),xPosition+4,yPosition+2,0xFFFFFF,field_146123_n);
-            mc.fontRenderer.drawString(text,vx,yPosition+2,color);
+            QuestLibraryScreen.font(mc).drawString(QuestLibraryScreen.font(mc).trimStringToWidth(key,Math.max(0,vx-xPosition-12)),xPosition+4,yPosition+2,0xFFFFFF,field_146123_n);
+            QuestLibraryScreen.font(mc).drawString(text,vx,yPosition+2,color);
         }
     }
     @Override public void handleMouseInput() { super.handleMouseInput(); int wheel=Mouse.getEventDWheel(); scroll+=wheel>0?-2:wheel<0?2:0; rebuild(); }
@@ -141,7 +141,7 @@ public final class QuestObjectScreen extends GuiScreen {
         super.keyTyped(ch,key);
     }
     @Override public boolean doesGuiPauseGame() { return false; }
-    private static final class ValueScreen extends GuiScreen {
+    private static final class ValueScreen extends QuestLibraryScreen {
         private final QuestObjectScreen parent; private final String label; private final JsonElement initial; private final java.util.function.Consumer<String> apply;
         private GuiTextField input; private int left,top; private String message="Use \\n for a line break. Tab completes common field values.";
         ValueScreen(QuestObjectScreen parent,String label,JsonElement initial,java.util.function.Consumer<String> apply) { this.parent=parent; this.label=label; this.initial=initial; this.apply=apply; }

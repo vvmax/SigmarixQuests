@@ -3,7 +3,7 @@ import dev.sigmarix.quests.*;
 import net.minecraft.client.gui.*;
 import org.lwjgl.input.Mouse;
 /** Server-authoritative confirmation controls for individual tasks. */
-public final class QuestTaskScreen extends GuiScreen {
+public final class QuestTaskScreen extends QuestLibraryScreen {
     private final GuiScreen parent;
     private final QuestCore.Quest quest;
     private int scroll,refreshTicks;

@@ -6,7 +6,7 @@ import net.minecraft.client.gui.*;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 /** Resource-pack images, item illustrations and formatted text; links require confirmation. */
-public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallback {
+public final class QuestGuideScreen extends QuestLibraryScreen implements GuiYesNoCallback {
     private final GuiScreen parent; private final QuestCore.Quest quest;
     private int page,scroll;
     private String pendingUri="";

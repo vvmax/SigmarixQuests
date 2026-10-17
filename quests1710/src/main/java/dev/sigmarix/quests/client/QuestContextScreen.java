@@ -3,7 +3,7 @@ import java.util.*;
 import net.minecraft.client.gui.*;
 import org.lwjgl.opengl.GL11;
 /** Reference context menu: 12 pixel rows, 8 pixel icons, and 3 pixel padding. */
-final class QuestContextScreen extends GuiScreen {
+final class QuestContextScreen extends QuestLibraryScreen {
     static class Entry {
         final String title,icon;final Runnable action;final boolean enabled;boolean closeMenu=true;java.util.function.BooleanSupplier enabledWhen;final List<String> tooltip=new ArrayList<String>();
         Entry(String title,String icon,Runnable action){this(title,icon,true,action);}

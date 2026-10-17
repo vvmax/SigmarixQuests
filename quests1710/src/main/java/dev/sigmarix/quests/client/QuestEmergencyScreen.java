@@ -1,7 +1,7 @@
 package dev.sigmarix.quests.client;
 import dev.sigmarix.quests.*;import net.minecraft.client.gui.*;import org.lwjgl.opengl.GL11;
 /** Original fullscreen emergency-item countdown and centered item strip. */
-final class QuestEmergencyScreen extends GuiScreen {
+final class QuestEmergencyScreen extends QuestLibraryScreen {
     private final GuiScreen parent;private final long end;private boolean sent;
     QuestEmergencyScreen(GuiScreen parent){this.parent=parent;end=System.currentTimeMillis()+Math.max(QuestTimer.emergency(ClientProxy.snapshot.book)*50L,ClientProxy.snapshot.emergencyWait*1000L);}
     @Override public void initGui(){String label=QuestText.tr(sent?"Close":"Cancel");int w=fontRendererObj.getStringWidth(label)+8;buttonList.clear();buttonList.add(new QuestFlatButton(0,(width-w)/2,height*2/3+16,w,20,label).left(4));}

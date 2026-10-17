@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
-public final class QuestIconScreen extends GuiScreen {
+public final class QuestIconScreen extends QuestLibraryScreen {
     private GuiTextField resource,name,color;
     private int slot,left,top;
     private boolean advanced;
