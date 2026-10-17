@@ -38,6 +38,29 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void screenSkinsAndProtectionValidatePermissionsWithoutConsumingHeldItems() {
+        QuestDevice tile=new QuestDevice(); tile.setWorldObj(player.worldObj); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"skin_screen"));
+        ItemStack wool=new ItemStack(Blocks.wool,2,14); QuestScreenSettings.appearance(tile,player,wool,false); assertEquals("minecraft:wool",tile.screenSkin); assertEquals(14,tile.screenSkinMeta); assertEquals(2,wool.stackSize);
+        try { QuestScreenSettings.protection(tile,player,true); fail(); } catch(IllegalArgumentException expected) {} assertFalse(tile.indestructible);
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true); QuestScreenSettings.protection(tile,player,true); when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(false);
+        try { QuestScreenSettings.appearance(tile,player,new ItemStack(Blocks.stone),false); fail(); } catch(IllegalArgumentException expected) {} assertEquals("minecraft:wool",tile.screenSkin);
+        NBTTagCompound saved=new NBTTagCompound(); tile.writeToNBT(saved); QuestDevice restored=new QuestDevice(); restored.readFromNBT(saved); assertTrue(restored.indestructible); assertEquals(Blocks.wool,QuestScreenSettings.skin(restored)); assertEquals(14,restored.screenSkinMeta);
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true); QuestScreenSettings.appearance(tile,player,null,true); assertEquals(Blocks.air,QuestScreenSettings.skin(tile)); QuestScreenSettings.appearance(tile,player,null,false); assertNull(QuestScreenSettings.skin(tile));
+        try { QuestScreenSettings.appearance(tile,player,new ItemStack(Blocks.chest),false); fail(); } catch(IllegalArgumentException expected) {} assertEquals("",tile.screenSkin);
+    }
+    @Test public void protectedScreensRejectBreakExplosionsAndEntityGrief() {
+        QuestBlocks.DeviceBlock block=new QuestBlocks.DeviceBlock(1,"protected_screen"); QuestDevice tile=new QuestDevice(); tile.indestructible=true; tile.setWorldObj(player.worldObj); when(player.worldObj.getBlock(0,0,0)).thenReturn(block); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(tile);
+        assertEquals(-1,block.getBlockHardness(player.worldObj,0,0,0),0); assertFalse(block.removedByPlayer(player.worldObj,player,0,0,0,false)); assertFalse(block.canEntityDestroy(player.worldObj,0,0,0,null));
+        assertEquals(Float.MAX_VALUE,block.getExplosionResistance(null,player.worldObj,0,0,0,0,0,0),0); block.onBlockExploded(player.worldObj,0,0,0,null); verify(player.worldObj,never()).setBlockToAir(0,0,0);
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true); when(player.worldObj.setBlockToAir(0,0,0)).thenReturn(true); assertTrue(block.removedByPlayer(player.worldObj,player,0,0,0,false));
+    }
+    @Test public void screenTeamsAndPresentationStayLinkedAfterOwnerChange() {
+        QuestDevice core=new QuestDevice(),part=new QuestDevice(); core.setWorldObj(player.worldObj); part.setWorldObj(player.worldObj); core.facing=part.facing=3; part.xCoord=1; core.owner=part.owner=player.getUniqueID(); QuestBlocks.DeviceBlock block=new QuestBlocks.DeviceBlock(0,"team_skin_screen");
+        when(player.worldObj.getBlock(0,0,0)).thenReturn(block); when(player.worldObj.getBlock(1,0,0)).thenReturn(block); when(player.worldObj.getTileEntity(0,0,0)).thenReturn(core); when(player.worldObj.getTileEntity(1,0,0)).thenReturn(part); QuestScreens.configure(core,2,1);
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true); core.screenInputOnly=true; core.screenInputIcon=new ItemStack(Items.diamond); QuestScreenSettings.appearance(core,player,new ItemStack(Blocks.wool,1,14),false); QuestScreenSettings.protection(core,player,true); UUID owner=UUID.randomUUID(); QuestScreenSettings.owner(core,player,owner);
+        assertEquals(owner,core.owner); assertEquals(owner,part.owner); assertEquals(core,QuestScreens.core(part)); assertTrue(part.indestructible); assertTrue(part.screenInputOnly); assertEquals("minecraft:wool",part.screenSkin); assertEquals(14,part.screenSkinMeta); assertNotSame(core.screenInputIcon,part.screenInputIcon);
+        when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(false); try { QuestScreenSettings.owner(core,player,player.getUniqueID()); fail(); } catch(IllegalArgumentException expected) {} assertEquals(owner,core.owner);
+    }
     @Test public void onlyTaskTerminalsAcceptResourceInputs() {
         QuestCore.Task resource=task("energy",null,100,false); QuestDevice tile=terminalTile(); doReturn(new QuestBlocks.DeviceBlock(3,"collector_resources")).when(tile).getBlockType();
         try {

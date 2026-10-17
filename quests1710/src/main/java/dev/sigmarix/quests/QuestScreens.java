@@ -40,9 +40,17 @@ public final class QuestScreens {
         }
     }
     private static void copy(QuestDevice core,QuestDevice part) {
-        if(!part.quest.equals(core.quest) || !part.task.equals(core.task) || !part.bindingProfile.equals(core.bindingProfile)) {
-            part.quest=core.quest; part.task=core.task; part.bindingProfile=core.bindingProfile; changed(part);
+        if(!part.quest.equals(core.quest) || !part.task.equals(core.task) || !part.bindingProfile.equals(core.bindingProfile) || part.indestructible!=core.indestructible || !part.screenSkin.equals(core.screenSkin) || part.screenSkinMeta!=core.screenSkinMeta || part.screenFullscreen!=core.screenFullscreen || part.screenHideIcons!=core.screenHideIcons || part.screenInputOnly!=core.screenInputOnly || !net.minecraft.item.ItemStack.areItemStacksEqual(part.screenInputIcon,core.screenInputIcon)) {
+            part.quest=core.quest; part.task=core.task; part.bindingProfile=core.bindingProfile; part.indestructible=core.indestructible; part.screenSkin=core.screenSkin; part.screenSkinMeta=core.screenSkinMeta; part.screenFullscreen=core.screenFullscreen; part.screenHideIcons=core.screenHideIcons; part.screenInputOnly=core.screenInputOnly; part.screenInputIcon=core.screenInputIcon==null?null:core.screenInputIcon.copy(); changed(part);
         }
+    }
+    public static void reassignOwner(QuestDevice core,UUID owner) {
+        for(int row=0;row<core.screenHeight;row++) for(int column=0;column<core.screenWidth;column++) { QuestDevice part=at(core,column,row); if(part!=null && belongs(part,core)) { part.owner=owner; changed(part); } }
+        core.owner=owner;
+    }
+    public static void presentationChanged(QuestDevice core) {
+        changed(core); if(core.getWorldObj()==null) return;
+        for(int row=0;row<core.screenHeight;row++) for(int column=0;column<core.screenWidth;column++) { QuestDevice part=at(core,column,row); if(part!=null && belongs(part,core)) { copy(core,part); changed(part); } }
     }
     public static boolean synchronize(QuestDevice tile) {
         if(!tile.screenLinked) return true;

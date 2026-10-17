@@ -9,6 +9,7 @@ public final class NativeQuestSmoke {
     private static int storageX,storageY,storageZ,offlineX,offlineY,offlineZ;
     private static UUID offlineOwner;
     private static int collectorX,collectorY,collectorZ,collectorStored,offlineCollectorX,offlineCollectorStored,openerX,openerY,openerZ;
+    public static String offlineOwnerId() { return offlineOwner.toString(); }
     public static int[] openerPosition() { return new int[]{openerX,openerY,openerZ}; }
     public static int[] collectorPosition() { return new int[]{collectorX,collectorY,collectorZ}; }
     public static int[] storagePosition() { return new int[]{storageX,storageY,storageZ}; }
@@ -63,6 +64,9 @@ public final class NativeQuestSmoke {
         try {
             storageX=(int)Math.floor(player.posX)+4; storageY=(int)Math.floor(player.posY); storageZ=(int)Math.floor(player.posZ)+4;
             net.minecraft.world.World world=player.worldObj;
+            int protectedX=(int)Math.floor(player.posX)+12,protectedY=(int)Math.floor(player.posY),protectedZ=(int)Math.floor(player.posZ)-12;
+            world.setBlock(protectedX,protectedY,protectedZ,QuestBlocks.devices[0]); QuestDevice protectedScreen=(QuestDevice)world.getTileEntity(protectedX,protectedY,protectedZ); protectedScreen.owner=id; protectedScreen.bindingChanged(); QuestScreenSettings.appearance(protectedScreen,player,new net.minecraft.item.ItemStack(net.minecraft.init.Blocks.wool,1,14),false); QuestScreenSettings.protection(protectedScreen,player,true);
+            world.newExplosion(null,protectedX+.5,protectedY+.5,protectedZ+.5,2,false,true); if(world.getTileEntity(protectedX,protectedY,protectedZ)!=protectedScreen) throw new IllegalStateException("Protected screen was destroyed by a real explosion"); world.setBlockToAir(protectedX,protectedY,protectedZ);
             offlineOwner=UUID.randomUUID(); offlineX=(int)Math.floor(player.posX)+8; offlineY=(int)Math.floor(player.posY); offlineZ=(int)Math.floor(player.posZ)+2;
             world.setBlock(offlineX,offlineY,offlineZ,QuestBlocks.devices[0]); QuestDevice offlineMachine=(QuestDevice)world.getTileEntity(offlineX,offlineY,offlineZ); offlineMachine.owner=offlineOwner; offlineMachine.quest=offline.id; offlineMachine.task=offlineRf.id; offlineMachine.bindingChanged();
             if(offlineMachine.player()!=null || offlineMachine.receiveEnergy(net.minecraftforge.common.util.ForgeDirection.UP,100,false)!=100) throw new IllegalStateException("Offline RF terminal did not accept energy without an online owner");

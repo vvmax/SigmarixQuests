@@ -47,6 +47,22 @@ public final class QuestBlocks {
             setHardness(3); setResistance(10); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc);
         }
         @Override public TileEntity createNewTileEntity(World world,int metadata) { return mode==7 || mode==8?new QuestStorage(mode==8):new QuestDevice(); }
+        @Override public int getRenderType() { return mode<=1 && QuestsMod.proxy!=null?QuestsMod.proxy.screenRenderType():0; }
+        @Override public boolean isOpaqueCube() { return mode>1; }
+        @Override public boolean renderAsNormalBlock() { return mode>1; }
+        @Override public boolean isNormalCube() { return mode<=1?!canProvidePower():super.isNormalCube(); }
+        @Override public boolean isNormalCube(IBlockAccess world,int x,int y,int z) { return mode<=1?!canProvidePower():super.isNormalCube(world,x,y,z); }
+        @Override public boolean canRenderInPass(int pass) { return mode<=1?pass==0 || pass==1:super.canRenderInPass(pass); }
+        @Override public boolean isSideSolid(IBlockAccess world,int x,int y,int z,net.minecraftforge.common.util.ForgeDirection side) { return mode<=1 || super.isSideSolid(world,x,y,z,side); }
+        private boolean protectedScreen(IBlockAccess world,int x,int y,int z) {
+            if(mode>1) return false; TileEntity raw=world.getTileEntity(x,y,z); if(!(raw instanceof QuestDevice)) return false;
+            QuestDevice tile=(QuestDevice)raw,core=QuestScreens.core(tile); return (core==null?tile:core).indestructible;
+        }
+        @Override public float getBlockHardness(World world,int x,int y,int z) { return protectedScreen(world,x,y,z)?-1:super.getBlockHardness(world,x,y,z); }
+        @Override public boolean removedByPlayer(World world,EntityPlayer player,int x,int y,int z,boolean harvest) { return (!protectedScreen(world,x,y,z) || QuestScreenSettings.editor(player)) && super.removedByPlayer(world,player,x,y,z,harvest); }
+        @Override public float getExplosionResistance(net.minecraft.entity.Entity entity,World world,int x,int y,int z,double ex,double ey,double ez) { return protectedScreen(world,x,y,z)?Float.MAX_VALUE:super.getExplosionResistance(entity,world,x,y,z,ex,ey,ez); }
+        @Override public void onBlockExploded(World world,int x,int y,int z,net.minecraft.world.Explosion explosion) { if(!protectedScreen(world,x,y,z)) super.onBlockExploded(world,x,y,z,explosion); }
+        @Override public boolean canEntityDestroy(IBlockAccess world,int x,int y,int z,net.minecraft.entity.Entity entity) { return !protectedScreen(world,x,y,z) && super.canEntityDestroy(world,x,y,z,entity); }
         @Override public void onBlockPlacedBy(World world,int x,int y,int z,EntityLivingBase entity,ItemStack stack) {
             if(entity instanceof EntityPlayer) { QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); tile.owner=((EntityPlayer)entity).getUniqueID(); int[] facing={2,5,3,4}; tile.facing=facing[net.minecraft.util.MathHelper.floor_double(entity.rotationYaw*4/360D+.5D)&3]; tile.bindingChanged(); }
         }

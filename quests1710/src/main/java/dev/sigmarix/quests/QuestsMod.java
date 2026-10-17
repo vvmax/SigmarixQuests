@@ -160,14 +160,29 @@ public final class QuestsMod {
                     String command=service.clickCommand(player.getUniqueID(),action.id);
                     MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
-                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode": case "detector_settings": case "screen_options":
+                case "bind_device": case "unbind_device": case "screen_size": case "detector_mode": case "detector_settings": case "screen_options": case "screen_skin": case "screen_lock": case "screen_owner":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
                     QuestDevice device=((QuestDeviceContainer)player.openContainer).tile;
                     if(device.xCoord!=action.x || device.yCoord!=action.y || device.zCoord!=action.z || !device.isUseableByPlayer(player)) throw new IllegalArgumentException("Device unavailable");
                     int deviceMode=((QuestBlocks.DeviceBlock)device.getBlockType()).mode;
                     if(deviceMode==6) throw new IllegalArgumentException("Crate openers use the crate loot table");
                     if((deviceMode==4 || deviceMode==5) && !editor(player)) throw new IllegalArgumentException("Operator permission required to configure task detectors");
+                    if(action.action.equals("screen_skin")) {
+                        if(action.choices.length!=1 || action.choices[0]<0 || action.choices[0]>1) throw new IllegalArgumentException("Invalid screen appearance");
+                        QuestScreenSettings.appearance(device,player,player.getHeldItem(),action.choices[0]==1); message="Screen appearance updated"; break;
+                    }
+                    if(action.action.equals("screen_lock")) {
+                        if(action.choices.length!=1 || action.choices[0]<0 || action.choices[0]>1) throw new IllegalArgumentException("Invalid protection setting");
+                        QuestScreenSettings.protection(device,player,action.choices[0]==1); message="Screen protection updated"; break;
+                    }
+                    if(action.action.equals("screen_owner")) {
+                        UUID owner;
+                        try { owner=UUID.fromString(action.text); }
+                        catch(IllegalArgumentException badId) { EntityPlayerMP target=MinecraftServer.getServer().getConfigurationManager().func_152612_a(action.text); if(target==null) throw new IllegalArgumentException("Use an online player name or UUID"); owner=target.getUniqueID(); }
+                        QuestScreenSettings.owner(device,player,owner); message="Screen team updated"; break;
+                    }
                     if(action.action.equals("screen_options")) {
+                        if(device.indestructible && !editor(player)) throw new IllegalArgumentException("Operator permission required for protected screens");
                         if(deviceMode!=0 && deviceMode!=1 || device.screenLinked || action.choices.length!=1 || action.choices[0]<0 || action.choices[0]>3) throw new IllegalArgumentException("Invalid screen option");
                         int option=action.choices[0];
                         if(deviceMode==1 && option==0) device.screenFullscreen=!device.screenFullscreen;
@@ -178,7 +193,7 @@ public final class QuestsMod {
                             if(icon!=null) { icon.stackSize=1; net.minecraft.nbt.NBTTagCompound encoded=new net.minecraft.nbt.NBTTagCompound(); icon.writeToNBT(encoded); if(encoded.toString().length()>8192 || net.minecraft.nbt.CompressedStreamTools.compress(encoded).length>4096) throw new IllegalArgumentException("Screen icon NBT is too large"); }
                             device.screenInputIcon=icon;
                         } else throw new IllegalArgumentException("Option does not apply to this screen");
-                        device.markDirty(); player.worldObj.markBlockForUpdate(device.xCoord,device.yCoord,device.zCoord); message="Screen options updated"; break;
+                        QuestScreens.presentationChanged(device); message="Screen options updated"; break;
                     }
                     if(action.action.equals("detector_settings")) {
                         if(!editor(player) || deviceMode!=4 && deviceMode!=5) throw new IllegalArgumentException("Operator task detector required");

@@ -25,6 +25,9 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     public int facing=2,screenPercent,screenWidth=1,screenHeight=1,coreX,coreY,coreZ;
     public boolean screenLinked,screenFullscreen,screenHideIcons,screenInputOnly;
     public net.minecraft.item.ItemStack screenInputIcon;
+    public boolean indestructible;
+    public String screenSkin="";
+    public int screenSkinMeta;
     public String screenTitle="Quest screen";
     private int ticks;
     private boolean euRegistered;
@@ -179,6 +182,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         if(nbt.hasKey("detectorRadius")) try { configureDetector(nbt.getDouble("detectorRadius"),nbt.getDouble("detectorOffsetY"),nbt.getDouble("detectorHeight"),nbt.getInteger("detectorPower")); } catch(IllegalArgumentException ignored) {}
         analog=nbt.getBoolean("analog"); redstoneOutput=Math.max(0,Math.min(15,nbt.getInteger("redstoneOutput")));
         screenWidth=Math.max(1,Math.min(8,nbt.getInteger("screenWidth"))); screenHeight=Math.max(1,Math.min(8,nbt.getInteger("screenHeight")));
+        indestructible=nbt.getBoolean("indestructible"); screenSkin=nbt.getString("screenSkin"); if(screenSkin.length()>256) screenSkin=""; screenSkinMeta=Math.max(0,Math.min(15,nbt.getInteger("screenSkinMeta")));
         screenFullscreen=nbt.getBoolean("screenFullscreen"); screenHideIcons=nbt.getBoolean("screenHideIcons"); screenInputOnly=nbt.getBoolean("screenInputOnly"); screenInputIcon=nbt.hasKey("screenInputIcon")?net.minecraft.item.ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("screenInputIcon")):null;
         screenLinked=nbt.getBoolean("screenLinked"); coreX=nbt.getInteger("coreX"); coreY=nbt.getInteger("coreY"); coreZ=nbt.getInteger("coreZ");
         facing=nbt.hasKey("facing")?nbt.getInteger("facing"):2; if(facing<2 || facing>5) facing=2;
@@ -191,12 +195,13 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         net.minecraft.nbt.NBTTagList storedRewards=new net.minecraft.nbt.NBTTagList();
         for(int i=0;i<9;i++) if(collectorItems[i]!=null) { NBTTagCompound entry=new NBTTagCompound(); collectorItems[i].writeToNBT(entry); entry.setByte("Slot",(byte)i); storedRewards.appendTag(entry); } nbt.setTag("collectorItems",storedRewards);
         nbt.setBoolean("detectorNotifications",detectorNotifications); nbt.setDouble("detectorRadius",detectorRadius); nbt.setDouble("detectorOffsetY",detectorOffsetY); nbt.setDouble("detectorHeight",detectorHeight); nbt.setInteger("detectorPower",detectorPower);
+        nbt.setBoolean("indestructible",indestructible); nbt.setString("screenSkin",screenSkin); nbt.setInteger("screenSkinMeta",screenSkinMeta);
         nbt.setBoolean("screenFullscreen",screenFullscreen); nbt.setBoolean("screenHideIcons",screenHideIcons); nbt.setBoolean("screenInputOnly",screenInputOnly); if(screenInputIcon!=null) { NBTTagCompound icon=new NBTTagCompound(); screenInputIcon.writeToNBT(icon); nbt.setTag("screenInputIcon",icon); }
         super.writeToNBT(nbt); nbt.setBoolean("analog",analog); nbt.setInteger("redstoneOutput",redstoneOutput); nbt.setInteger("screenWidth",screenWidth); nbt.setInteger("screenHeight",screenHeight); nbt.setBoolean("screenLinked",screenLinked); nbt.setInteger("coreX",coreX); nbt.setInteger("coreY",coreY); nbt.setInteger("coreZ",coreZ); nbt.setInteger("facing",facing); nbt.setInteger("screenPercent",screenPercent); nbt.setString("screenTitle",screenTitle); nbt.setString("bindingProfile",bindingProfile); nbt.setDouble("euFraction",euFraction); nbt.setString("euBinding",euBinding); if(input!=null) { NBTTagCompound stack=new NBTTagCompound(); input.writeToNBT(stack); nbt.setTag("input",stack); } if(owner!=null) nbt.setString("owner",owner.toString()); nbt.setString("quest",quest); nbt.setString("task",task); nbt.setBoolean("signal",signal);
     }
     @Override public AxisAlignedBB getRenderBoundingBox() { return AxisAlignedBB.getBoundingBox(xCoord-8,yCoord,zCoord-8,xCoord+9,yCoord+9,zCoord+9); }
     @Override public Packet getDescriptionPacket() { NBTTagCompound nbt=new NBTTagCompound(); writeToNBT(nbt); nbt.removeTag("collectorItems"); nbt.removeTag("input"); nbt.removeTag("pendingLoot"); return new S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,nbt); }
-    @Override public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet) { net.minecraft.item.ItemStack held=input; net.minecraft.item.ItemStack[] rewards=collectorItems.clone(); java.util.List<net.minecraft.item.ItemStack> queued=new java.util.ArrayList<net.minecraft.item.ItemStack>(pendingLoot); readFromNBT(packet.func_148857_g()); input=held; System.arraycopy(rewards,0,collectorItems,0,9); pendingLoot.clear(); pendingLoot.addAll(queued); }
+    @Override public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet) { String oldSkin=screenSkin; int oldMeta=screenSkinMeta; net.minecraft.item.ItemStack held=input; net.minecraft.item.ItemStack[] rewards=collectorItems.clone(); java.util.List<net.minecraft.item.ItemStack> queued=new java.util.ArrayList<net.minecraft.item.ItemStack>(pendingLoot); readFromNBT(packet.func_148857_g()); input=held; System.arraycopy(rewards,0,collectorItems,0,9); pendingLoot.clear(); pendingLoot.addAll(queued); if(worldObj!=null && worldObj.isRemote && (!oldSkin.equals(screenSkin) || oldMeta!=screenSkinMeta)) worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); }
     @Optional.Method(modid="IC2") private void registerEU() {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ic2.api.energy.event.EnergyTileLoadEvent(this)); euRegistered=true; euTier=getSinkTier();
     }

@@ -4,7 +4,7 @@ plugins {
 }
 def previewConfigBackups=[:]
 group = 'dev.sigmarix'
-version = '0.19.0'
+version = '0.20.0'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }

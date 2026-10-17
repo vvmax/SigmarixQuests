@@ -15,7 +15,7 @@ import net.minecraft.util.ScreenShotHelper;
 @Mod(modid="sigmarixquestpreview",name="Quest GUI preview fixture",version="1",dependencies="required-after:sigmarixquests")
 public final class QuestPreview {
     private QuestNetwork.Snapshot fixture;
-    private int ticks,stage,waiting;
+    private int ticks,stage,waiting,loginRetries;
     private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
     private QuestCore.Book original;
@@ -23,7 +23,8 @@ public final class QuestPreview {
     private long oldRevision,lastSmokeStep,lastBookAttempt;
     private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
-    private volatile boolean detectorRequested,openCollectorRequested,inputRequested,openProgressRequested,openOpenerRequested;
+    private double skinViewX,skinViewY,skinViewZ;
+    private volatile boolean detectorRequested,openCollectorRequested,inputRequested,openProgressRequested,openOpenerRequested,skinRequested;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
@@ -131,9 +132,14 @@ public final class QuestPreview {
                 if((Boolean)bridge.getMethod("tick").invoke(null)) { emcPassed=true; emcRunning=false; }
             } catch(Exception ex) { throw new IllegalStateException("ProjectE smoke failed",ex); }
         }
+        if(skinRequested) {
+            skinRequested=false; net.minecraft.entity.player.EntityPlayerMP actor=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            actor.inventory.setInventorySlotContents(6,new net.minecraft.item.ItemStack(net.minecraft.init.Blocks.wool,1,14)); actor.inventory.currentItem=6; actor.inventoryContainer.detectAndSendChanges(); actor.openContainer.detectAndSendChanges(); actor.playerNetServerHandler.sendPacket(new net.minecraft.network.play.server.S09PacketHeldItemChange(6));
+        }
         if(openProgressRequested) { openProgressRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0); owner.openGui(QuestsMod.instance,0,owner.worldObj,deviceX,deviceY,deviceZ); }
         if(inputRequested) {
             inputRequested=false; net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            owner.inventory.currentItem=8; owner.playerNetServerHandler.sendPacket(new net.minecraft.network.play.server.S09PacketHeldItemChange(8));
             owner.worldObj.setBlock(deviceX+4,deviceY,deviceZ,QuestBlocks.devices[0]); QuestDevice inputTile=(QuestDevice)owner.worldObj.getTileEntity(deviceX+4,deviceY,deviceZ); inputTile.owner=owner.getUniqueID(); inputTile.facing=4; inputTile.bindingChanged(); detectorDelay=30;
         }
         if(detectorRequested) {
@@ -201,6 +207,12 @@ public final class QuestPreview {
     private void smoke(Minecraft mc) throws Exception {
         if(++waiting%100==0) System.out.println("Quest smoke stage="+stage+" ticks="+waiting+" snapshot="+(ClientProxy.snapshot==null?"none":ClientProxy.snapshot.message)+" gui="+(mc.currentScreen==null?"none":mc.currentScreen.getClass().getSimpleName())+" player="+(mc.thePlayer!=null));
         if(waiting>2400) throw new IllegalStateException("Quest smoke timeout at stage "+stage);
+        if(stage==0 && !restarted && mc.thePlayer==null && mc.theWorld==null && mc.currentScreen instanceof net.minecraft.client.gui.GuiMainMenu && waiting>=200) {
+            java.lang.reflect.Field connection=Minecraft.class.getDeclaredField("myNetworkManager"); connection.setAccessible(true); net.minecraft.network.NetworkManager manager=(net.minecraft.network.NetworkManager)connection.get(mc);
+            System.out.println("Quest preview initial login retry: manager="+(manager==null?"null":"open="+manager.isChannelOpen()+", handler="+manager.getNetHandler().getClass().getSimpleName()));
+            if(loginRetries++>=1) throw new IllegalStateException("Initial integrated-server login failed twice");
+            waiting=0; mc.launchIntegratedServer(worldName,"Quest smoke fixture",null); return;
+        }
         if(mc.thePlayer==null || mc.theWorld==null || waiting%5!=0) return;
         long realNow=System.nanoTime(); if(realNow-lastSmokeStep<java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(200)) return; lastSmokeStep=realNow;
         QuestNetwork.Snapshot snap=ClientProxy.snapshot;
@@ -243,6 +255,8 @@ public final class QuestPreview {
                     if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
                     if(pinPassed && (!snap.pinned.contains("welcome") || snap.percentages.getOrDefault("welcome",0)!=100)) throw new IllegalStateException("Pinned quest did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
+                    net.minecraft.tileentity.TileEntity savedDisplay=mc.theWorld.getTileEntity(deviceX,deviceY,deviceZ); if(!(savedDisplay instanceof QuestDevice)) return; QuestDevice display=(QuestDevice)savedDisplay;
+                    if(!display.indestructible || !display.screenSkin.equals("minecraft:wool") || display.screenSkinMeta!=14 || !display.owner.toString().equals(NativeQuestSmoke.offlineOwnerId())) throw new IllegalStateException("Screen skin, protection or team did not survive restart");
                     java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, pinned HUD and restart persistence, notification history, custom click callback, confirmed file action, permission-checked network command, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress, world chapter map, fullscreen/hideIcons, input-only held icon, configured public detectors, scripted task button, conditional shop hook, offline collectors and persistent crate-opener roll".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
                     PreviewImageServer.stop(); mc.shutdown(); return;
                 }
@@ -506,11 +520,31 @@ public final class QuestPreview {
                 press(mc.currentScreen,10); stage=65; waiting=0; break;
             case 65:
                 if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20 || !((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenHideIcons) return;
+                skinRequested=true; stage=76; waiting=0; break;
+            case 76:
+                if(waiting<20 || mc.thePlayer.getHeldItem()==null || mc.thePlayer.getHeldItem().getItem()!=net.minecraft.item.Item.getItemFromBlock(net.minecraft.init.Blocks.wool)) return;
+                press(mc.currentScreen,11); stage=77; waiting=0; break;
+            case 77:
+                if(waiting<20 || !"minecraft:wool".equals(((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenSkin)) return;
+                if(((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.screenSkinMeta!=14 || mc.thePlayer.getHeldItem().stackSize!=1) throw new IllegalStateException("Screen skin metadata or held inventory changed");
+                press(mc.currentScreen,12); stage=79; waiting=0; break;
+            case 79:
+                if(waiting<20 || !((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.indestructible) return;
+                java.lang.reflect.Field ownerField=QuestDeviceScreen.class.getDeclaredField("owner"); ownerField.setAccessible(true); ((net.minecraft.client.gui.GuiTextField)ownerField.get(mc.currentScreen)).setText(NativeQuestSmoke.offlineOwnerId()); press(mc.currentScreen,13); stage=80; waiting=0; break;
+            case 80:
+                if(waiting<20 || !NativeQuestSmoke.offlineOwnerId().equals(((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.owner.toString())) return;
+                QuestDevice screenPart=(QuestDevice)mc.theWorld.getTileEntity(deviceX,deviceY+1,deviceZ+1);
+                if(!screenPart.indestructible || screenPart.screenSkinMeta!=14 || !screenPart.owner.equals(((QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots).tile.owner)) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-screen-options.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 mc.thePlayer.closeScreen(); QuestToasts.clear(); mc.gameSettings.hideGUI=true; stage=67; waiting=0; break;
             case 67:
                 if(waiting<20) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-world-map-fullscreen.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
-                mc.gameSettings.hideGUI=false; detectorRequested=true; stage=60; waiting=0; break;
+                skinViewX=mc.thePlayer.posX; skinViewY=mc.thePlayer.posY; skinViewZ=mc.thePlayer.posZ; mc.thePlayer.setPosition(skinViewX,skinViewY,skinViewZ-3); mc.thePlayer.rotationYaw=-34; mc.thePlayer.rotationPitch=10; stage=78; waiting=0; break;
+            case 78:
+                if(waiting<20) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-screen-skin-world.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.thePlayer.setPosition(skinViewX,skinViewY,skinViewZ); mc.thePlayer.rotationYaw=-90; mc.thePlayer.rotationPitch=17; mc.gameSettings.hideGUI=false; detectorRequested=true; stage=60; waiting=0; break;
             case 60:
                 if(!(mc.currentScreen instanceof QuestDeviceScreen) || waiting<20) return;
                 java.lang.reflect.Field settingsFields=QuestDeviceScreen.class.getDeclaredField("detectorFields"); settingsFields.setAccessible(true); net.minecraft.client.gui.GuiTextField[] fields=(net.minecraft.client.gui.GuiTextField[])settingsFields.get(mc.currentScreen);

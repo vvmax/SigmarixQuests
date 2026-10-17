@@ -128,3 +128,8 @@ quests.ui.crate_opener=Crate opener
 quests.ui.queued_loot=Queued loot
 quests.ui.input=Input
 quests.ui.outputs=Outputs
+
+quests.ui.use_held_skin=Use held skin
+quests.ui.unbreakable=Unbreakable
+quests.ui.set_team=Set team
+quests.ui.player_uuid=Player / UUID

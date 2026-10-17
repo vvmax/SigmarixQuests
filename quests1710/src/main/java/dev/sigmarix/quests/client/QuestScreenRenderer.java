@@ -10,7 +10,7 @@ public final class QuestScreenRenderer extends TileEntitySpecialRenderer {
     private final net.minecraft.client.renderer.entity.RenderItem itemRenderer=new net.minecraft.client.renderer.entity.RenderItem();
     @Override public void renderTileEntityAt(TileEntity raw,double x,double y,double z,float partial) {
         QuestDevice tile=(QuestDevice)raw;
-        if(tile.screenLinked && QuestScreens.core(tile)!=null) return;
+        if(tile.screenLinked) return;
         if(!(tile.getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)tile.getBlockType()).mode>1) return;
         float lightX=net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX,lightY=net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY;
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glPushMatrix();

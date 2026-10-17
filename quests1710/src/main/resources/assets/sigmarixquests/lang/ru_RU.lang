@@ -128,3 +128,8 @@ quests.ui.crate_opener=Открыватель кейсов
 quests.ui.queued_loot=Лут в очереди
 quests.ui.input=Вход
 quests.ui.outputs=Выходы
+
+quests.ui.use_held_skin=Вид предмета
+quests.ui.unbreakable=Неразрушимый
+quests.ui.set_team=Назначить
+quests.ui.player_uuid=Игрок / UUID

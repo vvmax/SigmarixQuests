@@ -17,11 +17,14 @@ public final class ClientProxy extends CommonProxy {
     private final ArrayBlockingQueue<String> queue=new ArrayBlockingQueue<String>(16);
     private final KeyBinding key=new KeyBinding("key.sigmarixquests.open",Keyboard.KEY_GRAVE,"key.categories.misc");
     private boolean opening;
+    private int screenRenderType;
+    @Override public int screenRenderType() { return screenRenderType; }
     private int syncTicks,pinTicks;
     private long neiRevision=Long.MIN_VALUE;
     public static QuestNetwork.Snapshot snapshot;
     @Override public void init() {
         QuestBotaniaGuide.register();
+        screenRenderType=cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId(); cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(new QuestScreenBlockRenderer(screenRenderType));
         if(cpw.mods.fml.common.Loader.isModLoaded("NotEnoughItems")) try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("register").invoke(null); }
         catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI integration registration failed",ex); }
         net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon"),new QuestIconRenderer());
