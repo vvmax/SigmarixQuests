@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.8.0", acceptableRemoteVersions="[0.8.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.9.0", acceptableRemoteVersions="[0.9.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -132,16 +132,21 @@ public final class QuestsMod {
             Long last=LAST_REQUEST.get(player.getUniqueID());
             if(last!=null && ticks-last<2) {
                 QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message="Error: Please wait before another action"; error.revision=service.revision;
-                if("icon_edit".equals(actionName)) QuestService.say(player,error.message);
+                if("icon_edit".equals(actionName) || "storage_page".equals(actionName)) QuestService.say(player,error.message);
                 QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return;
             }
             LAST_REQUEST.put(player.getUniqueID(),(long)ticks); counted=true;
-            if(!action.action.equals("icon_edit") && action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
+            if(!action.action.equals("icon_edit") && !action.action.equals("storage_page") && action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
             QuestCore.Quest quest=service.quests.get(action.id);
             List<Integer> choices=new ArrayList<Integer>(); for(int c:action.choices) choices.add(c);
             switch(action.action) {
                 case "view": break;
                 case "icon_edit": QuestIcons.edit(player,action.text,action.id,action.x,action.y); message="Icon updated"; QuestService.say(player,message); break;
+                case "storage_page":
+                    if(!(player.openContainer instanceof QuestStorageContainer)) throw new IllegalArgumentException("Open crate storage before changing its page");
+                    QuestStorage storage=((QuestStorageContainer)player.openContainer).storage;
+                    if(!storage.isUseableByPlayer(player) || storage.xCoord!=action.x || storage.yCoord!=action.y || storage.zCoord!=action.z) throw new IllegalArgumentException("Storage unavailable");
+                    storage.nextPage(); message="Storage page changed"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
                 case "bind_device": case "unbind_device": case "screen_size": case "detector_mode":
                     if(!(player.openContainer instanceof QuestDeviceContainer)) throw new IllegalArgumentException("Open the device before configuring it");
@@ -178,7 +183,7 @@ public final class QuestsMod {
             }
         } catch(Exception ex) {
             message="Error: "+ex.getMessage();
-            if("icon_edit".equals(actionName)) QuestService.say(player,message);
+            if("icon_edit".equals(actionName) || "storage_page".equals(actionName)) QuestService.say(player,message);
             if(!counted) { QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message=message; error.revision=service.revision; QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return; }
         }
         PENDING_VIEWS.remove(player.getUniqueID()); LAST_VIEW.put(player.getUniqueID(),(long)ticks); sendSnapshot(player,message);

@@ -77,3 +77,9 @@ quests.ui.texture_resource=Путь к текстуре
 quests.ui.invalid_icon_texture_or_color=Некорректная текстура или цвет
 quests.ui.all_groups=Все группы
 quests.ui.group=Группа
+
+quests.ui.virtual_reserve=Виртуальный запас
+item.sigmarixquests.crate_parcel.name=Запечатанная посылка с кейсами
+
+quests.ui.next_types=Типы >
+quests.ui.crates=Кейсы

@@ -12,6 +12,7 @@ import net.minecraft.world.*;
 
 public final class QuestBlocks {
     public static final Block[] devices=new Block[10];
+    public static final QuestCrateParcel crateParcel=new QuestCrateParcel();
     public static void register() {
         String[] ids={"task_screen","progress_screen","quest_barrier","reward_collector","redstone_detector","player_detector","loot_crate_opener","quest_chest","loot_crate_storage","progress_detector"};
         for(int i=0;i<ids.length;i++) { devices[i]=new DeviceBlock(i,ids[i]); GameRegistry.registerBlock(devices[i],ids[i]); }
@@ -19,6 +20,7 @@ public final class QuestBlocks {
         GameRegistry.registerTileEntity(QuestStorage.class,"sigmarixquests:storage");
         GameRegistry.registerItem(new LootCrateItem(),"loot_crate");
         GameRegistry.registerItem(new CustomIconItem(),"custom_icon");
+        GameRegistry.registerItem(crateParcel,"crate_parcel");
         QuestHooks.TASKS.put("sigmarix:redstone",(player,task)->false);
         QuestHooks.TASKS.put("sigmarix:player",(player,task)->false);
         QuestHooks.REWARDS.put("sigmarix:notice",(player,reward)->QuestService.say(player,reward.text));
@@ -49,6 +51,12 @@ public final class QuestBlocks {
             if(entity instanceof EntityPlayer) { QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); tile.owner=((EntityPlayer)entity).getUniqueID(); int[] facing={2,5,3,4}; tile.facing=facing[net.minecraft.util.MathHelper.floor_double(entity.rotationYaw*4/360D+.5D)&3]; tile.bindingChanged(); }
         }
         @Override public boolean onBlockActivated(World world,int x,int y,int z,EntityPlayer p,int side,float hitX,float hitY,float hitZ) {
+            if(mode==8 && p.getHeldItem()!=null && p.getHeldItem().getItem() instanceof QuestCrateParcel) {
+                if(!world.isRemote) { QuestStorage storage=(QuestStorage)world.getTileEntity(x,y,z); if(storage!=null && storage.isUseableByPlayer(p)) {
+                    try { QuestCrateParcel.deposit(p.getHeldItem(),storage); if(p.getHeldItem().stackSize<=0) p.inventory.setInventorySlotContents(p.inventory.currentItem,null); p.inventory.markDirty(); } catch(RuntimeException ex) { QuestService.say(p,ex.getMessage()); }
+                } }
+                return true;
+            }
             if(p.isSneaking()) return false;
             if(mode==6 && p.getHeldItem()!=null && p.getHeldItem().getItem() instanceof LootCrateItem) { if(!world.isRemote) LootCrateItem.open(p,p.getHeldItem()); return true; }
             if(!world.isRemote) { QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); if(tile!=null && tile.isUseableByPlayer(p)) { world.markBlockForUpdate(x,y,z); p.openGui(QuestsMod.instance,0,world,x,y,z); } else QuestService.say(p,"Only device owner or operator can open this device"); }
@@ -60,6 +68,7 @@ public final class QuestBlocks {
         }
         @Override public void breakBlock(World world,int x,int y,int z,Block block,int meta) {
             TileEntity tile=world.getTileEntity(x,y,z);
+            if(!world.isRemote && tile instanceof QuestStorage) for(ItemStack parcel:((QuestStorage)tile).parcels()) world.spawnEntityInWorld(new net.minecraft.entity.item.EntityItem(world,x+.5,y+.5,z+.5,parcel));
             if(!world.isRemote && tile instanceof QuestDevice) {
                 for(int slot=0;slot<((QuestDevice)tile).getSizeInventory();slot++) {
                     ItemStack input=((QuestDevice)tile).getStackInSlotOnClosing(slot);

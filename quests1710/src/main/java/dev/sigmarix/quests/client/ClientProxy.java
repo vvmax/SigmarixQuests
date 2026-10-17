@@ -34,7 +34,7 @@ public final class ClientProxy extends CommonProxy {
             @Override public void processCommand(ICommandSender s,String[] args) { open(); }
         });
     }
-    @Override public Object deviceScreen(net.minecraft.entity.player.EntityPlayer player,QuestDevice tile) { return tile instanceof QuestStorage?new net.minecraft.client.gui.inventory.GuiChest(player.inventory,tile):new QuestDeviceScreen(player,tile); }
+    @Override public Object deviceScreen(net.minecraft.entity.player.EntityPlayer player,QuestDevice tile) { return tile instanceof QuestStorage?new QuestStorageScreen(player,(QuestStorage)tile):new QuestDeviceScreen(player,tile); }
     public static void send(QuestNetwork.Action action) { if(!action.action.equals("save") && snapshot!=null) action.revision=snapshot.revision; QuestNetwork.channel.sendToServer(new QuestNetwork.Request(QuestService.JSON.toJson(action))); }
     @Override public void openIcon() { opening=false; Minecraft.getMinecraft().displayGuiScreen(new QuestIconScreen()); }
     @Override public void open() { if(Minecraft.getMinecraft().thePlayer==null) return; opening=true; send(new QuestNetwork.Action()); }

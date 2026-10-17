@@ -77,3 +77,9 @@ quests.ui.texture_resource=Texture resource
 quests.ui.invalid_icon_texture_or_color=Invalid icon texture or color
 quests.ui.all_groups=All groups
 quests.ui.group=Group
+
+quests.ui.virtual_reserve=Virtual reserve
+item.sigmarixquests.crate_parcel.name=Sealed crate parcel
+
+quests.ui.next_types=Next types
+quests.ui.crates=Crates

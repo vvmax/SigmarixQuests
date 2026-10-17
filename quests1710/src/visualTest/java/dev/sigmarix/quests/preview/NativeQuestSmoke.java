@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 public final class NativeQuestSmoke {
     private static String profile,original;
     private static int storageX,storageY,storageZ;
+    public static int[] storagePosition() { return new int[]{storageX,storageY,storageZ}; }
     public static void run(EntityPlayerMP player) throws Exception {
         QuestService main=QuestsMod.service; UUID id=player.getUniqueID();
         original=main.progress().profile(); profile="smoke-"+UUID.randomUUID().toString(); main.createProfile(profile);
@@ -42,12 +43,27 @@ public final class NativeQuestSmoke {
         Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); main.quests=utilityQuests;
         DropObserver observer=new DropObserver(); net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(observer); main.book=utilities;
         try {
-            storageX=(int)Math.floor(player.posX)+6; storageY=(int)Math.floor(player.posY); storageZ=(int)Math.floor(player.posZ)+6;
+            storageX=(int)Math.floor(player.posX)+4; storageY=(int)Math.floor(player.posY); storageZ=(int)Math.floor(player.posZ)+4;
             net.minecraft.world.World world=player.worldObj;
             world.setBlock(storageX,storageY,storageZ,QuestBlocks.devices[7]); QuestStorage chest=(QuestStorage)world.getTileEntity(storageX,storageY,storageZ); chest.owner=id; chest.bindingChanged(); chest.setInventorySlotContents(26,new net.minecraft.item.ItemStack(net.minecraft.init.Items.iron_ingot,2));
             for(int i=0;i<20;i++) chest.updateEntity();
             if(chest.getStackInSlot(26)!=null || !main.progress().completed(id).contains(chestQuest.id)) throw new IllegalStateException("Quest chest did not submit items and finish its quest");
             world.setBlockToAir(storageX,storageY,storageZ); world.setBlock(storageX,storageY,storageZ,QuestBlocks.devices[8]); QuestStorage storage=(QuestStorage)world.getTileEntity(storageX,storageY,storageZ); storage.owner=id; storage.bindingChanged(); storage.setInventorySlotContents(53,QuestLoot.crate(utilities,"preview-drop"));
+            net.minecraft.item.ItemStack crate=QuestLoot.crate(utilities,"preview-drop"); storage.store(crate,5000000000L); storage.compact();
+            if(storage.reserved()!=4999999937L || storage.getStackInSlot(0).stackSize!=64 || storage.getStackInSlot(53)!=null) throw new IllegalStateException("Virtual crate bank did not absorb intake or refill output");
+            world.setBlock(storageX,storageY-1,storageZ,net.minecraft.init.Blocks.hopper,0,3);
+            net.minecraft.tileentity.TileEntityHopper hopper=(net.minecraft.tileentity.TileEntityHopper)world.getTileEntity(storageX,storageY-1,storageZ);
+            for(int i=0;i<16;i++) hopper.updateEntity(); long pulled=0;
+            for(int i=0;i<hopper.getSizeInventory();i++) if(hopper.getStackInSlot(i)!=null) { pulled+=hopper.getStackInSlot(i).stackSize; storage.store(hopper.getStackInSlot(i),hopper.getStackInSlot(i).stackSize); hopper.setInventorySlotContents(i,null); }
+            if(pulled<=0) throw new IllegalStateException("Actual hopper could not extract virtual bank output"); storage.compact(); world.setBlockToAir(storageX,storageY-1,storageZ);
+            if(storage.reserved()!=4999999937L) throw new IllegalStateException("Hopper roundtrip changed total stored crates");
+            world.setBlock(storageX+3,storageY,storageZ,QuestBlocks.devices[8]); QuestStorage breakable=(QuestStorage)world.getTileEntity(storageX+3,storageY,storageZ); breakable.store(crate,256); breakable.compact(); world.setBlockToAir(storageX+3,storageY,storageZ);
+            long sealed=0; int parcels=0;
+            for(Object raw:world.getEntitiesWithinAABB(net.minecraft.entity.item.EntityItem.class,net.minecraft.util.AxisAlignedBB.getBoundingBox(storageX+2,storageY-1,storageZ-1,storageX+5,storageY+2,storageZ+2))) {
+                net.minecraft.entity.item.EntityItem entity=(net.minecraft.entity.item.EntityItem)raw; net.minecraft.item.ItemStack dropStack=entity.getEntityItem();
+                if(dropStack.getItem() instanceof QuestCrateParcel) { parcels++; sealed+=QuestCrateParcel.count(dropStack); entity.setDead(); }
+            }
+            if(parcels!=1 || sealed!=192) throw new IllegalStateException("Breaking storage lost or duplicated its virtual reserve");
             world.setBlock(storageX+2,storageY,storageZ,QuestBlocks.devices[9]); QuestDevice detector=(QuestDevice)world.getTileEntity(storageX+2,storageY,storageZ); detector.owner=id; detector.quest="task:"+meter.id+"/"+power.id; detector.task=power.id; detector.analog=true; detector.bindingChanged(); main.creditTask(player,meter.id,power.id,50);
             for(int i=0;i<20;i++) detector.updateEntity(); if(detector.redstoneOutput!=8) throw new IllegalStateException("Progress detector did not emit analog half-progress");
             main.creditTask(player,meter.id,power.id,50); detector.analog=false;
@@ -57,7 +73,7 @@ public final class NativeQuestSmoke {
             pig.attackEntityFrom(net.minecraft.util.DamageSource.causePlayerDamage(player),1000);
             if(!observer.seen) throw new IllegalStateException("Actual creature death did not drop its configured crate");
         } finally { main.book=previous; main.quests=previousQuests; net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(observer); }
-        System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, crate storage and analog detector");
+        System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, virtual crate storage beyond 32-bit counts, actual hopper extraction, sealed break drops and analog detector");
     }
     public static final class DropObserver {
         boolean seen;
@@ -68,7 +84,7 @@ public final class NativeQuestSmoke {
     public static void verify(EntityPlayerMP player) throws Exception {
         QuestService main=QuestsMod.service; UUID id=player.getUniqueID();
         net.minecraft.tileentity.TileEntity raw=player.worldObj.getTileEntity(storageX,storageY,storageZ);
-        if(!(raw instanceof QuestStorage) || ((QuestStorage)raw).getSizeInventory()!=54 || ((QuestStorage)raw).getStackInSlot(53)==null || !((QuestStorage)raw).getStackInSlot(53).getTagCompound().getString("table").equals("preview-drop")) throw new IllegalStateException("Crate storage did not survive world restart");
+        if(!(raw instanceof QuestStorage) || ((QuestStorage)raw).getSizeInventory()!=54 || ((QuestStorage)raw).reserved()!=4999999937L || ((QuestStorage)raw).getStackInSlot(0)==null || !((QuestStorage)raw).getStackInSlot(0).getTagCompound().getString("table").equals("preview-drop")) throw new IllegalStateException("Crate storage did not survive world restart");
         if(!main.progress().profile().equals(original) || !main.progress().stage(id,"preview:stage") || main.progress().skill(id,"preview:skill")!=12) throw new IllegalStateException("Native markers or selected pack mode did not survive restart");
         if(main.emergencyWait(player)<=0) throw new IllegalStateException("Emergency cooldown did not survive restart");
         main.switchProfile(profile);

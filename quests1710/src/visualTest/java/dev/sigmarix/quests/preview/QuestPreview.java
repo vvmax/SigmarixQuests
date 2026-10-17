@@ -27,6 +27,7 @@ public final class QuestPreview {
     private volatile boolean bcRequested,bcPassed;
     private volatile boolean iconRequested,iconReady;
     private boolean iconPassed;
+    private volatile boolean openStorageRequested;
     private boolean bcRunning;
     private boolean emcRunning;
     private boolean manaRunning;
@@ -50,6 +51,10 @@ public final class QuestPreview {
     }
     @SubscribeEvent public void server(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
+        if(openStorageRequested) {
+            net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
+            int[] position=NativeQuestSmoke.storagePosition(); owner.openGui(QuestsMod.instance,0,owner.worldObj,position[0],position[1],position[2]); openStorageRequested=false;
+        }
         if(iconRequested) {
             net.minecraft.entity.player.EntityPlayerMP owner=(net.minecraft.entity.player.EntityPlayerMP)net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList.get(0);
             owner.inventory.setInventorySlotContents(8,new net.minecraft.item.ItemStack(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon")));
@@ -173,7 +178,17 @@ public final class QuestPreview {
                 if(!nativePassed && !restarted) { nativeRequested=true; stage=26; break; }
                 if(cpw.mods.fml.common.Loader.isModLoaded("customnpcs") && !npcPassed && !restarted) { npcRequested=true; stage=25; break; }
                 action("view"); stage=1; break;
-            case 26: if(nativePassed) stage=0; break;
+            case 26:
+                if(nativePassed) { int[] position=NativeQuestSmoke.storagePosition(); if(!(mc.theWorld.getTileEntity(position[0],position[1],position[2]) instanceof QuestStorage)) return; QuestToasts.clear(); openStorageRequested=true; stage=42; waiting=0; } break;
+            case 42:
+                if(!(mc.currentScreen instanceof QuestStorageScreen) || waiting<15) return;
+                if(!(mc.thePlayer.openContainer instanceof QuestStorageContainer) || ((QuestStorageContainer)mc.thePlayer.openContainer).reserved!=4999999937L) return;
+                QuestToasts.clear(); ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-virtual-storage.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                press(mc.currentScreen,10); stage=43; break;
+            case 43:
+                if(snap==null || !snap.message.equals("Storage page changed")) return;
+                if(((QuestStorageContainer)mc.thePlayer.openContainer).reserved!=4999999937L) throw new IllegalStateException("Storage paging changed reserve count");
+                mc.thePlayer.closeScreen(); stage=0; break;
             case 31:
                 if(waiting<20) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-nei.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());

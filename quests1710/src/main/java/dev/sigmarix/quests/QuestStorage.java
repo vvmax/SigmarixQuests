@@ -2,10 +2,15 @@ package dev.sigmarix.quests;
 import java.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
-/** Native inventory chest: automatic item submission or dedicated physical crate storage. */
+/** Native inventory chest: automatic item submission or virtual crate storage with vanilla inventory buffers. */
 public final class QuestStorage extends QuestDevice {
     private ItemStack[] stacks=new ItemStack[54];
     private boolean crateOnly;
+    private QuestCrateBank bank=new QuestCrateBank();
+    public boolean crates() { return crateOnly; }
+    public long reserved() { return bank.total(); }
+    public long store(ItemStack stack,long amount) { if(!crateOnly) return 0; long accepted=bank.deposit(stack,amount); if(accepted>0) markDirty(); return accepted; }
+    public java.util.List<ItemStack> parcels() { java.util.List<ItemStack> parcels=new java.util.ArrayList<ItemStack>(); for(QuestCrateBank.Entry entry:bank.entries()) parcels.add(QuestCrateParcel.create(entry.prototype,entry.count())); bank.clear(); markDirty(); return parcels; }
     private int storageTicks,cursor;
     public QuestStorage() {}
     public QuestStorage(boolean crates) { crateOnly=crates; }
@@ -27,7 +32,9 @@ public final class QuestStorage extends QuestDevice {
     @Override public boolean canInsertItem(int slot,ItemStack stack,int side) { return isItemValidForSlot(slot,stack); }
     @Override public boolean canExtractItem(int slot,ItemStack stack,int side) { return slot>=0 && slot<getSizeInventory(); }
     @Override public void updateEntity() {
-        super.updateEntity(); if(getWorldObj()==null || getWorldObj().isRemote || crateOnly || ++storageTicks%20!=0) return;
+        super.updateEntity(); if(getWorldObj()==null || getWorldObj().isRemote) return;
+        if(crateOnly) { if(++storageTicks%5==0) compact(); return; }
+        if(++storageTicks%20!=0) return;
         net.minecraft.entity.player.EntityPlayerMP owner=player(); QuestService service=QuestsMod.service; if(owner==null || service==null) return;
         List<QuestCore.Quest> quests=new ArrayList<QuestCore.Quest>(service.quests.values()); if(quests.isEmpty()) return; int budget=4096;
         for(int scanned=0;scanned<quests.size() && budget>0;scanned++) {
@@ -41,13 +48,60 @@ public final class QuestStorage extends QuestDevice {
             if(accepted) service.finish(owner,definition);
         }
     }
+    public void nextPage() {
+        if(!crateOnly) throw new IllegalArgumentException("Only crate storage has pages");
+        long total=bank.total(); java.util.List<ItemStack> variants=new java.util.ArrayList<ItemStack>();
+        for(QuestCrateBank.Entry entry:bank.entries()) variants.add(entry.prototype);
+        for(ItemStack stack:stacks) if(stack!=null) {
+            if(Long.MAX_VALUE-total<stack.stackSize) throw new IllegalArgumentException("Extract some crates before paging this full bank"); total+=stack.stackSize;
+            boolean found=false; for(ItemStack variant:variants) if(QuestCrateBank.same(stack,variant)) { found=true; break; } if(!found) variants.add(stack);
+        }
+        if(variants.size()>QuestCrateBank.MAX_TYPES) throw new IllegalArgumentException("Too many crate variants to change page");
+        for(int slot=0;slot<getSizeInventory();slot++) if(stacks[slot]!=null) { bank.deposit(stacks[slot],stacks[slot].stackSize); stacks[slot]=null; }
+        variants.sort((a,b)->variantKey(a).compareTo(variantKey(b))); page=(page+1)%Math.max(1,(variants.size()+52)/53);
+        for(int i=0;i<53 && i+page*53<variants.size();i++) {
+            ItemStack prototype=variants.get(i+page*53); int amount=(int)bank.withdraw(prototype,Math.min(64,prototype.getMaxStackSize()));
+            if(amount>0) { stacks[i]=prototype.copy(); stacks[i].stackSize=amount; }
+        }
+        markDirty();
+    }
+    private int page;
+    private static String variantKey(ItemStack stack) { return net.minecraft.item.Item.itemRegistry.getNameForObject(stack.getItem())+"/"+stack.getItemDamage()+"/"+String.valueOf(stack.getTagCompound()); }
+    /** Slot 53 stays an intake so more than 53 variants can be stored through hoppers. */
+    public void compact() {
+        if(!crateOnly) return;
+        boolean changed=false; java.util.List<ItemStack> seen=new java.util.ArrayList<ItemStack>();
+        for(int slot=0;slot<getSizeInventory();slot++) {
+            ItemStack stack=stacks[slot]; if(stack==null) continue;
+            boolean duplicate=false; for(ItemStack earlier:seen) if(QuestCrateBank.same(earlier,stack)) { duplicate=true; break; }
+            if(slot==53 || duplicate) { int accepted=(int)bank.deposit(stack,stack.stackSize); if(accepted>0) { stack.stackSize-=accepted; changed=true; if(stack.stackSize<=0) stacks[slot]=null; } }
+            else seen.add(stack);
+        }
+        for(QuestCrateBank.Entry entry:new java.util.ArrayList<QuestCrateBank.Entry>(bank.entries())) {
+            int target=-1;
+            for(int slot=0;slot<53;slot++) if(QuestCrateBank.same(stacks[slot],entry.prototype)) { target=slot; break; }
+            if(target<0) for(int slot=0;slot<53;slot++) if(stacks[slot]==null) { target=slot; break; }
+            if(target<0) continue;
+            int current=stacks[target]==null?0:stacks[target].stackSize,limit=Math.min(64,entry.prototype.getMaxStackSize());
+            int moved=(int)bank.withdraw(entry.prototype,Math.min(entry.count(),Math.max(0,limit-current)));
+            if(moved>0) { if(stacks[target]==null) { stacks[target]=entry.prototype.copy(); stacks[target].stackSize=0; } stacks[target].stackSize+=moved; changed=true; }
+        }
+        if(changed) markDirty();
+    }
+    @Override public net.minecraft.network.Packet getDescriptionPacket() {
+        NBTTagCompound tag=new NBTTagCompound(); super.writeToNBT(tag); tag.setBoolean("crateOnly",crateOnly);
+        return new net.minecraft.network.play.server.S35PacketUpdateTileEntity(xCoord,yCoord,zCoord,0,tag);
+    }
+    @Override public void onDataPacket(net.minecraft.network.NetworkManager manager,net.minecraft.network.play.server.S35PacketUpdateTileEntity packet) {
+        NBTTagCompound tag=packet.func_148857_g(); super.readFromNBT(tag); crateOnly=tag.getBoolean("crateOnly");
+    }
     @Override public void readFromNBT(NBTTagCompound tag) {
-        super.readFromNBT(tag); crateOnly=tag.getBoolean("crateOnly"); stacks=new ItemStack[54]; NBTTagList entries=tag.getTagList("storage",10);
+        super.readFromNBT(tag); bank=QuestCrateBank.read(tag.getTagList("crateBank",10)); crateOnly=tag.getBoolean("crateOnly"); page=Math.max(0,Math.min((QuestCrateBank.MAX_TYPES-1)/53,tag.getInteger("storagePage"))); stacks=new ItemStack[54]; NBTTagList entries=tag.getTagList("storage",10);
         for(int i=0;i<entries.tagCount();i++) { NBTTagCompound entry=entries.getCompoundTagAt(i); int slot=entry.getByte("Slot") & 255; if(slot<getSizeInventory()) stacks[slot]=ItemStack.loadItemStackFromNBT(entry); }
     }
     @Override public void writeToNBT(NBTTagCompound tag) {
-        super.writeToNBT(tag); tag.setBoolean("crateOnly",crateOnly); NBTTagList entries=new NBTTagList();
+        super.writeToNBT(tag); tag.setInteger("storagePage",page); tag.setBoolean("crateOnly",crateOnly); NBTTagList entries=new NBTTagList();
         for(int slot=0;slot<getSizeInventory();slot++) if(stacks[slot]!=null) { NBTTagCompound entry=new NBTTagCompound(); entry.setByte("Slot",(byte)slot); stacks[slot].writeToNBT(entry); entries.appendTag(entry); }
-        tag.setTag("storage",entries);
+        tag.setTag("storage",entries); tag.setTag("crateBank",bank.write());
     }
 }

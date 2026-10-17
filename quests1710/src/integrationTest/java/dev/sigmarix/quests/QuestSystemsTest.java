@@ -20,7 +20,8 @@ public class QuestSystemsTest {
     private QuestService service;
     private QuestProgress data;
     private QuestCore.Quest quest;
-    @BeforeClass public static void boot() { Bootstrap.func_151354_b(); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestDevice.class,"sigmarixquests:test-device-base"); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestStorage.class,"sigmarixquests:test-storage"); }
+    private static QuestBlocks.LootCrateItem bankCrate;
+    @BeforeClass public static void boot() { Bootstrap.func_151354_b(); bankCrate=new QuestBlocks.LootCrateItem(); cpw.mods.fml.common.registry.GameRegistry.registerItem(bankCrate,"test-bank-crate"); cpw.mods.fml.common.registry.GameRegistry.registerItem(QuestBlocks.crateParcel,"crate_parcel"); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestDevice.class,"sigmarixquests:test-device-base"); cpw.mods.fml.common.registry.GameRegistry.registerTileEntity(QuestStorage.class,"sigmarixquests:test-storage"); }
     @Before public void setup() {
         player=mock(EntityPlayerMP.class);
         when(player.getUniqueID()).thenReturn(UUID.randomUUID());
@@ -692,6 +693,48 @@ public class QuestSystemsTest {
             QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=3; service.book.lootTables.put("table",Collections.singletonList(xp));
             ItemStack imported=new ItemStack(actual.getItem()); imported.setTagCompound(QuestService.tag("{type:rare}")); service.openLoot(player,"rare",imported); assertEquals(0,imported.stackSize); verify(player).addExperience(3);
         } finally { QuestsMod.service=null; }
+    }
+
+    @Test public void virtualCratesKeepExactVariantsAndLongCountsWithoutOverflow() {
+        ItemStack first=new ItemStack(bankCrate),second=new ItemStack(bankCrate); first.setTagCompound(QuestService.tag("{table:first}")); second.setTagCompound(QuestService.tag("{table:second}"));
+        QuestCrateBank bank=new QuestCrateBank(); assertEquals(5000000000L,bank.deposit(first,5000000000L)); assertEquals(2,bank.deposit(second,2));
+        QuestCrateBank saved=QuestCrateBank.read(bank.write()); assertEquals(5000000002L,saved.total()); assertEquals(2,saved.withdraw(second,100)); assertEquals(0,saved.count(second)); assertEquals(64,saved.withdraw(first,64));
+        long room=Long.MAX_VALUE-saved.total(); assertEquals(room,saved.deposit(first,Long.MAX_VALUE)); assertEquals(0,saved.deposit(second,1)); assertEquals(Long.MAX_VALUE,saved.total()); assertEquals(Long.MAX_VALUE,QuestCrateBank.read(saved.write()).total());
+        try { saved.deposit(new ItemStack(Items.diamond),1); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(Long.MAX_VALUE,saved.total());
+    }
+    @Test public void virtualStorageAbsorbsIntakeAndDuplicatesRefillsAndSurvivesSave() {
+        ItemStack crate=new ItemStack(bankCrate); crate.setTagCompound(QuestService.tag("{table:first}")); QuestStorage storage=new QuestStorage(true);
+        storage.store(crate,5000000000L); storage.compact(); assertEquals(64,storage.getStackInSlot(0).stackSize); assertEquals(4999999936L,storage.reserved());
+        ItemStack second=crate.copy(); second.stackSize=64; storage.setInventorySlotContents(53,second); storage.compact(); assertNull(storage.getStackInSlot(53)); assertEquals(5000000000L,storage.reserved());
+        assertEquals(64,storage.decrStackSize(0,64).stackSize); storage.compact(); assertEquals(4999999936L,storage.reserved()); assertEquals(64,storage.getStackInSlot(0).stackSize);
+        NBTTagCompound tag=new NBTTagCompound(); storage.writeToNBT(tag); QuestStorage restored=new QuestStorage(); restored.readFromNBT(tag); assertEquals(storage.reserved(),restored.reserved()); assertEquals(64,restored.getStackInSlot(0).stackSize);
+        java.util.List<ItemStack> parcels=restored.parcels(); assertEquals(1,parcels.size()); assertEquals(4999999936L,QuestCrateParcel.count(parcels.get(0))); assertEquals(0,restored.reserved()); assertEquals(64,restored.getStackInSlot(0).stackSize);
+        QuestStorage other=new QuestStorage(true); assertEquals(4999999936L,QuestCrateParcel.deposit(parcels.get(0),other)); assertEquals(0,parcels.get(0).stackSize); assertEquals(4999999936L,other.reserved());
+    }
+    @Test public void crateParcelDoesNotLoseContentsWhenInventoryIsFullAndOnlyUnpacksWhatFits() {
+        ItemStack crate=new ItemStack(bankCrate); crate.setTagCompound(QuestService.tag("{table:first}")); ItemStack parcel=QuestCrateParcel.create(crate,5000000000L);
+        for(int i=0;i<player.inventory.mainInventory.length;i++) player.inventory.mainInventory[i]=new ItemStack(Items.stick,64);
+        new QuestCrateParcel().onItemRightClick(parcel,player.worldObj,player); assertEquals(5000000000L,QuestCrateParcel.count(parcel));
+        player.inventory.mainInventory[0]=crate.copy(); player.inventory.mainInventory[0].stackSize=60;
+        new QuestCrateParcel().onItemRightClick(parcel,player.worldObj,player); assertEquals(64,player.inventory.mainInventory[0].stackSize); assertEquals(4999999996L,QuestCrateParcel.count(parcel));
+        assertTrue(QuestCrateBank.same(crate,QuestCrateParcel.prototype(parcel)));
+    }
+    @Test public void storageCounterUsesAllFourWordsAndTileDescriptionDoesNotReplaceOpenBuffers() {
+        QuestStorage storage=new QuestStorage(true); ItemStack crate=new ItemStack(bankCrate); storage.setInventorySlotContents(0,crate);
+        QuestStorageContainer container=new QuestStorageContainer(player,storage); long expected=5000000123L;
+        for(int i=0;i<4;i++) container.updateProgressBar(10+i,(short)(expected >>> (i*16))); assertEquals(expected,container.reserved);
+        NBTTagCompound tag=new NBTTagCompound(); tag.setBoolean("crateOnly",true); storage.onDataPacket(null,new net.minecraft.network.play.server.S35PacketUpdateTileEntity(0,0,0,0,tag)); assertSame(crate,storage.getStackInSlot(0));
+        storage.store(crate,expected); NBTTagCompound description=((net.minecraft.network.play.server.S35PacketUpdateTileEntity)storage.getDescriptionPacket()).func_148857_g(); assertFalse(description.hasKey("crateBank")); assertFalse(description.hasKey("storage"));
+    }
+
+    @Test public void virtualStoragePagesExposeVariantsBeyondTheVisibleSlotsWithoutChangingTotals() {
+        QuestStorage storage=new QuestStorage(true);
+        for(int i=0;i<60;i++) { ItemStack crate=new ItemStack(bankCrate); NBTTagCompound tag=new NBTTagCompound(); tag.setString("table",String.format("variant_%02d",i)); crate.setTagCompound(tag); storage.store(crate,100); }
+        storage.compact(); long total=storage.reserved(); for(int i=0;i<54;i++) if(storage.getStackInSlot(i)!=null) total+=storage.getStackInSlot(i).stackSize; assertEquals(6000,total);
+        storage.nextPage(); boolean last=false; total=storage.reserved();
+        for(int i=0;i<54;i++) if(storage.getStackInSlot(i)!=null) { ItemStack crate=storage.getStackInSlot(i); last|=crate.getTagCompound().getString("table").equals("variant_59"); total+=crate.stackSize; }
+        assertTrue(last); assertEquals(6000,total); storage.nextPage(); assertEquals("variant_00",storage.getStackInSlot(0).getTagCompound().getString("table"));
     }
 
 }
