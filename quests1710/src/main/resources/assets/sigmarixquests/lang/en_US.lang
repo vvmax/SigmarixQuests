@@ -83,3 +83,7 @@ item.sigmarixquests.crate_parcel.name=Sealed crate parcel
 
 quests.ui.next_types=Next types
 quests.ui.crates=Crates
+
+quests.ui.open_in_guide=Open in guide
+quests.ui.guide_is_not_available=Guide is not available
+quests.ui.guides=Guides

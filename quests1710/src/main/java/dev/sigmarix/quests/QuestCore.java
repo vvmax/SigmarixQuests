@@ -49,7 +49,7 @@ public final class QuestCore {
             Map<String, Quest> byId = new LinkedHashMap<String, Quest>();
             for (Quest q : quests) {
                 if (q == null || !validId(q.id) || byId.put(q.id, q) != null) throw new IllegalArgumentException("Invalid or duplicate quest id");
-                if (q.title == null || q.title.length() > 256 || q.description == null || q.description.length() > 16384 || q.subtitle==null || q.subtitle.length()>1024 || q.minWidth<0 || q.minWidth>4096 ||
+                if (q.title == null || q.title.length() > 256 || q.description == null || q.description.length() > 16384 || q.subtitle==null || q.subtitle.length()>1024 || q.guidePage==null || q.guidePage.length()>512 || q.minWidth<0 || q.minWidth>4096 ||
                     q.dependencies == null || q.dependencyState==null || !Arrays.asList("completed","started").contains(q.dependencyState) || q.rewardMode==null || !Arrays.asList("team","individual").contains(q.rewardMode) || q.tasks == null || q.rewards == null || q.tasks.size() > 128 || q.rewards.size() > 128 ||
                     q.chapter == null || (!q.chapter.isEmpty() && !chapterIds.contains(q.chapter)) ||
                     !Double.isFinite(q.x) || !Double.isFinite(q.y) || Math.abs(q.x) > 100000 || Math.abs(q.y) > 100000 || q.cooldownSeconds < 0 || q.minDependencies<0 || q.minDependencies>q.dependencies.size())
@@ -146,7 +146,7 @@ public final class QuestCore {
         public List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
     }
     public static final class Quest {
-        public String id, title, description = "", subtitle="", chapter = "", icon = "minecraft:book";
+        public String id, title, description = "", subtitle="", guidePage="", chapter = "", icon = "minecraft:book";
         public String dependencyState="completed", rewardMode="team", shape="", uri="",itemBrowser="inherit";
         public List<QuestPresentation.GuidePage> richPages=new ArrayList<QuestPresentation.GuidePage>();
         public List<String> tags=new ArrayList<String>(),pages=new ArrayList<String>();

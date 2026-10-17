@@ -481,7 +481,7 @@ def convert(folder):
         for path in documents(chapter_dir, ('chapter',)):
             try:
                 raw = read_document(path)
-                refuse_fields(raw, ('guide_page',))
+
                 if raw.get('custom_click') and not re.match(r'https?://', raw['custom_click']): raise ValueError('Quest custom click needs a supported http/https URI')
                 requirement = raw.get('dependency_requirement', 'all_completed')
                 if requirement not in ('all_completed', 'one_completed', 'all_started', 'one_started'):
@@ -489,7 +489,7 @@ def convert(folder):
                 repeat = bool(raw.get('can_repeat', False))
                 title = raw.get('title') or path.stem
                 quest = {'id': code(path.stem), 'chapter': chapter_id, 'title': title,
-                         'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': raw.get('custom_click', ''),
+                         'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'guidePage': raw.get('guide_page', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': raw.get('custom_click', ''),
                          'itemBrowser': 'inherit' if raw.get('disable_jei') in (None, 'default') else 'disabled' if tristate(raw['disable_jei']) else 'enabled',
                          'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)), 'tags': raw.get('tags', []),
                          'shape': raw.get('shape') or '', 'size': float(raw.get('size', 1)),

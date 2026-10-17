@@ -11,11 +11,12 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
     private int page,scroll;
     private String pendingUri="";
     private final Map<int[],String> links=new LinkedHashMap<int[],String>();
-    private int pages() { return Math.max(1,quest.pages.size()+quest.richPages.size()); }
+    private int pages() { return Math.max(1,quest.pages.size()+quest.richPages.size()+(quest.guidePage.isEmpty()?0:1)); }
     public QuestGuideScreen(GuiScreen parent,QuestCore.Quest quest) { this.parent=parent; this.quest=quest; }
     @Override public void initGui() {
         buttonList.clear(); buttonList.add(new GuiButton(0,12,height-30,70,20,QuestText.tr("Back")));
         buttonList.add(new GuiButton(1,90,height-30,45,20,"<")); buttonList.add(new GuiButton(2,140,height-30,45,20,">"));
+        if(!quest.guidePage.isEmpty()) buttonList.add(new GuiButton(5,width/2-80,height/2,160,20,QuestText.tr("Open in guide")));
         if(!quest.uri.isEmpty()) buttonList.add(new GuiButton(3,width-130,height-30,118,20,QuestText.tr("Open link...")));
     }
     @Override protected void actionPerformed(GuiButton b) {
@@ -23,6 +24,7 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
         if(b.id==1) { page=Math.max(0,page-1); scroll=0; }
         if(b.id==2) { page=Math.min(pages()-1,page+1); scroll=0; }
         if(b.id==3) open(quest.uri);
+        if(b.id==5) QuestGuides.open(quest.guidePage,this);
     }
     private void open(String uri) { if(QuestPresentation.link(uri) && !uri.isEmpty()) { pendingUri=uri; mc.displayGuiScreen(new GuiConfirmOpenLink(this,uri,4,false)); } }
     @Override public void confirmClicked(boolean yes,int id) {
@@ -32,6 +34,9 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
     @Override public void drawScreen(int x,int y,float partial) {
         drawDefaultBackground(); drawCenteredString(fontRendererObj,quest.title+" - "+(page+1)+"/"+pages(),width/2,14,0xFFFFFF);
         links.clear();
+        boolean external=!quest.guidePage.isEmpty() && page==pages()-1;
+        for(Object raw:buttonList) { GuiButton button=(GuiButton)raw; if(button.id==5) { button.visible=external; button.enabled=external && QuestGuides.available(quest.guidePage); } }
+        if(external) { drawCenteredString(fontRendererObj,fontRendererObj.trimStringToWidth(quest.guidePage,width-36),width/2,50,0xEEEEEE); super.drawScreen(x,y,partial); return; }
         if(page>=quest.pages.size() && !quest.richPages.isEmpty()) { rich(quest.richPages.get(page-quest.pages.size()),x,y); super.drawScreen(x,y,partial); return; }
         List<String> lines=fontRendererObj.listFormattedStringToWidth(quest.pages.isEmpty()?quest.description:quest.pages.get(page),width-36);
         int rows=Math.max(1,(height-76)/12); scroll=Math.max(0,Math.min(scroll,Math.max(0,lines.size()-rows)));

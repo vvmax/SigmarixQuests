@@ -83,3 +83,7 @@ item.sigmarixquests.crate_parcel.name=Запечатанная посылка с
 
 quests.ui.next_types=Типы >
 quests.ui.crates=Кейсы
+
+quests.ui.open_in_guide=Открыть руководство
+quests.ui.guide_is_not_available=Руководство недоступно
+quests.ui.guides=Руководства

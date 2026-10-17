@@ -7,6 +7,12 @@ from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, sec
 from migrate_progress import migrate
 
 class MigrationTests(unittest.TestCase):
+    def test_external_guide_reference_is_preserved_without_fetching_guide_content(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); chapter = root / 'chapters' / '01'; chapter.mkdir(parents=True)
+            (chapter / 'chapter.snbt').write_text('{}'); (chapter / '02.snbt').write_text('{guide_page:"botania:lexicon" tasks:[{type:"checkmark"}]}')
+            self.assertEqual('botania:lexicon', convert(root)['quests'][0]['guidePage'])
+
     def test_task_and_reward_labels_icons_and_task_toast_flags_survive_import(self):
         icon = {'id': 'ftbquests:custom_icon', 'tag': {'icon': 'minecraft:textures/items/diamond.png'}}
         raw = {'type': 'checkmark', 'title': 'Named task', 'description': ['First', 'Second'], 'icon': icon, 'disable_toast': True}
@@ -104,8 +110,8 @@ class MigrationTests(unittest.TestCase):
     def test_unknown_semantics_fail_with_source_path(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder); chapter = root / 'chapters' / '01'; chapter.mkdir(parents=True)
-            (chapter / 'chapter.snbt').write_text('{}'); (chapter / '02.snbt').write_text('{guide_page:"unknown" tasks:[{type:"checkmark"}]}')
-            with self.assertRaisesRegex(ValueError, '02.snbt.*guide_page'):
+            (chapter / 'chapter.snbt').write_text('{}'); (chapter / '02.snbt').write_text('{custom_click:"unsupported:action" tasks:[{type:"checkmark"}]}')
+            with self.assertRaisesRegex(ValueError, '02.snbt.*custom click'):
                 convert(root)
     def book(self):
         return {'quests': [{'id': 'ftb_00000002', 'rewardMode': 'individual', 'tasks': [{'id': 'ftb_00000003', 'type': 'item', 'count': 4}], 'rewards': [{'id': 'ftb_00000004', 'type': 'xp', 'mode': 'individual'}]}]}

@@ -21,6 +21,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         String filter=search==null?"":search.getText(); layoutSplit=split();
         buttonList.clear();
         buttonList.add(new GuiButton(11,8,height-38,96,20,QuestText.tr("All groups")));
+        if(QuestGuides.available("")) buttonList.add(new GuiButton(12,110,height-38,64,20,QuestText.tr("Guides")));
         buttonList.add(new GuiButton(0,width-65,8,57,20,QuestText.tr("Close")));
         buttonList.add(new GuiButton(1,8,8,70,20,QuestText.tr("Refresh")));
         buttonList.add(new GuiButton(2,84,8,110,20,QuestText.tr("Chapter")));
@@ -143,6 +144,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
     @Override protected void actionPerformed(GuiButton button) {
         QuestNetwork.Action action=new QuestNetwork.Action(); action.id=selected;
         switch(button.id) {
+            case 12: QuestGuides.open("",this); return;
             case 10: action.action="emergency"; ClientProxy.send(action); return;
             case 9: mc.displayGuiScreen(new QuestTeamScreen(this)); return;
             case 0: mc.displayGuiScreen(null); return;
