@@ -99,7 +99,7 @@ public final class QuestNetwork {
     public static void taskToast(EntityPlayerMP player,QuestCore.Quest quest,QuestCore.Task task) {
         if(channel==null || QuestEvents.notificationsMuted()) return;
         Toast toast=new Toast(); toast.title=QuestPresentation.title(task); toast.text="Task complete";
-        QuestCore.Task label=new QuestCore.Task(); label.title=task.title; label.type=task.type; label.target=task.target; label.meta=task.meta; label.nbt=task.nbt; label.levels=task.levels; label.dimension=task.dimension; toast.task=label;
+        toast.task=QuestService.JSON.fromJson(QuestService.JSON.toJson(task),QuestCore.Task.class);
         toast.icon=task.icon.isEmpty()?quest.icon:task.icon; toast.iconMeta=task.icon.isEmpty()?quest.iconMeta:task.iconMeta; toast.iconNbt=task.icon.isEmpty()?quest.iconNbt:task.iconNbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
@@ -107,7 +107,7 @@ public final class QuestNetwork {
     public static void rewardToast(EntityPlayerMP player,QuestCore.Reward source,int deliveredCount){
         if(channel==null || QuestEvents.notificationsMuted() || source.type.equals("toast"))return;
         Toast toast=new Toast();toast.text="Reward collected";toast.reward=new QuestCore.Reward();QuestCore.Reward r=toast.reward;
-        r.type=source.type;r.title=source.title;r.item=source.item;r.meta=source.meta;r.nbt=source.nbt;r.count=deliveredCount;r.randomBonus=0;r.icon=source.icon;r.iconMeta=source.iconMeta;r.iconNbt=source.iconNbt;
+        r.type=source.type;r.title=source.title;r.table=source.table;r.target=source.target;r.description=source.description;r.text=source.text;r.item=source.item;r.meta=source.meta;r.nbt=source.nbt;r.count=deliveredCount;r.randomBonus=0;r.icon=source.icon;r.iconMeta=source.iconMeta;r.iconNbt=source.iconNbt;
         toast.icon=source.icon.isEmpty()?(source.type.equals("item")?source.item:source.type.startsWith("xp")?"minecraft:experience_bottle":"minecraft:paper"):source.icon;toast.iconMeta=source.icon.isEmpty()?source.meta:source.iconMeta;toast.iconNbt=source.icon.isEmpty()?source.nbt:source.iconNbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
@@ -139,6 +139,7 @@ public final class QuestNetwork {
         public java.util.List<TeamEntry> teams=new java.util.ArrayList<TeamEntry>();
         public int teamColor=0x0094FF;
         public java.util.List<String> pinned=new java.util.ArrayList<String>();
+        public java.util.Map<String,Integer> chapterPercentages=new java.util.LinkedHashMap<String,Integer>();
         public java.util.Map<String,Integer> percentages=new java.util.LinkedHashMap<String,Integer>();
         public java.util.List<String> teamMembers=new java.util.ArrayList<String>(),teamInvites=new java.util.ArrayList<String>();
         public java.util.List<Rank> leaderboard=new java.util.ArrayList<Rank>();

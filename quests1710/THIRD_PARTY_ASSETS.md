@@ -23,3 +23,8 @@ FTBLib sprite rectangles observed in the reference 1.12.2 runtime. The port
 builds this atlas from the attributed original icon PNGs at resource reload,
 preserving resource-pack overrides and stable sampling when optional mods
 change the Minecraft block atlas. It adds no Minecraft block textures.
+
+The three toast sounds in `assets/sigmarixquests/sounds/reference/toast/` are
+unchanged Minecraft 1.12 asset-index objects (`ui/toast/in`, `out`, and
+`challenge_complete`). Mojang retains rights to these sounds. The reference
+manifest records their source keys, object SHA-1s and included-file SHA-256s.

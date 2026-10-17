@@ -8,6 +8,7 @@ public final class QuestEditorActions {
         for(QuestCore.Quest quest:draft.quests)if(selected.contains(quest.id) && quest.chapter.equals(chapter)){quest.x+=dx;quest.y+=dy;}
         draft.validate();return draft;
     }
+    public static QuestCore.Book moveChapter(QuestCore.Book book,String id,boolean up){QuestCore.Book draft=copy(book);int index=-1;for(int i=0;i<draft.chapters.size();i++)if(draft.chapters.get(i).id.equals(id)){index=i;break;}if(index<0)throw new IllegalArgumentException("Unknown chapter");int next=index+(up?-1:1);if(next>=0 && next<draft.chapters.size())Collections.swap(draft.chapters,index,next);draft.validate();return draft;}
     public static QuestCore.Book dependencies(QuestCore.Book book,Set<String> selected,String target,boolean reverse,boolean add){
         QuestCore.Book draft=copy(book);Map<String,QuestCore.Quest> quests=new LinkedHashMap<String,QuestCore.Quest>();for(QuestCore.Quest quest:draft.quests)quests.put(quest.id,quest);
         if(!quests.containsKey(target))throw new IllegalArgumentException("Unknown dependency quest");

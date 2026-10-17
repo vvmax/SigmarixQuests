@@ -233,6 +233,23 @@
     "assets/sigmarixquests/textures/reference/recipe_book.png": "8c8b8ef02c7d3c7ebd7fb3007c4fe5b8cfd3ff5eda070d533c124a8ba3360d95",
     "assets/sigmarixquests/textures/reference/steve.png": "4c7b0468044bfecacc43d00a3a69335a834b73937688292c20d3988cae58248d",
     "assets/sigmarixquests/textures/reference/toasts.png": "60998f6bd9cfbd661e336b94e1917fe802f9de06c992de866ec2e4b0779ceb18",
-    "assets/sigmarixquests/textures/reference/widgets.png": "48fe427f1ec8f94e65fdd667a5488ef0ed8bf2fe2fa4239dd36a48fbb570721c"
+    "assets/sigmarixquests/textures/reference/widgets.png": "48fe427f1ec8f94e65fdd667a5488ef0ed8bf2fe2fa4239dd36a48fbb570721c",
+    "assets/sigmarixquests/sounds/reference/toast/in.ogg": "fe8bdfeefd08724d83960019a05fe0dc970d3a9430943f2bde82958bb827e5ea",
+    "assets/sigmarixquests/sounds/reference/toast/out.ogg": "bfcb1c5378d0496b480a251569575035a1c2a163a821f4920ae4bda8065bec03",
+    "assets/sigmarixquests/sounds/reference/toast/challenge_complete.ogg": "a33c4fb11899468701aabb514e6419740bbaded38f3646749bd4ae5f17ef3603"
+  },
+  "minecraft_asset_objects": {
+    "assets/sigmarixquests/sounds/reference/toast/in.ogg": {
+      "source": "Minecraft 1.12 asset index: minecraft/sounds/ui/toast/in.ogg",
+      "sha1": "1bdb9e214a7833b794b1b4b97796d9f9af12bca5"
+    },
+    "assets/sigmarixquests/sounds/reference/toast/out.ogg": {
+      "source": "Minecraft 1.12 asset index: minecraft/sounds/ui/toast/out.ogg",
+      "sha1": "167a4f93c12d2d03d9ce266b8cb67065281bd218"
+    },
+    "assets/sigmarixquests/sounds/reference/toast/challenge_complete.ogg": {
+      "source": "Minecraft 1.12 asset index: minecraft/sounds/ui/toast/challenge_complete.ogg",
+      "sha1": "210c839d6fab655373b3a5e4c278f59dff4936d8"
+    }
   }
 }

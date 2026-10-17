@@ -268,21 +268,22 @@ public final class QuestsMod {
         for(UUID leader:data.invitations(id)) snapshot.teamInvites.add(playerName(leader));
         snapshot.leaderboard=data.leaderboard(service.quests.keySet());
         for(QuestNetwork.Rank rank:snapshot.leaderboard) try { rank.name=playerName(UUID.fromString(rank.name)); } catch(IllegalArgumentException teamName) {}
-        for(QuestCore.Chapter chapter:service.book.chapters) snapshot.chapterStates.put(chapter.id,service.chapterState(id,chapter.id));
+        for(QuestCore.Chapter chapter:service.book.chapters) {snapshot.chapterStates.put(chapter.id,service.chapterState(id,chapter.id));snapshot.chapterPercentages.put(chapter.id,service.objectPercent(id,"chapter:"+chapter.id));}
         snapshot.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(service.book),QuestCore.Book.class);
         if(!snapshot.canEdit) {
             Iterator<QuestCore.Quest> it=snapshot.book.quests.iterator();
             while(it.hasNext()) { QuestCore.Quest q=it.next(); if(q.hidden && !done.contains(q.id) && !service.unlocked(id,q) || !QuestPresentation.visibleChapter(service.book,q.chapter)) it.remove(); }
             snapshot.book.chapters.removeIf(chapter->!QuestPresentation.visibleChapter(service.book,chapter.id));
             for(QuestCore.Chapter chapter:snapshot.book.chapters) chapter.images.removeIf(image->image.dev);
-            snapshot.chapterStates.keySet().retainAll(snapshot.book.chapters.stream().map(chapter->chapter.id).collect(java.util.stream.Collectors.toSet()));
+            snapshot.chapterStates.keySet().retainAll(snapshot.book.chapters.stream().map(chapter->chapter.id).collect(java.util.stream.Collectors.toSet()));snapshot.chapterPercentages.keySet().retainAll(snapshot.chapterStates.keySet());
             // Command and custom implementation details are server-only for non-editors.
             for(List<QuestCore.Reward> table:snapshot.book.lootTables.values()) redact(table);
             for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.guidePage=""; q.customClick=""; q.description=""; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
         }
         Set<String> exposed=new HashSet<String>(); for(QuestCore.Quest q:snapshot.book.quests) exposed.add(q.id);
-        for(String pin:data.pins(id)) if(exposed.contains(pin) && service.visible(id,service.quests.get(pin))) { snapshot.pinned.add(pin); snapshot.percentages.put(pin,(int)Math.round(service.objectProgress(id,pin)*100)); }
+        for(String pin:data.pins(id)) if(exposed.contains(pin) && service.visible(id,service.quests.get(pin))) { snapshot.pinned.add(pin); snapshot.percentages.put(pin,service.objectPercent(id,pin)); }
         for(QuestCore.Quest q:snapshot.book.quests) {
+            snapshot.percentages.put(q.id,service.objectPercent(id,q.id));
             snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");
             for(int i=0;i<q.rewards.size();i++) { QuestCore.Reward r=q.rewards.get(i); snapshot.rewardStates.put(q.id+":"+r.id,data.rewardClaimed(id,q.id,r.id,service.individual(q,r))); }
             for(QuestCore.Task task:q.tasks) {

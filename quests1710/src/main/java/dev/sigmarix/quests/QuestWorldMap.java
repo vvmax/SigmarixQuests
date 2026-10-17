@@ -14,10 +14,10 @@ public final class QuestWorldMap {
         try { service.validateProgressReference(tile.quest); } catch(IllegalArgumentException removed) { return result; }
         String chapter=tile.quest.startsWith("chapter:")?tile.quest.substring(8):"";
         for(QuestCore.Quest quest:service.quests.values()) {
-            if(!chapter.isEmpty() && !QuestPresentation.within(service.book,quest.chapter,chapter) || !service.visible(viewer,quest) || !service.visible(tile.owner,quest)) continue;
+            if(!chapter.isEmpty() && !quest.chapter.equals(chapter) || !service.visible(viewer,quest) || !service.visible(tile.owner,quest)) continue;
             boolean completed=service.progress().completed(tile.owner).contains(quest.id);
             int state=completed?(service.claimed(tile.owner,quest)?3:2):service.unlocked(tile.owner,quest)?1:0;
-            int percent=(int)Math.round(100*service.objectProgress(tile.owner,quest.id));
+            int percent=service.objectPercent(tile.owner,quest.id);
             result.values.put(quest.id,state*101+percent);
         }
         return result;

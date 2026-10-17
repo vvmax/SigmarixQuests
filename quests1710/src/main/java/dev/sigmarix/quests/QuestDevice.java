@@ -79,7 +79,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     }
     public int percent() {
         QuestService service=QuestsMod.service; if(service==null || owner==null || !bindingProfile.equals(service.progress().profile())) return 0;
-        return (int)Math.round(100*service.objectProgress(owner,quest));
+        return service.objectPercent(owner,quest);
     }
     @Override public void updateEntity() {
         if(worldObj.isRemote) return;

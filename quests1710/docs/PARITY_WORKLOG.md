@@ -120,3 +120,40 @@ fields now use native read-only state for non-editors.
 
 Checkpoint build passed: 60 JUnit, 150 Forge integration tests and 43 Python tests.
 A new combined optional-mod client run is in progress after these changes.
+
+Context-menu geometry, disabled/info entries and original FTBLib icons now match
+one complete 854×480 frame. Active and completed pinned HUD also match full frames;
+fluid units and formatted counters now follow native task progress strings.
+See `context-hud-pixel-comparison.json`. Chapter up/down actions keep their menu
+open and rebuild against a new server revision; a native reward-table edit action
+is now available directly from random/choice/loot reward context menus.
+
+Seven toast frames (custom, long-title, long-subtitle, chapter, task, quest,
+reward) and four valid-items grids (0/1/5/20 entries) match full frames, without
+exclusions. See `toast-valid-items-pixel-comparison.json`. Chapter completion uses
+its native pink title and actual chapter name. Task notices preserve counts and
+custom icons; reward notices preserve live table title references. Native toast
+in/out/chapter-completion OGG files are attributed and hashed. The client fixture
+checks all three registered sound resources.
+
+Eleven world-screen foreground frames now match the native TESRs under the same
+orthographic front view: check task empty/complete, energy 0/50/100%, item, input
+mode, and chapter map normal/fullscreen/with icons/empty. Input animation phase is
+fixed at frame zero in both fixtures; no image regions are excluded. The runtime
+uses the animated block-atlas sprite rather than compressing its entire frame
+strip. Energy texture boundaries and hidden progress numbers follow the original.
+See `world-screen-pixel-comparison.json`. Chapter map values now include the
+selected chapter directly rather than silently merging its descendants.
+
+Server snapshots now send native integer display progress for all exposed quests,
+not only pinned ones. The display calculation floors task percentages, preserves
+positive progress at 1%, treats OR-task quests as 0/100%, and averages child chapter
+groups. Dedicated backend tests cover these semantics. The independent completion
+and task counter model remains authoritative.
+
+Latest build passed 61 JUnit and 153 Forge integration tests; 43 Python migration
+tests pass. The combined optional-mod client passed at commit 2fa64f1 (including
+native desktop Save and restart). A fresh combined run is checking the subsequent
+world-display, toast, sound, progress and context-action refinements. Remaining
+visual work includes fractional map sizes/zoom and further interaction states;
+this is still not a claim of complete parity.

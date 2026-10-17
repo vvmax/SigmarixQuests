@@ -1,0 +1,29 @@
+{
+  "toast.in": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "sigmarixquests:reference/toast/in",
+        "stream": false
+      }
+    ]
+  },
+  "toast.out": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "sigmarixquests:reference/toast/out",
+        "stream": false
+      }
+    ]
+  },
+  "toast.challenge_complete": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "sigmarixquests:reference/toast/challenge_complete",
+        "stream": false
+      }
+    ]
+  }
+}
