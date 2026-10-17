@@ -62,7 +62,7 @@ public final class QuestNEI extends TemplateRecipeHandler {
             if(!alternatives.isEmpty()) inputs.add(new PositionedStack(alternatives,8+(inputs.size()%3)*18,18+(inputs.size()/3)*18));
         }
         for(QuestCore.Reward reward:quest.rewards) rewards(reward,outputs,0);
-        return new Row(quest.title,inputs,outputs,"Quest: "+quest.id+" (choices/loot shown as options)");
+        return new Row(QuestTaskLabels.quest(quest),inputs,outputs,"Quest: "+quest.id+" (choices/loot shown as options)");
     }
     private void rewards(QuestCore.Reward reward,List<PositionedStack> output,int depth) {
         if(depth>16 || output.size()>=6) return;
@@ -70,7 +70,7 @@ public final class QuestNEI extends TemplateRecipeHandler {
             Item item=(Item)Item.itemRegistry.getObject(reward.item); if(item==null) return;
             ItemStack stack=new ItemStack(item,Math.min(64,reward.count),reward.meta); stack.setTagCompound(QuestService.tag(reward.nbt)); output.add(new PositionedStack(stack,112+(output.size()%3)*18,18+(output.size()/3)*18));
         } else if(reward.type.equals("loot") && book()!=null && book().lootTables.containsKey(reward.target)) for(QuestCore.Reward child:book().lootTables.get(reward.target)) rewards(child,output,depth+1);
-        else for(QuestCore.Reward child:reward.options) rewards(child,output,depth+1);
+        else for(QuestCore.Reward child:QuestCore.rewardOptions(book(),reward)) rewards(child,output,depth+1);
     }
     @Override public void drawBackground(int index) { Gui.drawRect(0,0,166,64,0xFF26313D); }
     @Override public void drawExtras(int index) {

@@ -4,6 +4,53 @@ from pathlib import Path
 from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, mapping_rules
 
 class ImportTests(unittest.TestCase):
+    def test_native_book_defaults_metadata_and_tick_precision_remain_editable(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'file.snbt').write_text('{title:"" tags:["book"] default_consume_items:true default_reward_team:true default_autoclaim_rewards:"no_toast" disable_toast:true emergency_items_cooldown:"21t"}')
+            chapter = root / 'chapters' / '00000001'
+            chapter.mkdir(parents=True)
+            (chapter / 'chapter.snbt').write_text('{subtitle:["Chapter detail"] tags:["chapter"] disable_toast:true icon:"ftbquests:book"}')
+            (chapter / '00000002.snbt').write_text('{tasks:[{uid:3 type:"item" item:"minecraft:stone" tags:["task"]}] rewards:[{uid:4 type:"xp" xp:7 tags:["reward"]}]}')
+            book = convert(root)
+            self.assertEqual(book['title'], '')
+            self.assertEqual(book['defaultQuestShape'], 'circle')
+            self.assertEqual(book['defaultAutoClaim'], 'no_toast')
+            self.assertEqual(book['emergencyCooldownTicks'], 21)
+            self.assertTrue(book['defaultConsumeItems'])
+            self.assertTrue(book['defaultRewardTeam'])
+            self.assertTrue(book['disableToast'])
+            self.assertEqual(book['chapters'][0]['description'], 'Chapter detail')
+            self.assertEqual(book['chapters'][0]['icon'], 'sigmarixquests:quest_book')
+            self.assertTrue(book['chapters'][0]['disableToast'])
+            quest = book['quests'][0]
+            self.assertEqual(quest['title'], '')
+            self.assertEqual(quest['rewardMode'], 'inherit')
+            self.assertEqual(quest['tasks'][0]['consumeMode'], 'inherit')
+            self.assertEqual(quest['tasks'][0]['tags'], ['task'])
+            self.assertEqual(quest['rewards'][0]['mode'], 'inherit')
+            self.assertEqual(quest['rewards'][0]['auto'], 'inherit')
+            self.assertEqual(quest['rewards'][0]['tags'], ['reward'])
+
+    def test_table_title_and_crate_item_name_are_independent(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'chapters' / '00000002').mkdir(parents=True)
+            (root / 'chapters' / '00000002' / 'chapter.snbt').write_text('{title:"Chapter"}')
+            (root / 'chapters' / '00000002' / '00000003.snbt').write_text('{tasks:[{type:"checkmark" uid:4}]}')
+            (root / 'reward_tables').mkdir()
+            (root / 'reward_tables' / '00000001.snbt').write_text('{title:"Table label" tags:["tier_one"] hide_tooltip:true use_title:true rewards:[{type:"xp" xp:10}] loot_crate:{string_id:"common" item_name:"Physical crate"}}')
+            book = convert(root)
+            settings = book['lootSettings']['ftb_00000001']
+            self.assertEqual(settings['name'], 'Table label')
+            self.assertEqual(settings['itemName'], 'Physical crate')
+            self.assertEqual(settings['tags'], ['tier_one'])
+            self.assertTrue(settings['hideTooltip'])
+            self.assertTrue(settings['useTitle'])
+
+    def test_silent_auto_claim_mode_is_preserved(self):
+        self.assertEqual(convert_reward({"type": "xp", "xp": 12, "auto": "no_toast"})["auto"], "no_toast")
+
     def test_snbt_comments_suffixes_and_omitted_commas(self):
         value = SNBT('{ // comment\nname:"Привет"\nlist:[I;1,2,3]\ntag:{on:1b}\n}').parse()
         self.assertEqual(value['name'], 'Привет')

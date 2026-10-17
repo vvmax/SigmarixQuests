@@ -38,6 +38,22 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    public static final class CustomRewardListener {final List<QuestCustomRewardEvent> events=new ArrayList<QuestCustomRewardEvent>();@cpw.mods.fml.common.eventhandler.SubscribeEvent public void reward(QuestCustomRewardEvent event){events.add(event);}}
+    @Test public void nativeCustomRewardPostsServerEventWithoutRequiringNamedHookAndRejectsReplay() throws Exception{
+        task("check",null,1,false);QuestCore.Reward reward=new QuestCore.Reward();reward.id="custom_native";reward.type="custom";quest.rewards.add(reward);CustomRewardListener listener=new CustomRewardListener();
+        java.lang.reflect.Field controllerField=cpw.mods.fml.common.Loader.class.getDeclaredField("modController");controllerField.setAccessible(true);Object old=controllerField.get(cpw.mods.fml.common.Loader.instance());cpw.mods.fml.common.LoadController controller=new cpw.mods.fml.common.LoadController(cpw.mods.fml.common.Loader.instance());java.lang.reflect.Field activeField=controller.getClass().getDeclaredField("activeContainer");activeField.setAccessible(true);cpw.mods.fml.common.ModMetadata metadata=new cpw.mods.fml.common.ModMetadata();metadata.modId="quest-event-tests";metadata.name="Quest event tests";activeField.set(controller,new cpw.mods.fml.common.DummyModContainer(metadata));controllerField.set(cpw.mods.fml.common.Loader.instance(),controller);try{net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(listener);}finally{controllerField.set(cpw.mods.fml.common.Loader.instance(),old);}
+        try{service.finish(player,quest);service.claimReward(player,quest,reward.id,Collections.<Integer>emptyList());assertEquals(1,listener.events.size());assertSame(player,listener.events.get(0).getPlayer());assertSame(reward,listener.events.get(0).getReward());assertTrue(listener.events.get(0).shouldNotify());try{service.claimReward(player,quest,reward.id,Collections.<Integer>emptyList());fail();}catch(IllegalArgumentException expected){}assertEquals(1,listener.events.size());}finally{net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(listener);}
+    }
+    @Test public void namedChoiceAndRandomRewardsUseCurrentTableWithoutLootCrateRollSettings() {
+        task("check",null,1,false);QuestCore.Reward choice=new QuestCore.Reward();choice.id="choice_table";choice.type="choice";choice.table="shared";quest.rewards.add(choice);
+        QuestCore.Reward stale=new QuestCore.Reward();stale.type="xp";stale.count=2;choice.options.add(stale);
+        QuestCore.Reward current=new QuestCore.Reward();current.type="xp";current.count=11;service.book.lootTables.put("shared",new ArrayList<QuestCore.Reward>(Collections.singletonList(current)));
+        QuestCore.LootSettings settings=new QuestCore.LootSettings();settings.rolls=64;settings.emptyWeight=1000000;service.book.lootSettings.put("shared",settings);
+        QuestCore.Reward random=new QuestCore.Reward();random.id="random_table";random.type="random";random.table="shared";quest.rewards.add(random);
+        service.finish(player,quest);service.claimReward(player,quest,choice.id,Collections.singletonList(0));verify(player).addExperience(11);verify(player,never()).addExperience(2);
+        current.count=13;service.claimReward(player,quest,random.id,Collections.<Integer>emptyList());verify(player).addExperience(13);assertTrue(service.claimed(player.getUniqueID(),quest));
+        try{service.claimReward(player,quest,random.id,Collections.<Integer>emptyList());fail();}catch(IllegalArgumentException expected){}verify(player,times(1)).addExperience(13);
+    }
     @Test public void cardRewardClickClaimsExactlyOneRootAndRejectsReplays() {
         task("check",null,1,false); xpReward(2,"team"); QuestCore.Reward choice=new QuestCore.Reward(); choice.id="pick"; choice.type="choice";
         QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=7; choice.options.add(xp); quest.rewards.add(choice); service.finish(player,quest);
@@ -103,6 +119,38 @@ public class QuestSystemsTest {
         edit.indestructible=false;edit.owner=UUID.randomUUID().toString();try{edit.apply(service,tile,player);fail();}catch(IllegalArgumentException expected){}assertEquals(player.getUniqueID(),tile.owner);
         QuestDevice detector=configuredDevice(5);try{QuestDeviceConfig.read(detector).apply(service,detector,player);fail();}catch(IllegalArgumentException expected){}
         when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true);QuestDeviceConfig allowed=QuestDeviceConfig.read(detector);allowed.radius=4;allowed.notifications=false;allowed.apply(service,detector,player);assertEquals(4,detector.detectorRadius,0);assertFalse(detector.detectorNotifications);
+    }
+    @Test public void originalBlockStateStringsResolveToNativeMetadataAndObservationConstraints() {
+        QuestBlockState.State wool=QuestBlockState.parse("minecraft:wool[color=red]");assertSame(Blocks.wool,wool.block);assertEquals(14,wool.meta);assertEquals("minecraft:wool[color=red]",QuestBlockState.format(wool.block,wool.meta));QuestBlockState.State stairs=QuestBlockState.parse("minecraft:oak_stairs[facing=north,half=top,shape=straight]");assertEquals(7,stairs.meta);assertSame(Blocks.air,QuestBlockState.parse("minecraft:air").block);
+        QuestCore.Task task=task("observation","minecraft:wool",1,false);task.matchType="block_id";task.properties="color=red";when(player.worldObj.getBlock(1,2,3)).thenReturn(Blocks.wool);when(player.worldObj.getBlockMetadata(1,2,3)).thenReturn(14);assertTrue(QuestRayMatcher.block(task,player.worldObj,1,2,3));task.properties="color=blue";assertFalse(QuestRayMatcher.block(task,player.worldObj,1,2,3));
+        for(String invalid:Arrays.asList("minecraft:missing","minecraft:wool[color=purple,color=red]","minecraft:wool[color=ultraviolet]","minecraft:stone[meta=16]"))try{QuestBlockState.parse(invalid);fail(invalid);}catch(IllegalArgumentException expected){}
+    }
+    @Test public void completionNotificationsIncludeNativeQuestChapterAndFileKindsAndHonorFlags() {
+        task("check",null,1,false);quest.title="";quest.chapter="map";service.book.quests.add(quest);QuestCore.Chapter chapter=new QuestCore.Chapter();chapter.id="map";chapter.title="Map";service.book.chapters.add(chapter);data.complete(player.getUniqueID(),quest.id);
+        cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper previous=QuestNetwork.channel,channel=mock(cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper.class);QuestNetwork.channel=channel;
+        try{service.completionNotifications(player,quest);org.mockito.ArgumentCaptor<QuestNetwork.Notice> notices=org.mockito.ArgumentCaptor.forClass(QuestNetwork.Notice.class);verify(channel,times(3)).sendTo(notices.capture(),same(player));List<String> kinds=new ArrayList<String>();for(QuestNetwork.Notice notice:notices.getAllValues()){QuestNetwork.Toast toast=QuestService.JSON.fromJson(notice.json,QuestNetwork.Toast.class);kinds.add(toast.completion);if(toast.completion.equals("quest")){assertEquals("",toast.quest.title);assertEquals(1,toast.quest.tasks.size());assertEquals("check",toast.quest.tasks.get(0).type);}}assertEquals(Arrays.asList("quest","chapter","file"),kinds);reset(channel);quest.disableToast=chapter.disableToast=service.book.disableToast=true;service.completionNotifications(player,quest);verify(channel,never()).sendTo(any(QuestNetwork.Notice.class),same(player));}finally{QuestNetwork.channel=previous;}
+    }
+    @Test public void openerNormalClickReportsStockWithoutOpeningOrConsumingHeldCrates() {
+        QuestDevice tile=configuredDevice(6);tile.setInventorySlotContents(1,new ItemStack(Items.gold_ingot,17));when(player.worldObj.getTileEntity(0,0,0)).thenReturn(tile);ItemStack held=new ItemStack(bankCrate,1);when(player.getHeldItem()).thenReturn(held);
+        cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper previous=QuestNetwork.channel,channel=mock(cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper.class);QuestNetwork.channel=channel;
+        try{assertTrue(((QuestBlocks.DeviceBlock)tile.getBlockType()).onBlockActivated(player.worldObj,0,0,0,player,2,.5F,.5F,.5F));org.mockito.ArgumentCaptor<QuestNetwork.Notice> notice=org.mockito.ArgumentCaptor.forClass(QuestNetwork.Notice.class);verify(channel).sendTo(notice.capture(),same(player));QuestNetwork.Toast status=QuestService.JSON.fromJson(notice.getValue().json,QuestNetwork.Toast.class);assertTrue(status.status);assertEquals("17",status.text);assertEquals(1,held.stackSize);verify(player,never()).openGui(any(),anyInt(),any(World.class),anyInt(),anyInt(),anyInt());}finally{QuestNetwork.channel=previous;}
+    }
+    @Test public void crateStockReportIncludesBuffersWithoutChangingLargeVirtualReserves() {
+        QuestCore.LootSettings settings=new QuestCore.LootSettings();settings.alias="common";service.book.lootSettings.put("loot",settings);QuestStorage storage=new QuestStorage(true);ItemStack crate=new ItemStack(bankCrate,1);NBTTagCompound tag=new NBTTagCompound();tag.setString("table","loot");crate.setTagCompound(tag);long count=1L+Integer.MAX_VALUE;storage.store(crate,count);ItemStack buffer=crate.copy();buffer.stackSize=9;storage.setInventorySlotContents(0,buffer);assertEquals(Long.valueOf(count+9),storage.crateCounts(service.book).get("loot"));assertEquals(count,storage.reserved());assertEquals(9,storage.getStackInSlot(0).stackSize);
+    }
+    @Test public void chestProtectionUsesTheSameAtomicPermissionChecksAsScreens() throws Exception {
+        QuestDevice tile=configuredDevice(7);QuestDeviceConfig edit=QuestDeviceConfig.read(tile);edit.indestructible=true;try{edit.apply(service,tile,player);fail();}catch(IllegalArgumentException expected){}assertFalse(tile.indestructible);when(player.canCommandSenderUseCommand(2,"quests.edit")).thenReturn(true);edit.apply(service,tile,player);assertTrue(tile.indestructible);
+    }
+    @Test public void silentAutoClaimDeliversOnceAndHonorsExplicitNotificationOverrides() {
+        service.book.quests.clear();service.book.quests.add(quest);service.book.defaultAutoClaim="no_toast";xpReward(2,"team");xpReward(3,"team");quest.rewards.get(1).auto="enabled";xpReward(9,"team");quest.rewards.get(2).auto="disabled";service.book.validate();data.complete(player.getUniqueID(),quest.id);
+        cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper previous=QuestNetwork.channel,channel=mock(cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper.class);QuestNetwork.channel=channel;
+        try{service.autoClaim(player,quest);service.autoClaim(player,quest);verify(player,times(1)).addExperience(2);verify(player,times(1)).addExperience(3);verify(player,never()).addExperience(9);verify(channel,times(1)).sendTo(isA(QuestNetwork.Notice.class),same(player));}finally{QuestNetwork.channel=previous;}
+    }
+    @Test public void chapterImageCommandsAreResolvedFromVisibleServerDefinitions() {
+        QuestCore.Chapter chapter=new QuestCore.Chapter();chapter.id="map";chapter.title="Map";service.book.chapters.add(chapter);QuestPresentation.MapImage image=new QuestPresentation.MapImage();image.click="command:say image";chapter.images.add(image);
+        assertEquals("/say image",service.clickCommand(player.getUniqueID(),"image:map:0"));
+        for(String reference:Arrays.asList("image:map:-1","image:map:1","image:map:bad","image:missing:0","image:map"))try{service.clickCommand(player.getUniqueID(),reference);fail(reference);}catch(IllegalArgumentException expected){}
+        image.dev=true;try{service.clickCommand(player.getUniqueID(),"image:map:0");fail();}catch(IllegalArgumentException expected){}assertEquals("/say image",service.clickCommand(player.getUniqueID(),"image:map:0",true));image.dev=false;chapter.alwaysInvisible=true;try{service.clickCommand(player.getUniqueID(),"image:map:0");fail();}catch(IllegalArgumentException expected){}
     }
     @Test public void operatorTaskProgressActionsPreserveOtherTasksAndNeverGrantRewards() {
         QuestCore.Task first=task("check",null,1,false),second=task("check",null,1,false);first.manual=second.manual=true;xpReward(9,"team");
@@ -702,6 +750,13 @@ public class QuestSystemsTest {
     private QuestDevice terminalTile() {
         QuestDevice tile=spy(new QuestDevice()); tile.owner=player.getUniqueID(); tile.quest=quest.id; tile.task=quest.tasks.get(0).id; tile.setWorldObj(player.worldObj); doReturn(player).when(tile).player();
         when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"eu_test")); QuestsMod.service=service; return tile;
+    }
+    @Test public void nativeEnergyInputLimitCapsEachTransferAndSimulationKeepsProgress(){
+        QuestCore.Task energy=task("energy",null,20,false);energy.maxInput=7;QuestDevice tile=terminalTile();
+        try{assertEquals(7,tile.receiveEnergy(ForgeDirection.UP,100,true));assertEquals(0,data.value(player.getUniqueID(),quest.id,energy.id));assertEquals(7,tile.receiveEnergy(ForgeDirection.UP,100,false));assertEquals(7,tile.receiveEnergy(ForgeDirection.UP,100,false));assertEquals(6,tile.receiveEnergy(ForgeDirection.UP,100,false));assertEquals(20,data.value(player.getUniqueID(),quest.id,energy.id));assertEquals(0,tile.receiveEnergy(ForgeDirection.UP,100,false));}finally{QuestsMod.service=null;}
+    }
+    @Test public void legacyAchievementCriteriaDoNotSilentlyCompleteUnknownCriteria(){
+        QuestCore.Task achievement=task("achievement","achievement.openInventory",1,false);achievement.criterion="missing";net.minecraft.stats.StatisticsFile stats=mock(net.minecraft.stats.StatisticsFile.class);when(player.func_147099_x()).thenReturn(stats);when(stats.hasAchievementUnlocked(net.minecraft.stats.AchievementList.openInventory)).thenReturn(true);assertFalse(service.check(player,quest,false));achievement.criterion="done";assertTrue(service.check(player,quest,false));
     }
     @Test public void euPacketsCreditOnlyAcceptedWholeUnitsAndRetainFractions() {
         task("ic2_energy",null,2,false); QuestDevice tile=terminalTile();

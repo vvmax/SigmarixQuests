@@ -28,6 +28,10 @@ final class QuestLibraryUi extends Gui {
     static void window(int x,int y,int w,int h) {patch("recipe_book",82,208,32,32,8,x,y,w,h);}
     static void slot(int x,int y,int w,int h) {patch("container_beacon",35,136,18,18,3,x-1,y-1,w+2,h+2);}
     static void textBox(int x,int y,int w,int h) {patch("container_enchanting_table",0,185,108,19,6,x,y,w,h);}
+    static final class IconButton extends GuiButton {
+        private final String icon;IconButton(int id,int x,int y,String icon){super(id,x,y,16,16,"");this.icon=icon;}
+        @Override public void drawButton(Minecraft mc,int mx,int my){if(!visible)return;field_146123_n=mx>=xPosition && my>=yPosition && mx<xPosition+width && my<yPosition+height;QuestClassicUi.libraryIcon(icon,xPosition,yPosition,16,0xFFFFFFFF);}
+    }
     static class Button extends GuiButton {
         final String icon;private boolean centered=true;
         Button(int id,int x,int y,int w,int h,String title,String icon) {super(id,x,y,w,h,title);this.icon=icon;}

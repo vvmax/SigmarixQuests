@@ -9,6 +9,9 @@ public final class QuestStorage extends QuestDevice {
     private QuestCrateBank bank=new QuestCrateBank();
     public boolean crates() { return crateOnly; }
     public long reserved() { return bank.total(); }
+    public Map<String,Long> crateCounts(QuestCore.Book book){Map<String,Long> counts=new LinkedHashMap<String,Long>();for(Map.Entry<String,QuestCore.LootSettings> entry:book.lootSettings.entrySet())if(!entry.getValue().alias.isEmpty())counts.put(entry.getKey(),0L);for(QuestCrateBank.Entry entry:bank.entries())crateCount(book,counts,entry.prototype,entry.count());for(ItemStack stack:stacks)if(stack!=null)crateCount(book,counts,stack,stack.stackSize);return counts;}
+    private void crateCount(QuestCore.Book book,Map<String,Long> counts,ItemStack stack,long amount){String key=QuestLoot.resolve(book,QuestLoot.table(stack.getTagCompound()));if(counts.containsKey(key)){long old=counts.get(key);counts.put(key,old+Math.min(amount,Long.MAX_VALUE-old));}}
+
     public long store(ItemStack stack,long amount) { if(!crateOnly) return 0; long accepted=bank.deposit(stack,amount); if(accepted>0) markDirty(); return accepted; }
     public java.util.List<ItemStack> parcels() { java.util.List<ItemStack> parcels=new java.util.ArrayList<ItemStack>(); for(QuestCrateBank.Entry entry:bank.entries()) parcels.add(QuestCrateParcel.create(entry.prototype,entry.count())); bank.clear(); markDirty(); return parcels; }
     private int storageTicks,cursor;

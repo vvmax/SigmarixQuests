@@ -10,10 +10,10 @@ public final class QuestCore {
         "item", "xp", "xp_levels", "command", "choice", "random", "loot", "achievement", "toast", "npc_quest", "npc_faction", "npc_mail", "gamestage", "skill", "custom")));
     public static final class Book {
         public int format = 2;
-        public boolean disableGui,hideFromItemBrowser,defaultRewardTeam,defaultConsumeItems;
+        public boolean disableGui,hideFromItemBrowser,defaultRewardTeam,defaultConsumeItems,disableToast;
         public String defaultAutoClaim="disabled",icon="",iconNbt="";public int iconMeta;public List<String> tags=new ArrayList<String>();
         public double gridScale=.5;
-        public String defaultQuestShape="square";
+        public String defaultQuestShape="circle";
         public List<Reward> emergencyItems=new ArrayList<Reward>();
         public int emergencyCooldownSeconds=300;
         public long emergencyCooldownTicks=-1;
@@ -21,14 +21,14 @@ public final class QuestCore {
         public QuestLoot.Weights noDrop=new QuestLoot.Weights(4000,600,0);
         public QuestPresentation.Theme theme=new QuestPresentation.Theme();
         public List<QuestPresentation.Style> styles=new ArrayList<QuestPresentation.Style>();
-        public String title = "Quest Book";
+        public String title = "";
         public List<Chapter> chapters = new ArrayList<Chapter>();
         public List<Quest> quests = new ArrayList<Quest>();
         public Map<String, LootSettings> lootSettings = new LinkedHashMap<String, LootSettings>();
         public Map<String, List<Reward>> lootTables = new LinkedHashMap<String, List<Reward>>();
         public Map<String, Quest> validate() {
             QuestPresentation.metadata(title,"",icon,iconMeta,iconNbt);QuestPresentation.tags(tags);
-            if(defaultAutoClaim==null || !Arrays.asList("disabled","enabled","invisible").contains(defaultAutoClaim))throw new IllegalArgumentException("Invalid default auto claim");
+            if(defaultAutoClaim==null || !Arrays.asList("disabled","enabled","no_toast","invisible").contains(defaultAutoClaim))throw new IllegalArgumentException("Invalid default auto claim");
             if (format < 1 || format > 2 || title == null || title.length() > 256 || quests == null || chapters == null || lootTables == null || lootSettings == null || quests.size() > 4096)
                 throw new IllegalArgumentException("Invalid book header or size");
             if(emergencyItems==null || emergencyItems.size()>64 || emergencyCooldownSeconds<0 || emergencyCooldownSeconds>31536000 || emergencyCooldownTicks< -1 || emergencyCooldownTicks>630720000L || noDrop==null) throw new IllegalArgumentException("Invalid emergency items or loot drop configuration");
@@ -67,11 +67,14 @@ public final class QuestCore {
                         throw new IllegalArgumentException("Invalid task: " + q.id);
                     if(t.consumeMode==null || !Arrays.asList("explicit","inherit","enabled","disabled").contains(t.consumeMode))throw new IllegalArgumentException("Invalid item consumption mode");
                     if(t.type.equals("item") && !t.consumeMode.equals("explicit"))t.consume=q.repeatable || t.consumeMode.equals("enabled") || t.consumeMode.equals("inherit") && defaultConsumeItems;
+                    if(t.craftingMode==null || !Arrays.asList("explicit","inherit","enabled","disabled").contains(t.craftingMode) || t.maxInput<0 || t.maxInput>Integer.MAX_VALUE || t.criterion==null || t.criterion.length()>256)throw new IllegalArgumentException("Invalid task configuration");
+                    if(t.type.equals("item") && !t.craftingMode.equals("explicit"))t.craftingOnly=t.craftingMode.equals("enabled");
                     QuestPresentation.metadata(t.title,t.description,t.icon,t.iconMeta,t.iconNbt);QuestPresentation.tags(t.tags);
                     if (t.id == null) t.id = "t" + i;
                     if (!validId(t.id) || !taskIds.add(t.id)) throw new IllegalArgumentException("Invalid task id: " + q.id);
                     if (Arrays.asList("item", "kill", "biome", "stat", "achievement", "observation", "interaction", "fluid", "npc_quest", "npc_dialog", "npc_faction", "gamestage", "skill").contains(t.type) && (t.target == null || t.target.isEmpty()) && !(t.type.equals("item") && (t.targets!=null && !t.targets.isEmpty() || t.filter!=null)))
                         throw new IllegalArgumentException("Missing task target: " + q.id);
+                    QuestBlockState.constraints(t.properties);
                     if(!QuestRayMatcher.TYPES.contains(t.matchType)) throw new IllegalArgumentException("Invalid ray matcher type");
                     if(t.comparison==null || !Arrays.asList("at_least","at_most","equals","not_equals","greater","less").contains(t.comparison)) throw new IllegalArgumentException("Invalid comparison");
                     if(t.type.equals("gamestage") || t.type.equals("skill")) QuestAttributes.validateKey(t.target);
@@ -89,15 +92,15 @@ public final class QuestCore {
                 }
             }
             for (Map.Entry<String, List<Reward>> e : lootTables.entrySet()) {
-                if (!validId(e.getKey()) || e.getValue() == null || e.getValue().isEmpty() && (!lootSettings.containsKey(e.getKey()) || lootSettings.get(e.getKey())==null || lootSettings.get(e.getKey()).emptyWeight<=0) || e.getValue().size() > 128) throw new IllegalArgumentException("Invalid loot table");
+                if (!validId(e.getKey()) || e.getValue() == null || e.getValue().size() > 128) throw new IllegalArgumentException("Invalid loot table");
                 for (Reward r : e.getValue()) validateReward(r, 0, true);
             }
             Set<String> aliases=new HashSet<String>();
             for(Map.Entry<String,LootSettings> e:lootSettings.entrySet()) {
                 LootSettings settings=e.getValue();
-                if(settings!=null && (settings.drops==null || settings.name==null || settings.name.length()>256)) throw new IllegalArgumentException("Invalid crate presentation");
+                if(settings!=null && (settings.drops==null || settings.name==null || settings.name.length()>256 || settings.itemName==null || settings.itemName.length()>256 || settings.icon==null || settings.iconNbt==null || settings.tags==null || settings.tags.size()>128)) throw new IllegalArgumentException("Invalid crate presentation");
                 if(settings!=null && (settings.alias==null || !settings.alias.isEmpty() && (!settings.alias.matches("[a-zA-Z0-9_.:/-]{1,128}") || !aliases.add(settings.alias) || lootTables.containsKey(settings.alias) && !settings.alias.equals(e.getKey())))) throw new IllegalArgumentException("Invalid or duplicate crate alias");
-                if(settings!=null) { settings.drops.validate(); QuestPresentation.color(settings.color); }
+                if(settings!=null) { settings.drops.validate(); QuestPresentation.color(settings.color); QuestPresentation.metadata(settings.name,"",settings.icon,settings.iconMeta,settings.iconNbt); QuestPresentation.tags(settings.tags); }
                 if(!lootTables.containsKey(e.getKey()) || settings==null || settings.rolls<1 || settings.rolls>64 || settings.emptyWeight<0 || settings.emptyWeight>1000000)
                     throw new IllegalArgumentException("Invalid loot settings: "+e.getKey());
             }
@@ -109,8 +112,9 @@ public final class QuestCore {
             return byId;
         }
         private void validateReward(Reward r, int depth, boolean randomContext) {
-            if (depth > 16 || r == null || r.type == null || !REWARD_TYPES.contains(r.type) || r.count < 1 || r.count > 4096 || r.meta < 0 || r.weight < 1 || r.weight > 1000000 || r.options == null || r.options.size() > 128 || r.mode==null || !Arrays.asList("inherit","team","individual").contains(r.mode) || r.nbt == null || r.text==null || r.text.length()>8192 || r.randomBonus<0 || r.randomBonus>4096 || r.count+r.randomBonus>4096)
+            if (depth > 16 || r == null || r.type == null || !REWARD_TYPES.contains(r.type) || r.count < 1 || r.count > 8192 && !r.type.equals("xp") && !r.type.equals("xp_levels") || r.meta < 0 || r.weight < 1 || r.weight > 1000000 || r.table==null || !r.table.isEmpty() && (!validId(r.table) || !Arrays.asList("choice","random").contains(r.type)) || r.options == null || r.options.size() > 128 || r.mode==null || !Arrays.asList("inherit","team","individual").contains(r.mode) || r.nbt == null || r.text==null || r.text.length()>8192 || r.randomBonus<0 || r.randomBonus>8192 || r.type.equals("item") && (long)r.count+r.randomBonus>16384)
                 throw new IllegalArgumentException("Invalid reward");
+            if(r.criterion==null || r.criterion.length()>256)throw new IllegalArgumentException("Invalid advancement criterion");
             QuestPresentation.metadata(r.title,r.description,r.icon,r.iconMeta,r.iconNbt);QuestPresentation.tags(r.tags);
             if(r.type.equals("gamestage") || r.type.equals("skill")) QuestAttributes.validateKey(r.target);
             if((r.type.equals("skill") || r.type.equals("npc_faction")) && r.points<0) throw new IllegalArgumentException("Negative skill level");
@@ -119,21 +123,23 @@ public final class QuestCore {
             if(r.attachments==null || r.attachments.size()>4 || !r.type.equals("npc_mail") && !r.attachments.isEmpty()) throw new IllegalArgumentException("Invalid mail attachments");
             Set<Integer> mailSlots=new HashSet<Integer>();
             for(MailItem entry:r.attachments) if(entry==null || entry.item==null || entry.item.isEmpty() || entry.nbt==null || entry.slot<0 || entry.slot>3 || !mailSlots.add(entry.slot) || entry.count<1 || entry.count>64 || entry.meta<0) throw new IllegalArgumentException("Invalid mail attachment");
-            if(r.auto==null || !Arrays.asList("inherit","enabled","disabled","invisible").contains(r.auto) || (depth>0 || randomContext) && !r.auto.equals("inherit")) throw new IllegalArgumentException("Invalid reward auto-claim scope");
+            if(r.auto==null || !Arrays.asList("inherit","enabled","disabled","no_toast","invisible").contains(r.auto) || (depth>0 || randomContext) && !r.auto.equals("inherit")) throw new IllegalArgumentException("Invalid reward auto-claim scope");
             if((depth>0 || randomContext) && !r.mode.equals("inherit")) throw new IllegalArgumentException("Reward scope belongs on quest reward roots");
             if ("item".equals(r.type) && (r.item == null || r.item.isEmpty())) throw new IllegalArgumentException("Missing reward item");
-            if (Arrays.asList("command", "achievement", "loot", "custom", "toast", "npc_quest", "npc_faction", "gamestage", "skill").contains(r.type) && (r.target == null || r.target.isEmpty() || r.target.length() > 8192))
+            if (Arrays.asList("command", "achievement", "loot", "npc_quest", "npc_faction", "gamestage", "skill").contains(r.type) && (r.target == null || r.target.isEmpty() || r.target.length() > 8192))
                 throw new IllegalArgumentException("Missing reward target");
-            if (("choice".equals(r.type) || "random".equals(r.type)) && r.options.isEmpty()) throw new IllegalArgumentException("Empty reward options");
+            if(r.type.equals("custom") && r.target!=null && r.target.length()>8192)throw new IllegalArgumentException("Invalid custom reward hook");
+            if (("choice".equals(r.type) || "random".equals(r.type)) && r.table.isEmpty() && r.options.isEmpty()) throw new IllegalArgumentException("Empty reward options");
             if(randomContext && r.type.equals("choice")) throw new IllegalArgumentException("Choice rewards cannot be nested in random loot");
             for (Reward option : r.options) validateReward(option, depth + 1, randomContext || r.type.equals("random"));
         }
         private void validateLootReferences(Reward r, Set<String> path) {
-            if ("loot".equals(r.type)) {
-                List<Reward> table = lootTables.get(r.target);
-                if (table == null || !path.add(r.target) || path.size() > 16) throw new IllegalArgumentException("Unknown or cyclic loot table: " + r.target);
+            if ("loot".equals(r.type) || !r.table.isEmpty()) {
+                String reference="loot".equals(r.type)?r.target:r.table;
+                List<Reward> table = lootTables.get(reference);
+                if (table == null || !path.add(reference) || path.size() > 16) throw new IllegalArgumentException("Unknown or cyclic loot table: " + r.target);
                 for (Reward entry : table) validateLootReferences(entry, path);
-                path.remove(r.target);
+                path.remove(reference);
             }
             for (Reward child : r.options) validateLootReferences(child, path);
         }
@@ -147,11 +153,11 @@ public final class QuestCore {
         }
     }
     public static boolean validId(String id) { return id != null && id.matches("[a-zA-Z0-9_.-]{1,64}"); }
-    public static final class LootSettings { public int rolls=1, emptyWeight; public String name="",color="FFFFFF",alias=""; public boolean glow; public QuestLoot.Weights drops=new QuestLoot.Weights(); }
+    public static final class LootSettings { public int rolls=1, emptyWeight; public String name="",color="FFFFFF",alias="",itemName="",icon="",iconNbt=""; public int iconMeta; public List<String> tags=new ArrayList<String>(); public boolean glow,hideTooltip,useTitle; public QuestLoot.Weights drops=new QuestLoot.Weights(); }
     public static final class Chapter {
         public String id,title,description="",image="",parent="",defaultQuestShape="",icon="",iconNbt="";
         public int iconMeta;
-        public boolean alwaysInvisible;
+        public boolean alwaysInvisible,disableToast;
         public List<String> tags=new ArrayList<String>();
         public List<QuestPresentation.MapImage> images=new ArrayList<QuestPresentation.MapImage>();
     }
@@ -175,15 +181,15 @@ public final class QuestCore {
         public String title="",description="",icon="",iconNbt="";
         public int iconMeta;
         public boolean disableToast,showNumbers;
-        public String id, type, target, nbt = "", nbtMode = "exact",consumeMode="explicit";
+        public String id, type, target, nbt = "", nbtMode = "exact",consumeMode="explicit",craftingMode="explicit",criterion="";
         public List<String> tags=new ArrayList<String>();
         public QuestItemFilter filter;
         public List<String> targets = new ArrayList<String>();
-        public long count = 1;
+        public long count = 1,maxInput;
         public int meta, dimension, energyTier=4;
         public boolean manual, checkActive;
         public int points=1;
-        public String comparison="at_least",matchType="";
+        public String comparison="at_least",matchType="",properties="";
         public boolean consume, levels, ignoreDamage, craftingOnly, ignoreDimension, box, entity;
         public double width=1, height=1, depth=1;
         public int lookTicks;
@@ -196,7 +202,7 @@ public final class QuestCore {
         public int iconMeta;
         public String id, mode="inherit", auto="inherit";
         public List<String> tags=new ArrayList<String>();
-        public String type = "item", item, target, nbt = "", text = "";
+        public String type = "item", item, target, nbt = "", text = "",table="",criterion="";
         public boolean asPlayer, onlyOne, remove;
         public boolean add=true;
         public int points=1;
@@ -205,6 +211,7 @@ public final class QuestCore {
         public List<MailItem> attachments=new ArrayList<MailItem>();
         public List<Reward> options = new ArrayList<Reward>();
     }
+    public static List<Reward> rewardOptions(Book book,Reward reward){if(!reward.table.isEmpty()){List<Reward> table=book.lootTables.get(reward.table);return table==null?Collections.<Reward>emptyList():table;}return reward.options;}
     public static boolean required(Quest quest) { return !quest.optional && !quest.repeatable && quest.customClick.isEmpty(); }
     public static boolean unlocked(Quest q, Set<String> completed) {
         if (q.dependencies.isEmpty()) return true;

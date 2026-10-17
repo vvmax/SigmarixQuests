@@ -11,6 +11,7 @@ public final class ForgeTestLauncher {
         Launch.classLoader=new LaunchClassLoader(urls.toArray(new URL[0]));
         Launch.blackboard=new HashMap<String,Object>(); Launch.blackboard.put("fml.deobfuscatedEnvironment",true);
         Thread.currentThread().setContextClassLoader(Launch.classLoader);
+        Launch.classLoader.registerTransformer("cpw.mods.fml.common.asm.transformers.EventSubscriptionTransformer");
         Class<?> bootstrap=Class.forName("dev.sigmarix.quests.ForgeTestBootstrap",true,Launch.classLoader);
         int failures=(Integer)bootstrap.getMethod("run").invoke(null);
         if(failures!=0) throw new AssertionError(failures+" Forge integration tests failed");

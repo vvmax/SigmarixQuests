@@ -8,7 +8,7 @@ from migrate_progress import migrate
 
 class MigrationTests(unittest.TestCase):
     def test_original_and_custom_shapes_keep_inheritance_and_resource_paths(self):
-        self.assertEqual('rsquare', quest_shape(None)); self.assertEqual('', quest_shape('default', True))
+        self.assertEqual('circle', quest_shape(None)); self.assertEqual('', quest_shape('default', True))
         self.assertEqual('heart', quest_shape('heart', True)); self.assertEqual('gear', quest_shape('gear'))
         self.assertEqual('ftbquests:textures/shapes/pack_star/background.png', quest_shape('pack_star'))
         self.assertEqual('pack:shapes/star.png', quest_shape('pack:shapes/star.png'))
@@ -52,7 +52,7 @@ class MigrationTests(unittest.TestCase):
 
     def test_map_illustrations_preserve_geometry_hover_and_links(self):
         image = convert_map_image({'image': 'minecraft:textures/blocks/stone.png', 'x': 2, 'y': -1, 'width': 3, 'height': 2, 'rotation': 45, 'hover': ['Image'], 'click': 'https://example.org/guide'})
-        self.assertEqual(image['rotation'], 45); self.assertEqual(image['hover'], ['Image']); self.assertEqual(image['uri'], 'https://example.org/guide')
+        self.assertEqual(image['rotation'], 45); self.assertEqual(image['hover'], ['Image']); self.assertEqual(image['click'], 'https://example.org/guide'); self.assertEqual(image['uri'], '')
         self.assertEqual('https://example.org/image.png', convert_map_image({'image': 'https://example.org/image.png'})['resource'])
         with self.assertRaises(ValueError): convert_map_image({'image': 'file:///tmp/image.png'})
     def test_emergency_durations_and_creature_weights(self):

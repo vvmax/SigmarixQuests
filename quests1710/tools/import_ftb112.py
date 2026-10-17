@@ -274,7 +274,7 @@ def block_state_key(block, properties):
 
 
 def object_presentation(raw, mappings=None):
-    result = {'title': text(raw.get('title', '')), 'description': text(raw.get('description', ''))}
+    result = {'title': text(raw.get('title', '')), 'description': text(raw.get('description', '')), 'tags': list(raw.get('tags', []))}
     if raw.get('icon'):
         value = item(raw['icon'], mappings)
         result.update(icon=value['item'], iconMeta=value.get('meta', 0), iconNbt=value.get('nbt', ''))
@@ -296,8 +296,8 @@ def convert_task(raw, index, defaults=None, repeat=False, mappings=None):
         # Metadata/NBT filters are shared by our alternatives. Refuse alternatives with distinct filters.
         distinct_filters = any((v.get('meta', 0), v.get('nbt', '')) != (value.get('meta', 0), value.get('nbt', '')) for v in values)
         result.update(type='item', target=value['item'], targets=[v['item'] for v in values[1:]], count=max(1, int(raw.get('count', 1))),
-                      consume=repeat or tristate(raw.get('consume_items'), bool(defaults.get('default_consume_items', False))),
-                      craftingOnly=tristate(raw.get('only_from_crafting'), False), ignoreDamage=bool(raw.get('ignore_damage', False)))
+                      consume=repeat or tristate(raw.get('consume_items'), bool(defaults.get('default_consume_items', False))), consumeMode='enabled' if repeat else 'inherit' if raw.get('consume_items') in (None, 'default') else 'enabled' if tristate(raw['consume_items']) else 'disabled',
+                      craftingOnly=tristate(raw.get('only_from_crafting'), False), craftingMode='inherit' if raw.get('only_from_crafting') in (None, 'default') else 'enabled' if tristate(raw['only_from_crafting']) else 'disabled', ignoreDamage=bool(raw.get('ignore_damage', False)))
         for key in ('meta', 'nbt'):
             if key in value:
                 result[key] = value[key]
@@ -315,6 +315,7 @@ def convert_task(raw, index, defaults=None, repeat=False, mappings=None):
         result.update(type='xp', count=int(raw.get('value', 1)), levels=not bool(raw.get('points', False)), consume=True)
     elif kind in ('forge_energy', 'ic2_energy', 'botania_mana', 'buildcraft_mj', 'fluid'):
         result.update(type='energy' if kind == 'forge_energy' else kind, count=int(raw.get('value', raw.get('amount', 1000))))
+        if kind != 'fluid': result['maxInput'] = int(raw.get('max_input', 0))
         if kind == 'fluid':
             result.update(target=(mappings or {}).get('fluids', {}).get(raw.get('fluid', 'water'), raw.get('fluid', 'water')), consume=True)
             if raw.get('nbt'):
@@ -384,9 +385,9 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False, mappings=None
     if not nested:
         if raw.get('uid'):
             result['id'] = code(raw['uid'])
-        result['mode'] = 'team' if repeat or tristate(raw.get('team_reward'), bool(defaults.get('default_reward_team', False))) else 'individual'
-        auto = raw.get('auto', 'invisible' if raw.get('invisible') else 'enabled' if raw.get('autoclaim') else 'disabled')
-        if auto not in ('enabled', 'disabled', 'invisible', 'default'):
+        result['mode'] = 'team' if repeat else 'inherit' if raw.get('team_reward') in (None, 'default') else 'team' if tristate(raw['team_reward']) else 'individual'
+        auto = raw.get('auto', 'invisible' if raw.get('invisible') else 'enabled' if raw.get('autoclaim') else 'default')
+        if auto not in ('enabled', 'disabled', 'no_toast', 'invisible', 'default'):
             raise ValueError('Unknown auto reward mode: ' + str(auto))
         result['auto'] = 'inherit' if auto == 'default' else auto
     elif raw.get('team_reward') not in (None, 'default') or raw.get('auto') not in (None, 'default', 'disabled'):
@@ -413,6 +414,8 @@ def convert_reward(raw, defaults=None, repeat=False, nested=False, mappings=None
                 value = convert_reward(option, defaults, repeat, True, mappings); value['weight'] = int(option.get('weight', 1)); result['options'].append(value)
             if not result['options']:
                 raise ValueError('Missing reward table/options')
+    elif kind == 'custom':
+        result.update(type='custom', target='')
     elif kind in ('npc_quest', 'npc_faction'):
         result.update(type=kind, target=str(int(raw.get(kind, 0))))
         if kind == 'npc_faction': result.update(points=int(raw.get('points', raw.get('required_points', 1))), add=bool(raw.get('add', True)))
@@ -472,6 +475,7 @@ def resolve_choices(reward, tables, path=(), depth=0):
         if table not in tables or table in path:
             raise ValueError('Unknown or cyclic choice/random table: ' + table)
         reward.pop('target', None)
+        reward['table'] = table
         reward['options'] = json.loads(json.dumps(tables[table]))
         path = path + (table,)
     for option in reward.get('options', []):
@@ -482,13 +486,17 @@ def weights(raw, defaults=None):
     defaults = defaults or {'passive': 0, 'monster': 0, 'boss': 0}
     return {key: int(raw.get(key, raw.get('#' + key, fallback))) for key, fallback in defaults.items()}
 
-def seconds(value):
-    if value is None: return 300
+def duration_ticks(value):
+    if value is None: return 6000
     text = str(value).strip().lower()
-    chunks = re.findall(r'(\d+)([tsmhd])', text)
+    chunks = re.findall(r'(\d+)([tsmhdw])', text)
     if not chunks or ''.join(number + unit for number, unit in chunks) != text: raise ValueError('Unsupported cooldown duration: ' + text)
-    ticks = sum(int(number) * {'t': 1, 's': 20, 'm': 1200, 'h': 72000, 'd': 1728000}[unit] for number, unit in chunks)
-    return (ticks + 19) // 20
+    return sum(int(number) * {'t': 1, 's': 20, 'm': 1200, 'h': 72000, 'd': 1728000, 'w': 12096000}[unit] for number, unit in chunks)
+
+
+def seconds(value):
+    return (duration_ticks(value) + 19) // 20
+
 
 def text(value):
     return value if isinstance(value, str) else '\n'.join(str(line) for line in (value or []))
@@ -496,7 +504,7 @@ def text(value):
 NATIVE_SHAPES = {'square', 'rsquare', 'circle', 'diamond', 'pentagon', 'hexagon', 'octagon', 'heart', 'gear'}
 
 def quest_shape(value, inherit=False):
-    if not value or value == 'default': return '' if inherit else 'rsquare'
+    if not value or value == 'default': return '' if inherit else 'circle'
     if not isinstance(value, str): raise ValueError('Invalid quest shape')
     if value in NATIVE_SHAPES or http_uri(value): return value
     if re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', value) and '..' not in value and '://' not in value: return value
@@ -527,20 +535,22 @@ def click_action(value):
 
 
 def convert_map_image(raw):
-    resource = raw.get('image', '')
+    resource = raw.get('image', 'minecraft:textures/gui/presets/isles.png')
     if not isinstance(resource, str) or not ((re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', resource) and '..' not in resource and '://' not in resource) or http_uri(resource)):
         raise ValueError('Map illustration needs a texture or http/https image: ' + str(resource))
-    click = raw.get('click', '')
-    if click and not http_uri(click): raise ValueError('Map illustration click needs a supported http/https URI')
-    return dict(resource=resource, x=float(raw.get('x', 0)), y=float(raw.get('y', 0)), width=float(raw.get('width', 1)), height=float(raw.get('height', 1)), rotation=float(raw.get('rotation', 0)), hover=[raw['hover']] if isinstance(raw.get('hover'), str) else raw.get('hover', []), uri=click, dev=bool(raw.get('dev', False)))
+    click = click_action(raw.get('click', ''))
+    return dict(resource=resource, x=float(raw.get('x', 0)), y=float(raw.get('y', 0)), width=float(raw.get('width', 1)), height=float(raw.get('height', 1)), rotation=float(raw.get('rotation', 0)), hover=[raw['hover']] if isinstance(raw.get('hover'), str) else raw.get('hover', []), click=click, uri='', dev=bool(raw.get('dev', False)))
 
 def convert(folder, mappings=None):
     mappings = mapping_rules(mappings)
     defaults = document(folder, 'file', True)
-    book = {'format': 2, 'title': defaults.get('title') or 'Imported FTB 1.12 book', 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
+    book = {'format': 2, 'title': text(defaults.get('title', '')), 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
+    book.update({key: value for key, value in object_presentation(defaults, mappings).items() if key != 'description'})
+    book.update(defaultRewardTeam=bool(defaults.get('default_reward_team', False)), defaultConsumeItems=bool(defaults.get('default_consume_items', False)), defaultAutoClaim=defaults.get('default_autoclaim_rewards', 'disabled'), disableToast=bool(defaults.get('disable_toast', False)))
     book.update(disableGui=bool(defaults.get('disable_gui', False)), gridScale=float(defaults.get('grid_scale', .5) or .5), defaultQuestShape=quest_shape(defaults.get('default_quest_shape')), hideFromItemBrowser=bool(defaults.get('default_quest_disable_jei', False)))
     book['emergencyItems'] = [dict(item(stack, mappings), type='item') for stack in defaults.get('emergency_items', [])]
     book['emergencyCooldownSeconds'] = seconds(defaults.get('emergency_items_cooldown'))
+    book['emergencyCooldownTicks'] = duration_ticks(defaults.get('emergency_items_cooldown'))
     book['dropLootCrates'] = bool(defaults.get('drop_loot_crates', False))
     book['noDrop'] = weights(defaults.get('loot_crate_no_drop', {}), {'passive': 4000, 'monster': 600, 'boss': 0})
     errors, references, raw_dependencies = [], {}, {}
@@ -551,10 +561,12 @@ def convert(folder, mappings=None):
             for reward in raw.get('rewards', []):
                 entry = convert_reward(reward, defaults, nested=True, mappings=mappings); entry['weight'] = int(reward.get('weight', 1)); entries.append(entry)
             book['lootTables'][name] = entries
-            book['lootSettings'][name] = {'rolls': max(1, int(raw.get('loot_size', 1))), 'emptyWeight': int(raw.get('empty_weight', 0))}
+            book['lootSettings'][name] = {'rolls': max(1, int(raw.get('loot_size', 1))), 'emptyWeight': int(raw.get('empty_weight', 0)), 'name': raw.get('title', ''), 'tags': list(raw.get('tags', [])), 'hideTooltip': bool(raw.get('hide_tooltip', False)), 'useTitle': bool(raw.get('use_title', False))}
+            for key, value in object_presentation(raw, mappings).items():
+                if key not in ('title', 'description', 'tags'): book['lootSettings'][name][key] = value
             if raw.get('loot_crate'):
                 crate = raw['loot_crate']
-                book['lootSettings'][name].update(alias=crate.get('string_id', ''), name=crate.get('item_name', ''), color=format(int(crate.get('color', 0xffffff)) & 0xffffff, '06X'), glow=bool(crate.get('glow', False)), drops=weights(crate.get('drops', {})))
+                book['lootSettings'][name].update(alias=crate.get('string_id', ''), itemName=crate.get('item_name', ''), color=format(int(crate.get('color', 0xffffff)) & 0xffffff, '06X'), glow=bool(crate.get('glow', False)), drops=weights(crate.get('drops', {})))
         except (ValueError, OSError, TypeError, KeyError) as error:
             errors.append(str(path) + ': ' + str(error))
     chapter_dirs = sorted(p for p in (folder / 'chapters').iterdir() if p.is_dir())
@@ -569,7 +581,7 @@ def convert(folder, mappings=None):
     for chapter_dir in chapter_dirs:
         try:
             chapter = document(chapter_dir, 'chapter'); chapter_id = code(chapter_dir.name)
-            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': text(chapter.get('description', [])), 'parent': code(chapter['group']) if chapter.get('group') else '', 'defaultQuestShape': quest_shape(chapter.get('default_quest_shape'), True), 'alwaysInvisible': bool(chapter.get('always_invisible', False)), 'images': [convert_map_image(image) for image in chapter.get('images', [])]})
+            book['chapters'].append({'id': chapter_id, 'title': text(chapter.get('title', '')), 'tags': list(chapter.get('tags', [])), 'disableToast': bool(chapter.get('disable_toast', False)), 'description': text(chapter.get('subtitle', chapter.get('description', []))), 'parent': code(chapter['group']) if chapter.get('group') else '', 'defaultQuestShape': quest_shape(chapter.get('default_quest_shape'), True), 'alwaysInvisible': bool(chapter.get('always_invisible', False)), 'images': [convert_map_image(image) for image in chapter.get('images', [])]})
             if chapter.get('icon'):
                 icon = item(chapter['icon'], mappings)
                 book['chapters'][-1].update(icon=icon['item'], iconMeta=icon.get('meta', 0), iconNbt=icon.get('nbt', ''))
@@ -585,14 +597,14 @@ def convert(folder, mappings=None):
                 if requirement not in ('all_completed', 'one_completed', 'all_started', 'one_started'):
                     raise ValueError('Unknown dependency requirement: ' + str(requirement))
                 repeat = bool(raw.get('can_repeat', False))
-                title = raw.get('title') or path.stem
+                title = text(raw.get('title', ''))
                 quest = {'id': code(path.stem), 'chapter': chapter_id, 'title': title,
                          'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'guidePage': raw.get('guide_page', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': '', 'customClick': click_action(raw.get('custom_click', '')),
                          'itemBrowser': 'inherit' if raw.get('disable_jei') in (None, 'default') else 'disabled' if tristate(raw['disable_jei']) else 'enabled',
                          'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)), 'tags': raw.get('tags', []),
                          'shape': quest_shape(raw.get('shape'), True), 'size': float(raw.get('size', 1)),
                          'hideDependencyLines': bool(raw.get('hide_dependency_lines', False)), 'hideTextUntilComplete': bool(raw.get('hide_text_until_complete', False)), 'disableToast': bool(raw.get('disable_toast', False)),
-                         'rewardMode': 'team' if repeat or defaults.get('default_reward_team') else 'individual',
+                         'rewardMode': 'team' if repeat else 'inherit',
                          'hidden': bool(raw.get('hide', False)), 'optional': bool(raw.get('optional', False)),
                          'repeatable': repeat, 'autoRepeat': repeat, 'anyTask': bool(raw.get('or_tasks', False)),
                          'anyDependency': requirement.startswith('one_'), 'dependencyState': 'started' if requirement.endswith('started') else 'completed',

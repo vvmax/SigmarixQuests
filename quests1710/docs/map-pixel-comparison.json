@@ -1,0 +1,36 @@
+{
+  "reference": "FTBQuests 1202.9.0.15 / FTBLib 5.4.7.2",
+  "resolution": [
+    854,
+    480
+  ],
+  "gui_scale": 2,
+  "quest_card": {
+    "include": [
+      226,
+      138,
+      402,
+      202
+    ],
+    "exclude": [],
+    "pixels_compared": 81204,
+    "different_pixels": 0,
+    "notes": [
+      "Entire window matches without exclusions."
+    ]
+  },
+  "chapter_hover": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Map nodes, dependencies and all side panels match."
+    ]
+  }
+}

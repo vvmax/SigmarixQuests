@@ -29,7 +29,7 @@ public final class QuestTaskScreen extends GuiScreen {
         ClientProxy.send(action);
     }
     @Override public void updateScreen() { if(ClientProxy.snapshot.revision!=revision) { mc.displayGuiScreen(parent); return; } rebuild(); if(++refreshTicks%40==0) ClientProxy.send(new QuestNetwork.Action()); }
-    @Override public void drawScreen(int x,int y,float partial) { QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,quest.title,width/2,15,0xFFFFFF); drawCenteredString(fontRendererObj,fontRendererObj.trimStringToWidth(ClientProxy.snapshot.message,width-24),width/2,28,0xFFDD77); super.drawScreen(x,y,partial);
+    @Override public void drawScreen(int x,int y,float partial) { QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,QuestTaskLabels.quest(quest),width/2,15,0xFFFFFF); drawCenteredString(fontRendererObj,fontRendererObj.trimStringToWidth(ClientProxy.snapshot.message,width-24),width/2,28,0xFFDD77); super.drawScreen(x,y,partial);
         for(Object raw:buttonList) { GuiButton button=(GuiButton)raw;
             if(button.id>=100) { QuestCore.Task task=quest.tasks.get(button.id-100); if(!task.icon.isEmpty()) {
                 net.minecraft.item.Item item=(net.minecraft.item.Item)net.minecraft.item.Item.itemRegistry.getObject(task.icon);

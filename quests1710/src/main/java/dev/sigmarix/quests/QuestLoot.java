@@ -33,7 +33,7 @@ public final class QuestLoot {
         if(!book.lootTables.containsKey(table)) throw new IllegalArgumentException("Unknown crate table");
         ItemStack stack=new ItemStack(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","loot_crate"));
         QuestCore.LootSettings settings=book.lootSettings.get(table); NBTTagCompound tag=new NBTTagCompound(); tag.setString("table",table);
-        if(settings!=null) { tag.setString("name",settings.name); tag.setInteger("color",QuestPresentation.color(settings.color)); tag.setBoolean("glow",settings.glow); }
+        if(settings!=null) { tag.setString("name",settings.itemName.isEmpty()?settings.name:settings.itemName); tag.setInteger("color",QuestPresentation.color(settings.color)); tag.setBoolean("glow",settings.glow); }
         stack.setTagCompound(tag); return stack;
     }
     public static String choose(QuestCore.Book book,EntityLivingBase entity,Random random) {

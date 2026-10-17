@@ -15,7 +15,7 @@ import net.minecraft.util.ScreenShotHelper;
 @Mod(modid="sigmarixquestpreview",name="Quest GUI preview fixture",version="1",dependencies="required-after:sigmarixquests")
 public final class QuestPreview {
     private QuestNetwork.Snapshot fixture;
-    private String renderMode="";
+    private String renderMode="",captureName="";private int captureIndex;private String[] captureModes;
     private int ticks,stage,waiting,loginRetries,lastServerStep=-5;
     private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
@@ -40,14 +40,17 @@ public final class QuestPreview {
     private boolean euRunning;
     private int detectorDelay,deviceDelay,deviceX,deviceY,deviceZ;
     @Mod.EventHandler public void init(FMLInitializationEvent event) throws Exception {
-        remoteImage=PreviewImageServer.start(); GuideSmoke.register();
+        remoteImage=PreviewImageServer.start();
         java.util.List<String> expected=java.nio.file.Files.readAllLines(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/expected-mods.txt").toPath(),StandardCharsets.UTF_8);
         String[][] optional={{"IC2","ic2.api.energy.tile.IEnergySink"},{"Botania","vazkii.botania.api.mana.IManaReceiver"},{"ProjectE","moze_intel.projecte.playerData.Transmutation"},{"customnpcs","noppes.npcs.scripted.ScriptPlayer"},{"BuildCraft|Core","buildcraft.BuildCraftCore"},{"NotEnoughItems","codechicken.nei.api.API"}};
         for(String[] mod:optional) {
             boolean loaded=cpw.mods.fml.common.Loader.isModLoaded(mod[0]); if(loaded!=expected.contains(mod[0])) throw new IllegalStateException("Unexpected optional mod state: "+mod[0]+"="+loaded);
             if(!loaded) try { Class.forName(mod[1],false,getClass().getClassLoader()); throw new IllegalStateException("Compile-only API leaked into game runtime: "+mod[0]); } catch(ClassNotFoundException correct) {}
         }
-        renderMode=new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/fluid-only").exists()?"fluid":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/picker-only").exists()?"picker":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/card-only").exists()?"card":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/catalog-only").exists()?"catalog":"";
+        renderMode=new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/table-only").exists()?"table":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/map-only").exists()?"map":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/file-only").exists()?"file":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/image-only").exists()?"image":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/fluid-only").exists()?"fluid":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/picker-only").exists()?"picker":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/card-only").exists()?"card":new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/catalog-only").exists()?"catalog":"";
+        if(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/parity-only").exists()){captureModes=new String[]{"map","map_hover","file","image","table","table_crate","card","fluid","picker","catalog"};captureName=captureModes[0];renderMode="map";}
+        if(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/forms-only").exists()){captureModes=new String[]{"forms_quest","forms_chapter","forms_task-checkmark","forms_task-item","forms_task-fluid","forms_task-energy","forms_task-dimension","forms_task-biome","forms_task-location","forms_task-kill","forms_task-xp","forms_task-stat","forms_task-observation","forms_task-interaction","forms_task-achievement","forms_task-custom","forms_reward-item","forms_reward-choice","forms_reward-random","forms_reward-loot","forms_reward-command","forms_reward-custom","forms_reward-xp","forms_reward-xp_levels","forms_reward-achievement","forms_reward-toast"};captureName=captureModes[0];renderMode="forms";}
+        if(renderMode.isEmpty())GuideSmoke.register();
         fixture=new QuestNetwork.Snapshot();
         try(Reader reader=new InputStreamReader(getClass().getResourceAsStream("/example-quests.json"),StandardCharsets.UTF_8)) {
             fixture.book=QuestService.JSON.fromJson(reader,QuestCore.Book.class);
@@ -173,30 +176,53 @@ public final class QuestPreview {
         player.playerNetServerHandler.setPlayerLocation(player.posX,player.posY,z+1D,-90,17);
         deviceX=x; deviceY=y; deviceZ=z; deviceDelay=0;
     }
+    private void finishCapture(Minecraft mc){
+        if(captureModes==null || ++captureIndex>=captureModes.length){mc.shutdown();return;}
+        captureName=captureModes[captureIndex];renderMode=captureName.split("_")[0];ticks=29;fixture=new QuestNetwork.Snapshot();fixture.book=new QuestCore.Book();fixture.canEdit=true;mc.displayGuiScreen(null);
+    }
     @SubscribeEvent(priority=EventPriority.LOWEST) public void tick(TickEvent.ClientTickEvent event) throws Exception {
         if(event.phase!=TickEvent.Phase.END) return;
         Minecraft mc=Minecraft.getMinecraft(); mc.guiAchievement.func_146257_b(); mc.gameSettings.showInventoryAchievementHint=false; mc.gameSettings.pauseOnLostFocus=false; mc.gameSettings.renderDistanceChunks=2; mc.gameSettings.fancyGraphics=false; mc.gameSettings.enableVsync=false; mc.gameSettings.limitFramerate=30;
         if(testing) { smoke(mc); return; }
         ClientProxy.snapshot=fixture; ticks++;
+        if(renderMode.equals("forms")){
+            mc.gameSettings.guiScale=2;String name=captureName.substring(6);
+            if(ticks==30){fixture.book=new QuestCore.Book();QuestCore.Chapter chapter=new QuestCore.Chapter();chapter.id="chapter";chapter.title="";fixture.book.chapters.add(chapter);QuestCore.Quest quest=new QuestCore.Quest();quest.id="quest";quest.title="";quest.chapter=chapter.id;fixture.book.quests.add(quest);Object object;String scope;
+                if(name.equals("quest")){object=quest;scope="quest";}else if(name.equals("chapter")){object=chapter;scope="chapter";}else if(name.startsWith("task-")){String type=name.substring(5).replace("checkmark","check");Class<?> menus=Class.forName("dev.sigmarix.quests.client.QuestCreationMenus");java.lang.reflect.Method task=menus.getDeclaredMethod("task",String.class);task.setAccessible(true);object=task.invoke(null,type);quest.tasks.add((QuestCore.Task)object);scope="task";}else{QuestCore.Reward reward=new QuestCore.Reward();reward.id="reward";reward.type=name.substring(7);reward.target="";if(reward.type.equals("item"))reward.item="minecraft:apple";if(reward.type.equals("xp"))reward.count=100;quest.rewards.add(reward);object=reward;scope="reward";}
+                Class<?> editor=Class.forName("dev.sigmarix.quests.client.QuestObjectConfigScreen");java.lang.reflect.Constructor<?> ctor=editor.getDeclaredConstructor(net.minecraft.client.gui.GuiScreen.class,QuestCore.Book.class,Object.class,String.class,Runnable.class);ctor.setAccessible(true);mc.displayGuiScreen((net.minecraft.client.gui.GuiScreen)ctor.newInstance(null,fixture.book,object,scope,(Runnable)()->{}));}
+            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),name+"-config.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)finishCapture(mc);return;
+        }
+        if(renderMode.equals("table")){
+            mc.gameSettings.guiScale=2;if(ticks==30){fixture.book=new QuestCore.Book();if((captureName.equals("table_crate") || new File(mc.mcDataDir,"../build/preview/table-crate").exists())){QuestCore.LootSettings settings=new QuestCore.LootSettings();settings.alias="common";fixture.book.lootSettings.put("table",settings);}Class<?> editor=Class.forName("dev.sigmarix.quests.client.QuestRewardTableSettingsScreen");java.lang.reflect.Constructor<?> ctor=editor.getDeclaredConstructor(net.minecraft.client.gui.GuiScreen.class,QuestCore.Book.class,String.class);ctor.setAccessible(true);mc.displayGuiScreen((net.minecraft.client.gui.GuiScreen)ctor.newInstance(null,fixture.book,"table"));}
+            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),(captureName.equals("table_crate")?"table-crate-config-controlled.png":"table-config-controlled.png"),mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)finishCapture(mc);return;
+        }
+        if(renderMode.equals("map")){
+            mc.gameSettings.guiScale=2;if(ticks==30){fixture.book=new QuestCore.Book();fixture.book.title="Quest map fixture";fixture.canEdit=false;fixture.states.clear();for(int c=0;c<2;c++){QuestCore.Chapter chapter=new QuestCore.Chapter();chapter.id="c"+c;chapter.title=c==0?"Getting started":"More quests";chapter.icon=c==0?"minecraft:book":"minecraft:paper";if(c==1 && new File(mc.mcDataDir,"../build/preview/map-group").exists())chapter.parent="c0";fixture.book.chapters.add(chapter);for(int i=0;i<(c==0?4:1);i++){int index=c==0?i:4;QuestCore.Quest q=new QuestCore.Quest();q.id=String.format(java.util.Locale.ROOT,"%08x",0x20000000+index);q.title=new String[]{"First quest","Second quest","Third quest","Extra quest","Last quest"}[index];q.chapter=chapter.id;q.x=index==0 || index==4?0:index==2?4:2;q.y=index==3?2:0;q.optional=index==3;if(index==1 || index==3)q.dependencies.add("20000000");if(index==2)q.dependencies.add("20000001");QuestCore.Task task=new QuestCore.Task();task.id="t"+index;task.type="check";task.manual=true;q.tasks.add(task);QuestCore.Reward reward=new QuestCore.Reward();reward.id="r"+index;reward.type="xp";reward.count=100;q.rewards.add(reward);fixture.book.quests.add(q);fixture.states.put(q.id,index==0 || index==4?"available":"locked");}}fixture.book.validate();mc.displayGuiScreen(new QuestBookScreen());}
+            if(ticks==65){mc.getFramebuffer().bindFramebuffer(true);org.lwjgl.opengl.GL11.glClearColor(0,0,0,1);org.lwjgl.opengl.GL11.glClear(org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT|org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT);mc.entityRenderer.setupOverlayRendering();boolean group=new File(mc.mcDataDir,"../build/preview/map-group").exists();boolean hover=group || captureName.equals("map_hover") || new File(mc.mcDataDir,"../build/preview/map-hover").exists();mc.currentScreen.drawScreen(hover?8:-1,hover?8:-1,0);ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),group?"chapter-group-controlled.png":hover?"chapter-hover-controlled.png":"main-map-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());}if(ticks==75)finishCapture(mc);return;
+        }
+        if(renderMode.equals("image") || renderMode.equals("file")){
+            mc.gameSettings.guiScale=2;if(ticks==30){fixture.book=new QuestCore.Book();QuestCore.Chapter chapter=new QuestCore.Chapter();chapter.id="map";chapter.title="Map";fixture.book.chapters.add(chapter);QuestPresentation.MapImage image=new QuestPresentation.MapImage();chapter.images.add(image);Class<?> editor=Class.forName("dev.sigmarix.quests.client.QuestObjectConfigScreen");java.lang.reflect.Constructor<?> ctor=editor.getDeclaredConstructor(net.minecraft.client.gui.GuiScreen.class,QuestCore.Book.class,Object.class,String.class,Runnable.class);ctor.setAccessible(true);mc.displayGuiScreen((net.minecraft.client.gui.GuiScreen)ctor.newInstance(null,fixture.book,renderMode.equals("file")?fixture.book:image,renderMode.equals("file")?"file":"chapter.image",(Runnable)()->{}));}
+            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),renderMode+"-config-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)finishCapture(mc);return;
+        }
         if(renderMode.equals("fluid")){
             mc.gameSettings.guiScale=2;if(ticks==30){Class<?> picker=Class.forName("dev.sigmarix.quests.client.QuestFluidSelectScreen");java.lang.reflect.Constructor<?> ctor=picker.getDeclaredConstructor(net.minecraft.client.gui.GuiScreen.class,boolean.class,java.util.function.Consumer.class);ctor.setAccessible(true);mc.displayGuiScreen((net.minecraft.client.gui.GuiScreen)ctor.newInstance(null,false,(java.util.function.Consumer<net.minecraftforge.fluids.Fluid>)v->{}));}
-            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"fluid-picker-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)mc.shutdown();return;
+            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"fluid-picker-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)finishCapture(mc);return;
         }
         if(renderMode.equals("picker")){
             mc.gameSettings.guiScale=2;if(ticks==30){Class<?> picker=Class.forName("dev.sigmarix.quests.client.QuestItemSelectScreen");java.lang.reflect.Constructor<?> ctor=picker.getDeclaredConstructor(net.minecraft.client.gui.GuiScreen.class,net.minecraft.item.ItemStack.class,boolean.class,java.util.function.Predicate.class,java.util.function.Consumer.class);ctor.setAccessible(true);mc.displayGuiScreen((net.minecraft.client.gui.GuiScreen)ctor.newInstance(null,null,true,(java.util.function.Predicate<net.minecraft.item.ItemStack>)v->true,(java.util.function.Consumer<net.minecraft.item.ItemStack>)v->{}));}
-            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"item-picker-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)mc.shutdown();return;
+            if(ticks==65)ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"item-picker-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());if(ticks==75)finishCapture(mc);return;
         }
         if(renderMode.equals("card")) {
             mc.gameSettings.guiScale=2;
-            if(ticks==30){fixture.book=new QuestCore.Book();QuestCore.Quest quest=new QuestCore.Quest();quest.id="card";quest.title="Classic quest view";quest.subtitle="Two columns, individual rewards";quest.description="Click the task, then claim each reward separately.";for(int i=0;i<2;i++){QuestCore.Task task=new QuestCore.Task();task.id="t"+i;task.type="check";quest.tasks.add(task);QuestCore.Reward reward=new QuestCore.Reward();reward.id="r"+i;reward.type="xp";quest.rewards.add(reward);}fixture.book.quests.add(quest);fixture.book.validate();fixture.states.put("card","locked");QuestBookScreen screen=new QuestBookScreen();mc.displayGuiScreen(screen);java.lang.reflect.Field selected=QuestBookScreen.class.getDeclaredField("selected");selected.setAccessible(true);selected.set(screen,"card");screen.refresh();}
-            if(ticks==65){File destination=new File(mc.mcDataDir,"../build/preview");destination.mkdirs();ScreenShotHelper.saveScreenshot(destination,"quest-card-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());}
-            if(ticks==75)mc.shutdown();return;
+            if(ticks==30){fixture.book=new QuestCore.Book();QuestCore.Quest quest=new QuestCore.Quest();quest.id="card";quest.title="Classic quest view";quest.subtitle="Two columns, individual rewards";quest.description="Click the task, then claim each reward separately.";for(int i=0;i<2;i++){QuestCore.Task task=new QuestCore.Task();task.id="t"+i;task.type="check";quest.tasks.add(task);QuestCore.Reward reward=new QuestCore.Reward();reward.id="r"+i;reward.type="xp";reward.count=100;quest.rewards.add(reward);}fixture.book.quests.add(quest);fixture.book.validate();fixture.states.put("card","locked");QuestBookScreen screen=new QuestBookScreen();mc.displayGuiScreen(screen);java.lang.reflect.Field selected=QuestBookScreen.class.getDeclaredField("selected");selected.setAccessible(true);selected.set(screen,"card");screen.refresh();}
+            if(ticks==65){mc.getFramebuffer().bindFramebuffer(true);org.lwjgl.opengl.GL11.glClearColor(0,0,0,1);org.lwjgl.opengl.GL11.glClear(org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT|org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT);mc.entityRenderer.setupOverlayRendering();mc.currentScreen.drawScreen(-1,-1,0);File destination=new File(mc.mcDataDir,"../build/preview");destination.mkdirs();ScreenShotHelper.saveScreenshot(destination,"quest-card-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());}
+            if(ticks==75)finishCapture(mc);return;
         }
         if(renderMode.equals("catalog")) {
             mc.gameSettings.guiScale=2;
             if(ticks==30) mc.displayGuiScreen(new QuestVisualCatalog());
             if(ticks==65) { File destination=new File(mc.mcDataDir,"../build/preview"); destination.mkdirs(); ScreenShotHelper.saveScreenshot(destination,"item-catalog-controlled.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer()); }
-            if(ticks==75) mc.shutdown();
+            if(ticks==75) finishCapture(mc);
             return;
         }
         if(ticks==30) {

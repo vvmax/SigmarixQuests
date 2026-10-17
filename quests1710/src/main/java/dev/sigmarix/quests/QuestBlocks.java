@@ -80,8 +80,8 @@ public final class QuestBlocks {
         @Override @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
         public int getRenderBlockPass(){return mode==2?1:0;}
         private boolean protectedScreen(IBlockAccess world,int x,int y,int z) {
-            if(mode>1) return false; TileEntity raw=world.getTileEntity(x,y,z); if(!(raw instanceof QuestDevice)) return false;
-            QuestDevice tile=(QuestDevice)raw,core=QuestScreens.core(tile); return (core==null?tile:core).indestructible;
+            if(mode>1 && mode!=7) return false; TileEntity raw=world.getTileEntity(x,y,z); if(!(raw instanceof QuestDevice)) return false;
+            QuestDevice tile=(QuestDevice)raw,core=mode==7?tile:QuestScreens.core(tile); return (core==null?tile:core).indestructible;
         }
         @Override public float getBlockHardness(World world,int x,int y,int z) { return protectedScreen(world,x,y,z)?-1:super.getBlockHardness(world,x,y,z); }
         @Override public boolean removedByPlayer(World world,EntityPlayer player,int x,int y,int z,boolean harvest) { return (!protectedScreen(world,x,y,z) || QuestScreenSettings.editor(player)) && super.removedByPlayer(world,player,x,y,z,harvest); }
@@ -102,8 +102,10 @@ public final class QuestBlocks {
                 if(mode==1 && !p.isSneaking()){if(!world.isRemote && !core.indestructible && QuestsMod.service!=null && core.owner!=null){java.util.List<QuestCore.Chapter> chapters=new java.util.ArrayList<QuestCore.Chapter>();for(QuestCore.Chapter chapter:QuestsMod.service.book.chapters)if(QuestPresentation.visibleChapter(QuestsMod.service.book,chapter.id))chapters.add(chapter);if(!chapters.isEmpty()){int current=-1;for(int i=0;i<chapters.size();i++)if(core.quest.equals("chapter:"+chapters.get(i).id))current=i;core.quest="chapter:"+chapters.get((current+1)%chapters.size()).id;core.task="";core.bindingChanged();}}return true;}
                 if(!world.isRemote && core.isUseableByPlayer(p)){world.markBlockForUpdate(core.xCoord,core.yCoord,core.zCoord);p.openGui(QuestsMod.instance,0,world,core.xCoord,core.yCoord,core.zCoord);}return true;
             }
-            if(p.isSneaking()) return false;
-            if(mode==6 && p.getHeldItem()!=null && p.getHeldItem().getItem() instanceof LootCrateItem) { if(!world.isRemote) LootCrateItem.open(p,p.getHeldItem()); return true; }
+            if(mode==7 && !p.isSneaking()){if(!world.isRemote){QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z);if(tile!=null && tile.isUseableByPlayer(p))p.addChatMessage(new net.minecraft.util.ChatComponentTranslation("tile.ftbquests.chest.deprecated").setChatStyle(new net.minecraft.util.ChatStyle().setColor(net.minecraft.util.EnumChatFormatting.RED)));}return true;}
+            if(mode==6 && !p.isSneaking()){if(!world.isRemote && p instanceof net.minecraft.entity.player.EntityPlayerMP){QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z);if(tile!=null)QuestNetwork.status((net.minecraft.entity.player.EntityPlayerMP)p,"tile.ftbquests.loot_crate_opener.rightclick",tile.storedOutputCount());}return true;}
+            if(mode==8 && !p.isSneaking()){if(!world.isRemote && QuestsMod.service!=null){QuestStorage tile=(QuestStorage)world.getTileEntity(x,y,z);if(tile!=null)for(java.util.Map.Entry<String,Long> entry:tile.crateCounts(QuestsMod.service.book).entrySet()){QuestCore.LootSettings settings=QuestsMod.service.book.lootSettings.get(entry.getKey());p.addChatMessage(new net.minecraft.util.ChatComponentText(settings.alias+": ").appendSibling(new net.minecraft.util.ChatComponentText(Long.toString(entry.getValue())).setChatStyle(new net.minecraft.util.ChatStyle().setColor(net.minecraft.util.EnumChatFormatting.GOLD))));}}return true;}
+            if(p.isSneaking() && mode!=6 && mode!=7 && mode!=8)return false;
             if(!world.isRemote) { QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); if(tile!=null && tile.isUseableByPlayer(p)) { world.markBlockForUpdate(x,y,z); p.openGui(QuestsMod.instance,0,world,x,y,z); } else QuestService.say(p,"Only device owner or operator can open this device"); }
             return true;
         }
@@ -132,7 +134,7 @@ public final class QuestBlocks {
     }
     public static final class LootCrateItem extends Item {
         LootCrateItem() { setUnlocalizedName("sigmarixquests.loot_crate"); setTextureName("ftbquests:lootcrate/front_outline"); setCreativeTab(net.minecraft.creativetab.CreativeTabs.tabMisc); }
-        @Override public String getItemStackDisplayName(ItemStack stack) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null && !settings.name.isEmpty()) return settings.name; return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
+        @Override public String getItemStackDisplayName(ItemStack stack) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null && !settings.itemName.isEmpty()) return settings.itemName; if(settings!=null && !settings.name.isEmpty()) return settings.name; return stack.hasTagCompound() && !stack.getTagCompound().getString("name").isEmpty()?stack.getTagCompound().getString("name"):super.getItemStackDisplayName(stack); }
         @Override public int getColorFromItemStack(ItemStack stack,int pass) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null) return QuestPresentation.color(settings.color); return stack.hasTagCompound() && stack.getTagCompound().hasKey("color")?stack.getTagCompound().getInteger("color"):0xFFFFFF; }
         @Override public boolean hasEffect(ItemStack stack,int pass) { QuestCore.LootSettings settings=QuestLoot.settings(stack); if(settings!=null) return settings.glow; return stack.hasTagCompound() && stack.getTagCompound().getBoolean("glow"); }
         @Override public void getSubItems(Item item,net.minecraft.creativetab.CreativeTabs tab,java.util.List list) {

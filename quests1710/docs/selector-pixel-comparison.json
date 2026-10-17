@@ -61,5 +61,117 @@
       "Animated vanilla fluids excluded, including their slot gutters.",
       "Title outside the comparison bounds also matched."
     ]
+  },
+  "image_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Entire captured window, including default background and all property rows."
+    ]
+  },
+  "file_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Default book configuration, three groups, scrollbar, all visible rows and original background."
+    ]
+  },
+  "table_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Full native reward table property window."
+    ]
+  },
+  "table_crate_config": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Full native table / crate / creature drop groups, including group controls."
+    ]
+  },
+  "chapter_hover": {
+    "include": [
+      0,
+      0,
+      210,
+      60
+    ],
+    "exclude": [],
+    "pixels_compared": 12600,
+    "different_pixels": 0,
+    "notes": [
+      "Expanded single chapter: exact title, icon, selection tint and border. Map outside this mask is still under comparison."
+    ]
+  },
+  "main_map": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Full map fixture: two chapters, five quests, default circular nodes, dependencies, sidebars and native colors."
+    ]
+  },
+  "quest_card": {
+    "include": [
+      226,
+      138,
+      402,
+      202
+    ],
+    "exclude": [],
+    "pixels_compared": 81204,
+    "different_pixels": 0,
+    "notes": [
+      "Complete two-task/two-reward editor card, including header, numeric badges and corners."
+    ]
+  },
+  "chapter_group": {
+    "include": [
+      0,
+      0,
+      854,
+      480
+    ],
+    "exclude": [],
+    "pixels_compared": 409920,
+    "different_pixels": 0,
+    "notes": [
+      "Full map with expanded parent and child chapters."
+    ]
   }
 }

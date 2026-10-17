@@ -34,7 +34,7 @@ public final class QuestGuideScreen extends GuiScreen implements GuiYesNoCallbac
         mc.displayGuiScreen(this);
     }
     @Override public void drawScreen(int x,int y,float partial) {
-        QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,quest.title+" - "+(page+1)+"/"+pages(),width/2,14,0xFFFFFF);
+        QuestClassicUi.background(mc,width,height); drawCenteredString(fontRendererObj,QuestTaskLabels.quest(quest)+" - "+(page+1)+"/"+pages(),width/2,14,0xFFFFFF);
         links.clear();
         int extra=quest.pages.size()+quest.richPages.size();
         boolean external=!quest.guidePage.isEmpty() && page==extra,action=!quest.customClick.isEmpty() && page==extra+(quest.guidePage.isEmpty()?0:1);

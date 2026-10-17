@@ -24,6 +24,7 @@ public final class ClientProxy extends CommonProxy {
     public static QuestNetwork.Snapshot snapshot;
     @Override public void init() {
         QuestBotaniaGuide.register();net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new QuestGuiSprites());
+        ((net.minecraft.client.resources.IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new QuestIconAtlas());
         screenRenderType=cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId(); cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(new QuestScreenBlockRenderer(screenRenderType));
         if(cpw.mods.fml.common.Loader.isModLoaded("NotEnoughItems")) try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("register").invoke(null); }
         catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI integration registration failed",ex); }

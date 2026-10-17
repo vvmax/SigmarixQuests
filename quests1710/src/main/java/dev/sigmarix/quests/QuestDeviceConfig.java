@@ -15,7 +15,7 @@ public final class QuestDeviceConfig {
     }
     public void apply(QuestService service,QuestDevice tile,EntityPlayerMP actor) throws java.io.IOException {
         int mode=QuestScreenSettings.mode(tile);boolean editor=QuestScreenSettings.editor(actor);
-        if(tile.screenLinked || mode<0 || mode==6 || mode==7 || mode==8 || !tile.isUseableByPlayer(actor))throw new IllegalArgumentException("Device unavailable");
+        if(tile.screenLinked || mode<0 || mode==6 || mode==8 || !tile.isUseableByPlayer(actor))throw new IllegalArgumentException("Device unavailable");
         if(quest==null || task==null || owner==null || skin==null || inputItem==null || inputNbt==null || quest.length()>160 || task.length()>64 || skin.length()>256 || inputItem.length()>256 || inputNbt.length()>8192 || skinMeta<0 || skinMeta>15 || inputMeta<0)throw new IllegalArgumentException("Invalid device settings");
         if((mode==4 || mode==5) && !editor)throw new IllegalArgumentException("Operator permission required for detectors");
         if(indestructible!=tile.indestructible && !editor || !owner.equals(tile.owner==null?"":tile.owner.toString()) && !editor)throw new IllegalArgumentException("Operator permission required");
@@ -30,13 +30,13 @@ public final class QuestDeviceConfig {
             }
         }else if(!task.isEmpty())throw new IllegalArgumentException("Task requires a quest");
         boolean screen=mode<=1;
-        if(!screen && (!skin.equals(tile.screenSkin) || skinMeta!=tile.screenSkinMeta || inputOnly!=tile.screenInputOnly || fullscreen!=tile.screenFullscreen || hideIcons!=tile.screenHideIcons || indestructible!=tile.indestructible || !inputItem.isEmpty()))throw new IllegalArgumentException("Setting does not apply to this device");
+        if(!screen && (!skin.equals(tile.screenSkin) || skinMeta!=tile.screenSkinMeta || inputOnly!=tile.screenInputOnly || fullscreen!=tile.screenFullscreen || hideIcons!=tile.screenHideIcons || mode!=7 && indestructible!=tile.indestructible || !inputItem.isEmpty()))throw new IllegalArgumentException("Setting does not apply to this device");
         if(screen && !skin.isEmpty()) {if(!Block.blockRegistry.containsKey(skin))throw new IllegalArgumentException("Unknown skin block");Block b=(Block)Block.blockRegistry.getObject(skin);if(b instanceof QuestBlocks.DeviceBlock || b.hasTileEntity(skinMeta) || b!=net.minecraft.init.Blocks.air && b.getRenderType()<0)throw new IllegalArgumentException("Invalid skin block");}
         ItemStack icon=null;if(!inputItem.isEmpty()){Item item=(Item)Item.itemRegistry.getObject(inputItem);if(item==null)throw new IllegalArgumentException("Unknown icon item");icon=new ItemStack(item,1,inputMeta);icon.setTagCompound(QuestService.tag(inputNbt));if(icon.hasTagCompound() && net.minecraft.nbt.CompressedStreamTools.compress(icon.getTagCompound()).length>4096)throw new IllegalArgumentException("Icon NBT is too large");}
-        if(!Objects.equals(nextOwner,tile.owner)){if(mode!=0 && mode!=1 && mode!=4 && mode!=9)throw new IllegalArgumentException("Team cannot be changed on this device");if(nextOwner==null)throw new IllegalArgumentException("Choose a team");}
+        if(!Objects.equals(nextOwner,tile.owner)){if(mode!=0 && mode!=1 && mode!=4 && mode!=7 && mode!=9)throw new IllegalArgumentException("Team cannot be changed on this device");if(nextOwner==null)throw new IllegalArgumentException("Choose a team");}
         // All failure-prone validation is complete before the first mutation.
         if(!Objects.equals(nextOwner,tile.owner)){if(screen)QuestScreens.reassignOwner(tile,nextOwner);else tile.owner=nextOwner;}
-        tile.quest=quest;tile.task=task;tile.analog=analog;
+        tile.quest=quest;tile.task=task;tile.analog=analog;if(mode==7)tile.indestructible=indestructible;
         if(screen){tile.screenSkin=skin;tile.screenSkinMeta=skinMeta;tile.screenInputOnly=inputOnly;tile.screenFullscreen=fullscreen;tile.screenHideIcons=hideIcons;tile.indestructible=indestructible;tile.screenInputIcon=icon;}
         if(mode==4 || mode==5){tile.configureDetector(radius,offset,height,power);tile.detectorNotifications=notifications;}
         tile.bindingChanged();if(screen)QuestScreens.presentationChanged(tile);else{tile.markDirty();if(tile.getWorldObj()!=null)tile.getWorldObj().markBlockForUpdate(tile.xCoord,tile.yCoord,tile.zCoord);}

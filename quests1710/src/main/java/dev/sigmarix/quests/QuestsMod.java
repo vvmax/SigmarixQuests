@@ -158,7 +158,7 @@ public final class QuestsMod {
                     storage.nextPage(); message="Storage page changed"; break;
                 case "pin": service.pin(player.getUniqueID(),action.id); message="Pinned quests updated"; break;
                 case "click_command":
-                    String command=service.clickCommand(player.getUniqueID(),action.id);
+                    String command=service.clickCommand(player.getUniqueID(),action.id,editor(player));
                     MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
                 case "emergency": service.emergency(player); message="Emergency items received"; break;
                 case "device_config":

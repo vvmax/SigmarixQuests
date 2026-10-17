@@ -10,7 +10,7 @@ public final class QuestPinScreen extends GuiScreen {
     private void rebuild() {
         buttonList.clear(); if(ClientProxy.snapshot==null) return; int rows=Math.max(1,(height-82)/24); scroll=Math.max(0,Math.min(scroll,Math.max(0,ClientProxy.snapshot.pinned.size()-rows)));
         for(int i=scroll;i<ClientProxy.snapshot.pinned.size() && i<scroll+rows;i++) {
-            String id=ClientProxy.snapshot.pinned.get(i),title=id; for(QuestCore.Quest quest:ClientProxy.snapshot.book.quests) if(quest.id.equals(id)) title=quest.title;
+            String id=ClientProxy.snapshot.pinned.get(i),title=id; for(QuestCore.Quest quest:ClientProxy.snapshot.book.quests) if(quest.id.equals(id)) title=QuestTaskLabels.quest(quest);
             buttonList.add(new QuestFlatButton(100+i,12,36+(i-scroll)*24,width-24,20,fontRendererObj.trimStringToWidth(title+" "+ClientProxy.snapshot.percentages.getOrDefault(id,0)+"% - "+QuestText.tr("Unpin quest"),width-40)));
         }
         buttonList.add(new QuestFlatButton(0,12,height-32,80,20,QuestText.tr("Back"))); buttonList.add(new QuestFlatButton(1,width-144,height-32,132,20,QuestText.tr("Notifications")));

@@ -48,6 +48,11 @@ public class QuestBoundaryTest {
         try(GZIPOutputStream zip=new GZIPOutputStream(bytes)) { zip.write(new byte[QuestNetwork.MAX_BYTES+1]); }
         try { QuestNetwork.decode(bytes.toByteArray()); fail(); } catch(IOException expected) {}
     }
+    @Test public void namedRandomTableCyclesAndMissingTablesAreRejected() {
+        QuestCore.Book book=new QuestCore.Book();QuestCore.Reward random=new QuestCore.Reward();random.type="random";random.table="loop";book.lootTables.put("loop",Collections.singletonList(random));
+        try{book.validate();fail();}catch(IllegalArgumentException expected){}
+        random.table="missing";try{book.validate();fail();}catch(IllegalArgumentException expected){}
+    }
     @Test public void lootCyclesAreRejected() {
         QuestCore.Book book=new QuestCore.Book(); QuestCore.Reward r=new QuestCore.Reward(); r.type="loot"; r.target="loop";
         book.lootTables.put("loop",Collections.singletonList(r));

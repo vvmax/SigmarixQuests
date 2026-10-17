@@ -79,7 +79,9 @@ public final class QuestNetwork {
         @Override public IMessage onMessage(Notice message,MessageContext context) { QuestsMod.proxy.notice(message.json); return null; }
     }
     public static final class Toast {
-        public String title="",text="",icon="minecraft:book",iconNbt="";
+        public boolean status;
+        public String title="",text="",icon="minecraft:book",iconNbt="",completion="";
+        public QuestCore.Quest quest;
         public int iconMeta;
         public QuestCore.Task task;
         public QuestCore.Reward reward;
@@ -92,6 +94,8 @@ public final class QuestNetwork {
         Toast toast=new Toast(); toast.title=title; toast.text=text; toast.icon=icon; toast.iconMeta=meta; toast.iconNbt=nbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
+    public static void completion(EntityPlayerMP player,String kind,String title,String icon,int meta,String nbt,QuestCore.Quest source){if(channel==null || QuestEvents.notificationsMuted())return;Toast toast=new Toast();toast.completion=kind;toast.title=title;toast.text=kind.equals("quest")?"Quest complete":kind+" complete";toast.icon=icon;toast.iconMeta=meta;toast.iconNbt=nbt;if(source!=null){toast.quest=new QuestCore.Quest();toast.quest.id=source.id;toast.quest.title=source.title;toast.quest.icon=source.icon;toast.quest.iconMeta=source.iconMeta;toast.quest.iconNbt=source.iconNbt;if(!source.tasks.isEmpty())toast.quest.tasks.add(source.tasks.get(0));}channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);}
+    public static void status(EntityPlayerMP player,String key,long value){if(channel==null)return;Toast toast=new Toast();toast.status=true;toast.title=key;toast.text=Long.toString(value);channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);}
     public static void taskToast(EntityPlayerMP player,QuestCore.Quest quest,QuestCore.Task task) {
         if(channel==null || QuestEvents.notificationsMuted()) return;
         Toast toast=new Toast(); toast.title=QuestPresentation.title(task); toast.text="Task complete";

@@ -7,7 +7,7 @@ import java.util.*;
 public final class QuestPresentation {
     public static final Set<String> SHAPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("square","rsquare","circle","diamond","hexagon","octagon","pentagon","heart","gear")));
     public static final class MapImage {
-        public String resource="minecraft:textures/blocks/stone.png",uri="";
+        public String resource="minecraft:textures/gui/presets/isles.png",uri="",click="";
         public List<String> hover=new ArrayList<String>();
         public double x,y,width=1,height=1,rotation,opacity=1;
         public boolean dev;
@@ -62,6 +62,7 @@ public final class QuestPresentation {
             if(chapter.image==null || !chapter.image.isEmpty() && !image(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !shape(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
             for(MapImage image:chapter.images) {
                 if(image==null || !image(image.resource) || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");
+                new QuestClick(image.click);
                 for(String line:image.hover) if(line==null || line.length()>1024) throw new IllegalArgumentException("Invalid map illustration hover");
             }
         }

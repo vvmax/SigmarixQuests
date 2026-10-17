@@ -118,7 +118,7 @@ public class QuestService {
         if (r.type.startsWith("npc_")) QuestNPCs.validate(r);
         if (r.type.equals("item")) { ItemStack prototype=new ItemStack(item(r.item),1,r.meta); prototype.setTagCompound(tag(r.nbt)); if(prototype.getMaxStackSize()<1) throw new IllegalArgumentException("Invalid reward stack limit"); }
         if (r.type.equals("achievement")) stat(r.target, true);
-        if (r.type.equals("custom") && !QuestHooks.REWARDS.containsKey(r.target)) throw new IllegalArgumentException("Unregistered reward hook: " + r.target);
+        if (r.type.equals("custom") && r.target!=null && !r.target.isEmpty() && !QuestHooks.REWARDS.containsKey(r.target)) throw new IllegalArgumentException("Unregistered reward hook: " + r.target);
         for (QuestCore.Reward child : r.options) validateReward(child);
     }
     private static void validateItemTarget(String id) {
@@ -329,7 +329,7 @@ public class QuestService {
                 t.target.equals(Integer.toString(p.worldObj.getBiomeGenForCoords(MathHelper.floor_double(p.posX), MathHelper.floor_double(p.posZ)).biomeID));
             case "location": return (t.ignoreDimension || p.dimension==t.dimension) && (t.box ? p.posX>=t.x && p.posX<t.x+t.width && p.posY>=t.y && p.posY<t.y+t.height && p.posZ>=t.z && p.posZ<t.z+t.depth : p.getDistanceSq(t.x,t.y,t.z)<=t.radius*t.radius);
             case "stat": return p.func_147099_x().writeStat(stat(t.target,false)) >= t.count;
-            case "achievement": return p.func_147099_x().hasAchievementUnlocked((Achievement)stat(t.target,true));
+            case "achievement": return (t.criterion.isEmpty() || t.criterion.equals("done")) && p.func_147099_x().hasAchievementUnlocked((Achievement)stat(t.target,true));
             case "observation": return looking(p,t) && (t.lookTicks==0 || lookTimers.getOrDefault(p.getUniqueID(),Collections.<String,Integer>emptyMap()).getOrDefault(q.id+":"+t.id,0)>=t.lookTicks);
             default: return false;
         }
@@ -431,7 +431,7 @@ public class QuestService {
             for (ItemStack empty : containers) give(p,empty);
             p.inventory.markDirty(); p.inventoryContainer.detectAndSendChanges();
             for(QuestCore.Task t:q.tasks) progress().markTask(p.getUniqueID(),q.id,t.id);
-            progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime()); progress().complete(p.getUniqueID(),q.id); if(!q.disableToast) QuestNetwork.toast(p,q.title,"Quest complete",q.icon,q.iconMeta,q.iconNbt);
+            progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime()); progress().complete(p.getUniqueID(),q.id); completionNotifications(p,q);
         }
         return true;
     }
@@ -481,7 +481,12 @@ public class QuestService {
         }
         if(quest.anyTask && !quest.tasks.isEmpty() && ready.isEmpty()) return false;
         for(QuestCore.Task task:ready) progress().markTask(player,quest.id,task.id);
-        progress().timestamp(player,quest.id,worldTime); progress().complete(player,quest.id); return true;
+        progress().timestamp(player,quest.id,worldTime); progress().complete(player,quest.id);MinecraftServer server=MinecraftServer.getServer();if(server!=null)for(Object raw:server.getConfigurationManager().playerEntityList){EntityPlayerMP recipient=(EntityPlayerMP)raw;if(progress().group(recipient.getUniqueID()).equals(progress().group(player))){completionNotifications(recipient,quest);break;}}return true;
+    }
+    public void completionNotifications(EntityPlayerMP actor,QuestCore.Quest quest){
+        List<EntityPlayerMP> recipients=new ArrayList<EntityPlayerMP>();MinecraftServer server=MinecraftServer.getServer();if(server==null)recipients.add(actor);else for(Object raw:server.getConfigurationManager().playerEntityList){EntityPlayerMP player=(EntityPlayerMP)raw;if(progress().group(actor.getUniqueID()).equals(progress().group(player.getUniqueID())))recipients.add(player);}
+        QuestCore.Chapter chapter=QuestPresentation.chapter(book,quest.chapter);boolean chapterDone=chapter!=null && objectProgress(actor.getUniqueID(),"chapter:"+chapter.id)>=1,fileDone=objectProgress(actor.getUniqueID(),"book:")>=1;
+        for(EntityPlayerMP recipient:recipients){if(!quest.disableToast)QuestNetwork.completion(recipient,"quest",quest.title,quest.icon,quest.iconMeta,quest.iconNbt,quest);if(chapterDone && !chapter.disableToast)QuestNetwork.completion(recipient,"chapter",chapter.title,chapter.icon.isEmpty()?"minecraft:book":chapter.icon,chapter.iconMeta,chapter.iconNbt,null);if((chapter==null || chapterDone) && fileDone && !book.disableToast)QuestNetwork.completion(recipient,"file",book.title,book.icon.isEmpty()?"minecraft:book":book.icon,book.iconMeta,book.iconNbt,null);}
     }
     private boolean storedTask(UUID player,QuestCore.Quest quest,QuestCore.Task task) {
         if(task.sticky && progress().taskDone(player,quest.id,task.id)) return true;
@@ -503,15 +508,15 @@ public class QuestService {
         if(depth>32 || ++budget[0]>4096) throw new IllegalArgumentException("Reward expansion exceeds safe limit");
         if(r.type.equals("choice")) {
             if(!choices.hasNext()) throw new IllegalArgumentException("Choose a reward option (zero-based index)");
-            int index=choices.next(); if(index<0 || index>=r.options.size()) throw new IllegalArgumentException("Invalid reward choice");
-            flatten(r.options.get(index),choices,random,out,budget,depth+1); return;
+            int index=choices.next(); if(index<0 || index>=QuestCore.rewardOptions(book,r).size()) throw new IllegalArgumentException("Invalid reward choice");
+            flatten(QuestCore.rewardOptions(book,r).get(index),choices,random,out,budget,depth+1); return;
         }
         if(!r.type.equals("loot") && !r.type.equals("random")) { out.add(r); return; }
         QuestCore.LootSettings settings=r.type.equals("loot")?book.lootSettings.get(r.target):null;
-        List<QuestCore.Reward> options=r.type.equals("loot")?book.lootTables.get(r.target):r.options;
+        List<QuestCore.Reward> options=r.type.equals("loot")?book.lootTables.get(r.target):QuestCore.rewardOptions(book,r);
         int empty=settings==null?0:settings.emptyWeight,rolls=settings==null?1:settings.rolls,total=empty;
         for(QuestCore.Reward o:options) total=Math.addExact(total,o.weight);
-        if(total<=0) throw new IllegalArgumentException("Empty loot distribution");
+        if(total<=0)return;
         for(int roll=0;roll<rolls;roll++) {
             int pick=random.nextInt(total); if(pick<empty) continue; pick-=empty;
             for(QuestCore.Reward o:options) { pick-=o.weight; if(pick<0) { flatten(o,choices,random,out,budget,depth+1); break; } }
@@ -522,7 +527,7 @@ public class QuestService {
     private boolean hasChoice(QuestCore.Reward reward) { return hasChoice(reward,new HashSet<String>()); }
     private boolean hasChoice(QuestCore.Reward reward,Set<String> tables) {
         if(reward.type.equals("choice")) return true;
-        for(QuestCore.Reward option:reward.options) if(hasChoice(option,tables)) return true;
+        for(QuestCore.Reward option:QuestCore.rewardOptions(book,reward)) if(hasChoice(option,tables)) return true;
         if(reward.type.equals("loot") && tables.add(reward.target)) {
             List<QuestCore.Reward> entries=book.lootTables.get(reward.target);
             if(entries!=null) for(QuestCore.Reward entry:entries) if(hasChoice(entry,tables)) return true;
@@ -581,7 +586,7 @@ public class QuestService {
         if(depth>32 || ++budget[0]>4096) throw new IllegalArgumentException("Automated loot expansion exceeds limit");
         if(reward.type.equals("item")) return reward.onlyOne;
         if(!reward.type.equals("random") && !reward.type.equals("loot")) return true;
-        List<QuestCore.Reward> options=reward.type.equals("loot")?book.lootTables.get(reward.target):reward.options;
+        List<QuestCore.Reward> options=reward.type.equals("loot")?book.lootTables.get(reward.target):QuestCore.rewardOptions(book,reward);
         if(options==null) throw new IllegalArgumentException("Unknown loot table");
         for(QuestCore.Reward option:options) if(lootNeedsPlayer(option,depth+1,budget)) return true;
         return false;
@@ -642,13 +647,14 @@ public class QuestService {
         QuestProgress data=progress(); UUID id=p.getUniqueID();
         if (!data.completed(id).contains(q.id) || claimed(id,q)) throw new IllegalArgumentException("Reward unavailable");
         List<QuestCore.Reward> leaves=new ArrayList<QuestCore.Reward>(); Iterator<Integer> selected=choices.iterator();
-        List<Integer> pending=new ArrayList<Integer>(); boolean allShared=true; int[] budget={0};
+        List<Integer> pending=new ArrayList<Integer>();Set<Integer> silentRewards=new HashSet<Integer>(); boolean allShared=true; int[] budget={0};
         for(int i=0;i<q.rewards.size();i++) {
             QuestCore.Reward r=q.rewards.get(i); boolean personal=individual(q,r); allShared&=!personal;
             if(rootId!=null && !rootId.equals(rewardId(r,i))) continue;
             if(data.rewardClaimed(id,q.id,rewardId(r,i),personal)) continue;
-            if(automatic && (!(r.auto.equals("enabled") || r.auto.equals("invisible") || r.auto.equals("inherit") && (q.autoClaim || !book.defaultAutoClaim.equals("disabled"))) || hasChoice(r))) continue;
+            if(automatic && (!(r.auto.equals("enabled") || r.auto.equals("no_toast") || r.auto.equals("invisible") || r.auto.equals("inherit") && (q.autoClaim || !book.defaultAutoClaim.equals("disabled"))) || hasChoice(r))) continue;
             List<QuestCore.Reward> expanded=new ArrayList<QuestCore.Reward>(); flatten(r,selected,p.getRNG(),expanded,budget,0);
+            String auto=r.auto.equals("inherit")?(q.autoClaim?"enabled":book.defaultAutoClaim):r.auto;if(automatic && (auto.equals("no_toast") || auto.equals("invisible")))for(int n=leaves.size();n<leaves.size()+expanded.size();n++)silentRewards.add(n);
             pending.add(i); leaves.addAll(expanded);
         }
         if(automatic && pending.isEmpty() && !(q.rewards.isEmpty() && q.autoClaim)) return;
@@ -667,7 +673,7 @@ public class QuestService {
         preflightRewardEffects(p,leaves);
         for(int index:pending) { QuestCore.Reward r=q.rewards.get(index); data.claimReward(id,q.id,rewardId(r,index),individual(q,r)); }
         if(allShared && (rootId==null || claimed(id,q)) && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
-        applyRewards(p,leaves,itemSink);
+        applyRewards(p,leaves,itemSink,silentRewards);
         for(int index:pending) QuestEvents.fire("reward_claimed",id,q.id,rewardId(q.rewards.get(index),index));
         if(q.autoRepeat) repeatAutomated(id,q,p.worldObj.getTotalWorldTime());
     }
@@ -683,10 +689,12 @@ public class QuestService {
         List<String> pinned=new ArrayList<String>(); for(String old:progress().pins(player)) if(quests.containsKey(old) && visible(player,quests.get(old))) pinned.add(old);
         if(!pinned.remove(questId)) pinned.add(questId); progress().pins(player,pinned);
     }
-    public String clickCommand(UUID player,String questId) {
-        QuestCore.Quest quest=quests.get(questId);
-        if(quest==null || !visible(player,quest)) throw new IllegalArgumentException("Quest action is not visible");
-        QuestClick click=new QuestClick(quest.customClick); if(!click.type.equals("command")) throw new IllegalArgumentException("Quest has no command action");
+    public String clickCommand(UUID player,String questId) {return clickCommand(player,questId,false);}
+    public String clickCommand(UUID player,String questId,boolean editor) {
+        String action;
+        if(questId.startsWith("image:")){String[] parts=questId.substring(6).split(":",2);QuestCore.Chapter chapter=parts.length==2?QuestPresentation.chapter(book,parts[0]):null;if(chapter==null || !editor && !QuestPresentation.visibleChapter(book,chapter.id))throw new IllegalArgumentException("Image action is not visible");int index;try{index=Integer.parseInt(parts[1]);}catch(NumberFormatException invalid){throw new IllegalArgumentException("Unknown image");}if(index<0 || index>=chapter.images.size() || chapter.images.get(index).dev && !editor)throw new IllegalArgumentException("Image action is not visible");action=chapter.images.get(index).click;}
+        else{QuestCore.Quest quest=quests.get(questId);if(quest==null || !visible(player,quest))throw new IllegalArgumentException("Quest action is not visible");action=quest.customClick;}
+        QuestClick click=new QuestClick(action); if(!click.type.equals("command")) throw new IllegalArgumentException("Quest has no command action");
         return click.value.startsWith("/")?click.value:"/"+click.value;
     }
     public void openLoot(EntityPlayerMP p,String table,ItemStack crate) {
@@ -713,9 +721,10 @@ public class QuestService {
             }
         }
     }
-    private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink) {
+    private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink){applyRewards(p,leaves,itemSink,Collections.<Integer>emptySet());}
+    private void applyRewards(EntityPlayerMP p,List<QuestCore.Reward> leaves,java.util.function.Consumer<ItemStack> itemSink,Set<Integer> silentRewards) {
         UUID id=p.getUniqueID();
-        for(QuestCore.Reward r:leaves) { boolean delivered=true;int deliveredCount=r.count;switch(r.type) {
+        for(int index=0;index<leaves.size();index++) {QuestCore.Reward r=leaves.get(index);boolean notify=!silentRewards.contains(index); boolean delivered=true;int deliveredCount=r.count;switch(r.type) {
             case "item":
                 Item reward=item(r.item); ItemStack prototype=new ItemStack(reward,1,r.meta); prototype.setTagCompound(tag(r.nbt));
                 boolean exists=false; for(ItemStack stack:p.inventory.mainInventory) if(stack!=null && stack.isItemEqual(prototype) && ItemStack.areItemStackTagsEqual(stack,prototype)) exists=true;
@@ -730,12 +739,12 @@ public class QuestService {
             case "command":
                 String command=r.target.replace("{player}",p.getCommandSenderName()).replace("{uuid}",id.toString()).replace("{x}",Integer.toString(MathHelper.floor_double(p.posX))).replace("{y}",Integer.toString(MathHelper.floor_double(p.posY))).replace("{z}",Integer.toString(MathHelper.floor_double(p.posZ)));
                 MinecraftServer.getServer().getCommandManager().executeCommand(r.asPlayer?p:MinecraftServer.getServer(),command); break;
-            case "achievement": grantAchievement(p,(Achievement)stat(r.target,true),new HashSet<Achievement>()); break;
-            case "toast": QuestNetwork.toast(p,r.target,r.text,r.item==null?"minecraft:book":r.item); break;
-            case "custom": QuestHooks.REWARDS.get(r.target).grant(p,r); break;
+            case "achievement": if(r.criterion.isEmpty() || r.criterion.equals("done"))grantAchievement(p,(Achievement)stat(r.target,true),new HashSet<Achievement>());else delivered=false;break;
+            case "toast": if(notify)QuestNetwork.toast(p,r.title.isEmpty()?(r.target==null?"":r.target):r.title,r.description.isEmpty()?r.text:r.description,r.icon.isEmpty()?(r.item==null?"minecraft:book":r.item):r.icon,r.icon.isEmpty()?r.meta:r.iconMeta,r.icon.isEmpty()?r.nbt:r.iconNbt);break;
+            case "custom": if(r.target!=null && !r.target.isEmpty())QuestHooks.REWARDS.get(r.target).grant(p,r);net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new QuestCustomRewardEvent(r,p,notify));QuestEvents.fire("custom_reward",p.getUniqueID(),"",r.id==null?"":r.id);break;
             default: throw new IllegalStateException("Unexpected flattened reward");
         }
-        if(delivered && itemSink==null)QuestNetwork.rewardToast(p,r,deliveredCount);
+        if(delivered && itemSink==null && notify)QuestNetwork.rewardToast(p,r,deliveredCount);
         }
         p.inventoryContainer.detectAndSendChanges();
     }

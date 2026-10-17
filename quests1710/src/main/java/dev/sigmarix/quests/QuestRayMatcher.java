@@ -19,7 +19,8 @@ public final class QuestRayMatcher {
                 tag=new NBTTagCompound(); tile.writeToNBT(tag); identity=type(task).equals("block_entity_id")?tag.getString("id"):tile.getClass().getName(); break;
             default: return false;
         }
-        if(!task.target.equals(identity) || !task.ignoreDamage && world.getBlockMetadata(x,y,z)!=task.meta) return false;
+        if(!task.target.equals(identity) || task.properties.isEmpty() && !task.ignoreDamage && world.getBlockMetadata(x,y,z)!=task.meta) return false;
+        if(type(task).equals("block_id") && !task.properties.isEmpty() && !QuestBlockState.matches(world.getBlock(x,y,z),world.getBlockMetadata(x,y,z),QuestBlockState.constraints(task.properties)))return false;
         if(!task.nbt.isEmpty() && tag==null) { TileEntity tile=world.getTileEntity(x,y,z); if(tile==null) return false; tag=new NBTTagCompound(); tile.writeToNBT(tag); }
         return QuestService.nbtMatches(task.nbt,task.nbtMode,tag);
     }

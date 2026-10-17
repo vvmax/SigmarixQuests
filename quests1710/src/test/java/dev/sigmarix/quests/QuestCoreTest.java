@@ -9,6 +9,9 @@ public final class QuestCoreTest {
         try { book.validate(); } catch (IllegalArgumentException expected) { return; }
         throw new AssertionError("Invalid book accepted");
     }
+    @org.junit.Test public void nativeItemAndExperienceRewardRangesAreAcceptedWithoutOverflow() {
+        QuestCore.Book book=new QuestCore.Book();QuestCore.Quest quest=quest("limits");book.quests.add(quest);QuestCore.Reward reward=new QuestCore.Reward();reward.item="minecraft:stone";reward.count=8192;reward.randomBonus=8192;quest.rewards.add(reward);book.validate();reward.count=8193;reject(book);reward.count=Integer.MAX_VALUE;reward.type="xp";reward.randomBonus=0;book.validate();reward.count=-1;reject(book);
+    }
     @org.junit.Test public void regression() {
         QuestCore.Book b=new QuestCore.Book(); QuestCore.Quest a=quest("a"), c=quest("c");
         b.quests.add(a); b.quests.add(c); c.dependencies.add("a"); b.validate();

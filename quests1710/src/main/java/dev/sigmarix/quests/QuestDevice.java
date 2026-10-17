@@ -39,6 +39,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     private final net.minecraft.item.ItemStack[] collectorItems=new net.minecraft.item.ItemStack[9];
     private final java.util.List<net.minecraft.item.ItemStack> pendingLoot=new java.util.ArrayList<net.minecraft.item.ItemStack>();
     public int queuedLoot;
+    public long storedOutputCount(){long count=0;for(net.minecraft.item.ItemStack stack:collectorItems)if(stack!=null)count+=stack.stackSize;for(net.minecraft.item.ItemStack stack:pendingLoot)count+=stack.stackSize;return count;}
     public boolean opener() { return worldObj!=null && getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==6; }
     private int outputIndex(int slot) { return collector()?(slot>=0 && slot<9?slot:-1):opener() && slot>=1 && slot<=9?slot-1:-1; }
     public boolean collector() { return worldObj!=null && getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==3; }
@@ -69,6 +70,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         if(t.sticky && s.progress().taskDone(owner,quest,task)) return 0;
         return Math.max(0,t.count-s.progress().value(owner,quest,task));
     }
+    private long inputRemaining(String type){long available=remaining(type);QuestCore.Task definition=definition(type);return definition!=null && definition.maxInput>0?Math.min(available,definition.maxInput):available;}
     private void credit(long amount) {
         QuestService service=QuestsMod.service; EntityPlayerMP actor=player();
         if(actor!=null) service.creditTask(actor,quest,task,amount);
@@ -158,7 +160,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         QuestEvents.withNotifications(detectorNotifications,() -> {
             boolean completed=service.progress().completed(recipient).contains(quest);
             service.creditTask(recipient,quest,task,target.count);
-            if(service.finishStored(recipient,q,worldObj.getTotalWorldTime()) && !completed && online!=null && !q.disableToast) QuestNetwork.toast(online,q.title,"Quest complete",q.icon,q.iconMeta,q.iconNbt);
+            service.finishStored(recipient,q,worldObj.getTotalWorldTime());
         });
     }
     /** A public detector credits the detected player's team, never its builder's team. */
@@ -226,7 +228,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public double getDemandedEnergy() {
         if(screenLinked) { QuestDevice core=QuestScreens.core(this); return core==null?0:core.getDemandedEnergy(); }
         if(!taskTerminal()) return 0;
-        return Math.max(0,remaining("ic2_energy")-(euBinding.equals(euKey())?euFraction:0));
+        return Math.max(0,inputRemaining("ic2_energy")-(euBinding.equals(euKey())?euFraction:0));
     }
     @Override public int getSinkTier() { QuestCore.Task t=definition("ic2_energy"); return t==null?4:t.energyTier; }
     @Override public double injectEnergy(ForgeDirection side,double amount,double voltage) {
@@ -244,7 +246,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public boolean canRecieveManaFromBursts() { return !isFull(); }
     @Override public void recieveMana(int mana) {
         if(mana<=0 || isFull()) return;
-        long accepted=Math.min(mana,remaining("botania_mana"));
+        long accepted=Math.min(mana,inputRemaining("botania_mana"));
         if(accepted>0) credit(accepted);
     }
     @Override public int fill(ForgeDirection from,FluidStack resource,boolean commit) {
@@ -262,7 +264,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public boolean canConnectEnergy(ForgeDirection from) { return taskTerminal() && (definition("energy")!=null || definition("buildcraft_mj")!=null); }
     @Override public int receiveEnergy(ForgeDirection from,int amount,boolean simulate) {
         if(worldObj==null || worldObj.isRemote || amount<=0) return 0;
-        boolean mj=definition("buildcraft_mj")!=null; long remaining=remaining(mj?"buildcraft_mj":"energy");
+        boolean mj=definition("buildcraft_mj")!=null; long remaining=inputRemaining(mj?"buildcraft_mj":"energy");
         long units=mj?remaining/100000+(remaining%100000==0?0:1):remaining;
         int accepted=(int)Math.min(amount,units);
         if(!simulate && accepted>0) credit(mj?Math.min(remaining,accepted*100000L):accepted);
