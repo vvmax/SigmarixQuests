@@ -81,6 +81,7 @@ public final class QuestNetwork {
     public static final class Toast {
         public String title="",text="",icon="minecraft:book",iconNbt="";
         public int iconMeta;
+        public QuestCore.Task task;
     }
     public static void toast(EntityPlayerMP player,String title,String text,String icon) {
         toast(player,title,text,icon,0,"");
@@ -88,6 +89,13 @@ public final class QuestNetwork {
     public static void toast(EntityPlayerMP player,String title,String text,String icon,int meta,String nbt) {
         if(channel==null) return;
         Toast toast=new Toast(); toast.title=title; toast.text=text; toast.icon=icon; toast.iconMeta=meta; toast.iconNbt=nbt;
+        channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
+    }
+    public static void taskToast(EntityPlayerMP player,QuestCore.Quest quest,QuestCore.Task task) {
+        if(channel==null) return;
+        Toast toast=new Toast(); toast.title=QuestPresentation.title(task); toast.text="Task complete";
+        QuestCore.Task label=new QuestCore.Task(); label.title=task.title; label.type=task.type; label.target=task.target; label.meta=task.meta; label.nbt=task.nbt; label.levels=task.levels; label.dimension=task.dimension; toast.task=label;
+        toast.icon=task.icon.isEmpty()?quest.icon:task.icon; toast.iconMeta=task.icon.isEmpty()?quest.iconMeta:task.iconMeta; toast.iconNbt=task.icon.isEmpty()?quest.iconNbt:task.iconNbt;
         channel.sendTo(new Notice(QuestService.JSON.toJson(toast)),player);
     }
     public static final class Action {
@@ -103,6 +111,8 @@ public final class QuestNetwork {
         public long revision;
         public long emergencyWait;
         public boolean canEdit,teamLeader;
+        public java.util.List<String> pinned=new java.util.ArrayList<String>();
+        public java.util.Map<String,Integer> percentages=new java.util.LinkedHashMap<String,Integer>();
         public java.util.List<String> teamMembers=new java.util.ArrayList<String>(),teamInvites=new java.util.ArrayList<String>();
         public java.util.List<Rank> leaderboard=new java.util.ArrayList<Rank>();
         public String message="", team="", profile="default";

@@ -109,7 +109,8 @@ public class QuestService {
         QuestNetwork.Snapshot wire=new QuestNetwork.Snapshot(); wire.book=next;
         for(QuestCore.Chapter c:next.chapters) wire.chapterStates.put(c.id,"not_started");
         for(QuestCore.Quest q:next.quests) { wire.states.put(q.id,"available"); for(QuestCore.Reward r:q.rewards) wire.rewardStates.put(q.id+":"+r.id,false); for(QuestCore.Task t:q.tasks) { wire.counters.put(q.id+":"+t.id,Long.MAX_VALUE); wire.taskStates.put(q.id+":"+t.id,false); } }
-        try { QuestNetwork.encode(JSON.toJson(wire)); } catch(IOException e) { throw new IllegalArgumentException("Book cannot fit a safe network snapshot",e); }
+        for(QuestCore.Quest q:next.quests) if(wire.pinned.size()<16) { wire.pinned.add(q.id); wire.percentages.put(q.id,100); }
+        try { String payload=JSON.toJson(wire); if(payload.getBytes(StandardCharsets.UTF_8).length>QuestNetwork.MAX_BYTES-32768 || QuestNetwork.encode(payload).length>QuestNetwork.MAX_COMPRESSED-16384) throw new IOException("Book needs room for live snapshot metadata"); } catch(IOException e) { throw new IllegalArgumentException("Book cannot fit a safe network snapshot",e); }
         return result;
     }
     private void validateReward(QuestCore.Reward r) {
@@ -521,6 +522,11 @@ public class QuestService {
         long wait=emergencyWait(player); if(wait>0) throw new IllegalArgumentException("Emergency items available in "+wait+" seconds");
         for(QuestCore.Reward reward:book.emergencyItems) validateReward(reward);
         progress().emergency(player.getUniqueID(),player.worldObj.getTotalWorldTime()); applyRewards(player,book.emergencyItems,null);
+    }
+    public void pin(UUID player,String questId) {
+        QuestCore.Quest quest=quests.get(questId); if(quest==null || !visible(player,quest)) throw new IllegalArgumentException("Quest is not visible");
+        List<String> pinned=new ArrayList<String>(); for(String old:progress().pins(player)) if(quests.containsKey(old) && visible(player,quests.get(old))) pinned.add(old);
+        if(!pinned.remove(questId)) pinned.add(questId); progress().pins(player,pinned);
     }
     public String clickCommand(UUID player,String questId) {
         QuestCore.Quest quest=quests.get(questId);

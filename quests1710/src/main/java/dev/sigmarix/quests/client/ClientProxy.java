@@ -17,7 +17,7 @@ public final class ClientProxy extends CommonProxy {
     private final ArrayBlockingQueue<String> queue=new ArrayBlockingQueue<String>(16);
     private final KeyBinding key=new KeyBinding("key.sigmarixquests.open",Keyboard.KEY_GRAVE,"key.categories.misc");
     private boolean opening;
-    private int syncTicks;
+    private int syncTicks,pinTicks;
     private long neiRevision=Long.MIN_VALUE;
     public static QuestNetwork.Snapshot snapshot;
     @Override public void init() {
@@ -27,6 +27,7 @@ public final class ClientProxy extends CommonProxy {
         net.minecraftforge.client.MinecraftForgeClient.registerItemRenderer(cpw.mods.fml.common.registry.GameRegistry.findItem("sigmarixquests","custom_icon"),new QuestIconRenderer());
         ClientRegistry.bindTileEntitySpecialRenderer(QuestDevice.class,new QuestScreenRenderer());
         FMLCommonHandler.instance().bus().register(new QuestToasts());
+        FMLCommonHandler.instance().bus().register(new QuestPins());
         ClientRegistry.registerKeyBinding(key); FMLCommonHandler.instance().bus().register(this);
         ClientCommandHandler.instance.registerCommand(new CommandBase() {
             @Override public String getCommandName() { return "questbook"; }
@@ -45,8 +46,10 @@ public final class ClientProxy extends CommonProxy {
     @SubscribeEvent public void tick(TickEvent.ClientTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
         Minecraft mc=Minecraft.getMinecraft();
-        if(mc.theWorld==null) { QuestImages.clear(); QuestToasts.clear(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; opening=false; return; }
+        if(mc.theWorld==null) { QuestImages.clear(); QuestToasts.disconnect(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; pinTicks=0; opening=false; return; }
         if(snapshot==null && mc.thePlayer!=null && ++syncTicks%20==0) send(new QuestNetwork.Action());
+        QuestToasts.pump();
+        if(snapshot!=null && !snapshot.pinned.isEmpty() && mc.currentScreen==null && ++pinTicks%40==0) send(new QuestNetwork.Action());
         String json;
         while((json=queue.poll())!=null) {
             try {

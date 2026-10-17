@@ -14,7 +14,7 @@ public final class QuestTaskScreen extends GuiScreen {
         buttonList.clear(); int rows=Math.max(1,(height-90)/26); scroll=Math.max(0,Math.min(scroll,Math.max(0,quest.tasks.size()-rows)));
         for(int i=scroll;i<quest.tasks.size() && i<scroll+rows;i++) {
             QuestCore.Task task=quest.tasks.get(i); boolean submit=task.consume && (task.type.equals("emc") || task.type.equals("item") && !task.craftingOnly); boolean done=Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(quest.id+":"+task.id));
-            GuiButton button=new GuiButton(100+i,12,42+(i-scroll)*26,width-24,22,fontRendererObj.trimStringToWidth(QuestPresentation.title(task)+(done?" [done]":task.type.equals("check")?" - confirm":submit?" - submit":""),width-40));
+            GuiButton button=new GuiButton(100+i,12,42+(i-scroll)*26,width-24,22,fontRendererObj.trimStringToWidth(QuestTaskLabels.title(task)+(done?" [done]":task.type.equals("check")?" - confirm":submit?" - submit":""),width-40));
             button.enabled=!done && (task.type.equals("check") || submit) && "available".equals(ClientProxy.snapshot.states.get(quest.id)); buttonList.add(button);
         }
         buttonList.add(new GuiButton(0,12,height-32,90,20,QuestText.tr("Back")));

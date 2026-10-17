@@ -3,10 +3,17 @@ import unittest
 import uuid
 from pathlib import Path
 from nbt_codec import IntTag, FloatTag, TypedArray, read_nbt, write_nbt
-from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights, convert_map_image, item, click_action
+from import_ftb112 import SNBT, snbt, convert, convert_task, convert_reward, seconds, weights, convert_map_image, item, click_action, quest_shape
 from migrate_progress import migrate
 
 class MigrationTests(unittest.TestCase):
+    def test_original_and_custom_shapes_keep_inheritance_and_resource_paths(self):
+        self.assertEqual('rsquare', quest_shape(None)); self.assertEqual('', quest_shape('default', True))
+        self.assertEqual('heart', quest_shape('heart', True)); self.assertEqual('gear', quest_shape('gear'))
+        self.assertEqual('ftbquests:textures/shapes/pack_star/background.png', quest_shape('pack_star'))
+        self.assertEqual('pack:shapes/star.png', quest_shape('pack:shapes/star.png'))
+        with self.assertRaises(ValueError): quest_shape('../private')
+
     def test_custom_click_protocols_survive_import_and_reject_malformed_targets(self):
         for value in ('command:/help', 'custom:pack:open_panel', 'guide:botania:lexicon', 'guide:', 'https://example.org/page', 'curseforgepages:pack:guide', 'othermod:panel'):
             self.assertEqual(value, click_action(value))

@@ -43,6 +43,17 @@ public final class QuestProgress extends WorldSavedData {
     private NBTTagCompound attributes(UUID id) {
         String key=id.toString(); if(!attributes.hasKey(key)) attributes.setTag(key,new NBTTagCompound()); return attributes.getCompoundTag(key);
     }
+    public List<String> pins(UUID id) {
+        NBTTagList list=attributes(id).getCompoundTag("pins").getTagList(activeProfile,8); List<String> result=new ArrayList<String>();
+        for(int i=0;i<list.tagCount() && result.size()<16;i++) { String quest=list.getStringTagAt(i); if(QuestCore.validId(quest) && !result.contains(quest)) result.add(quest); }
+        return result;
+    }
+    public void pins(UUID id,Collection<String> quests) {
+        if(quests==null || quests.size()>16) throw new IllegalArgumentException("At most 16 quests can be pinned");
+        NBTTagList list=new NBTTagList(); Set<String> unique=new HashSet<String>();
+        for(String quest:quests) { if(!QuestCore.validId(quest) || !unique.add(quest)) throw new IllegalArgumentException("Invalid pinned quest"); list.appendTag(new NBTTagString(quest)); }
+        NBTTagCompound player=attributes(id),all=player.getCompoundTag("pins"); all.setTag(activeProfile,list); player.setTag("pins",all); markDirty();
+    }
     public long emergencyWait(UUID id,long now,long cooldownTicks) {
         NBTTagCompound data=attributes(id); if(!data.hasKey("emergencyAt")) return 0;
         long previous=data.getLong("emergencyAt"),elapsed=now>=previous?now-previous:0;

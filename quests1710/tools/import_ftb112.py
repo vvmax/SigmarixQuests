@@ -423,6 +423,17 @@ def seconds(value):
 def text(value):
     return value if isinstance(value, str) else '\n'.join(str(line) for line in (value or []))
 
+NATIVE_SHAPES = {'square', 'rsquare', 'circle', 'diamond', 'pentagon', 'hexagon', 'octagon', 'heart', 'gear'}
+
+def quest_shape(value, inherit=False):
+    if not value or value == 'default': return '' if inherit else 'rsquare'
+    if not isinstance(value, str): raise ValueError('Invalid quest shape')
+    if value in NATIVE_SHAPES or http_uri(value): return value
+    if re.fullmatch(r'[a-z0-9_.-]+:[a-zA-Z0-9_./-]+', value) and '..' not in value and '://' not in value: return value
+    if re.fullmatch(r'[a-z0-9_-]+', value): return 'ftbquests:textures/shapes/' + value + '/background.png'
+    raise ValueError('Invalid custom shape resource')
+
+
 def http_uri(value):
     if not isinstance(value, str) or len(value) > 2048 or re.search(r'\s', value): return False
     try:
@@ -456,7 +467,7 @@ def convert_map_image(raw):
 def convert(folder):
     defaults = document(folder, 'file', True)
     book = {'format': 2, 'title': defaults.get('title') or 'Imported FTB 1.12 book', 'chapters': [], 'quests': [], 'lootTables': {}, 'lootSettings': {}}
-    book.update(disableGui=bool(defaults.get('disable_gui', False)), gridScale=float(defaults.get('grid_scale', .5) or .5), defaultQuestShape=defaults.get('default_quest_shape') or 'square', hideFromItemBrowser=bool(defaults.get('default_quest_disable_jei', False)))
+    book.update(disableGui=bool(defaults.get('disable_gui', False)), gridScale=float(defaults.get('grid_scale', .5) or .5), defaultQuestShape=quest_shape(defaults.get('default_quest_shape')), hideFromItemBrowser=bool(defaults.get('default_quest_disable_jei', False)))
     book['emergencyItems'] = [dict(item(stack), type='item') for stack in defaults.get('emergency_items', [])]
     book['emergencyCooldownSeconds'] = seconds(defaults.get('emergency_items_cooldown'))
     book['dropLootCrates'] = bool(defaults.get('drop_loot_crates', False))
@@ -487,7 +498,7 @@ def convert(folder):
     for chapter_dir in chapter_dirs:
         try:
             chapter = document(chapter_dir, 'chapter'); chapter_id = code(chapter_dir.name)
-            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': text(chapter.get('description', [])), 'parent': code(chapter['group']) if chapter.get('group') else '', 'defaultQuestShape': chapter.get('default_quest_shape') or '', 'alwaysInvisible': bool(chapter.get('always_invisible', False)), 'images': [convert_map_image(image) for image in chapter.get('images', [])]})
+            book['chapters'].append({'id': chapter_id, 'title': chapter.get('title') or chapter_id, 'description': text(chapter.get('description', [])), 'parent': code(chapter['group']) if chapter.get('group') else '', 'defaultQuestShape': quest_shape(chapter.get('default_quest_shape'), True), 'alwaysInvisible': bool(chapter.get('always_invisible', False)), 'images': [convert_map_image(image) for image in chapter.get('images', [])]})
             register(chapter_id, 'chapter:' + chapter_id)
         except (ValueError, OSError, TypeError) as error:
             errors.append(str(chapter_dir) + ': ' + str(error)); continue
@@ -505,7 +516,7 @@ def convert(folder):
                          'description': '\n'.join([text(raw.get('description', '')), text(raw.get('text', []))]), 'subtitle': raw.get('subtitle', ''), 'guidePage': raw.get('guide_page', ''), 'minWidth': int(raw.get('min_width', 0)), 'uri': '', 'customClick': click_action(raw.get('custom_click', '')),
                          'itemBrowser': 'inherit' if raw.get('disable_jei') in (None, 'default') else 'disabled' if tristate(raw['disable_jei']) else 'enabled',
                          'x': float(raw.get('x', 0)), 'y': float(raw.get('y', 0)), 'tags': raw.get('tags', []),
-                         'shape': raw.get('shape') or '', 'size': float(raw.get('size', 1)),
+                         'shape': quest_shape(raw.get('shape'), True), 'size': float(raw.get('size', 1)),
                          'hideDependencyLines': bool(raw.get('hide_dependency_lines', False)), 'hideTextUntilComplete': bool(raw.get('hide_text_until_complete', False)), 'disableToast': bool(raw.get('disable_toast', False)),
                          'rewardMode': 'team' if repeat or defaults.get('default_reward_team') else 'individual',
                          'hidden': bool(raw.get('hide', False)), 'optional': bool(raw.get('optional', False)),

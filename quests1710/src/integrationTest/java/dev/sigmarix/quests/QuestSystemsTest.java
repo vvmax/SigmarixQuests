@@ -745,4 +745,16 @@ public class QuestSystemsTest {
         quest.customClick="custom:pack:action"; try { service.clickCommand(player.getUniqueID(),quest.id); fail(); } catch(IllegalArgumentException expected) {}
     }
 
+    @Test public void pinsRemainPersonalAndModeSpecificAcrossSaveAndTeamChanges() {
+        data.pins(player.getUniqueID(),Arrays.asList("first","second")); EntityPlayerMP other=teammate(); assertTrue(data.pins(other.getUniqueID()).isEmpty());
+        data.profile("expert"); assertTrue(data.pins(player.getUniqueID()).isEmpty()); data.pins(player.getUniqueID(),Collections.singletonList("expert_quest")); data.profile("default");
+        data.kick(player.getUniqueID(),other.getUniqueID()); assertEquals(Arrays.asList("first","second"),data.pins(player.getUniqueID()));
+        NBTTagCompound saved=new NBTTagCompound(); data.writeToNBT(saved); QuestProgress restored=new QuestProgress(); restored.readFromNBT(saved); assertEquals(Arrays.asList("first","second"),restored.pins(player.getUniqueID())); restored.profile("expert"); assertEquals(Collections.singletonList("expert_quest"),restored.pins(player.getUniqueID()));
+    }
+    @Test public void pinningRejectsHiddenTargetsAndPrunesRemovedDefinitionsBeforeCapacityCheck() {
+        data.pins(player.getUniqueID(),Collections.singletonList("removed")); service.pin(player.getUniqueID(),quest.id); assertEquals(Collections.singletonList(quest.id),data.pins(player.getUniqueID())); service.pin(player.getUniqueID(),quest.id); assertTrue(data.pins(player.getUniqueID()).isEmpty());
+        quest.hidden=true; quest.dependencies.add("earlier"); try { service.pin(player.getUniqueID(),quest.id); fail(); } catch(IllegalArgumentException expected) {} assertTrue(data.pins(player.getUniqueID()).isEmpty());
+        java.util.List<String> tooMany=new java.util.ArrayList<String>(); for(int i=0;i<17;i++) tooMany.add("q"+i); try { data.pins(player.getUniqueID(),tooMany); fail(); } catch(IllegalArgumentException expected) {} assertTrue(data.pins(player.getUniqueID()).isEmpty());
+    }
+
 }

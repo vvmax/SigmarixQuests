@@ -28,6 +28,8 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         if(ClientProxy.snapshot.canEdit) buttonList.add(new GuiButton(3,200,8,70,20,QuestText.tr("Edit book")));
         buttonList.add(new GuiButton(9,276,8,66,20,QuestText.tr("Teams")));
         int buttonWidth=Math.max(32,(width-split()-24)/3);
+        buttonList.add(new GuiButton(13,split()+6,54,74,16,QuestText.tr("Pin quest")));
+        buttonList.add(new GuiButton(14,split()+86,54,74,16,QuestText.tr("Pinned")));
         buttonList.add(new GuiButton(8,split()+6,height-78,Math.max(60,width-split()-12),18,QuestText.tr("Guide / link")));
         buttonList.add(new GuiButton(4,split()+6,height-54,buttonWidth,20,QuestText.tr("Check")));
         buttonList.add(new GuiButton(5,split()+10+buttonWidth,height-54,buttonWidth,20,QuestText.tr("Claim")));
@@ -46,6 +48,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
             if(b.id==2) { QuestCore.Chapter definition=QuestPresentation.chapter(ClientProxy.snapshot.book,chapter); b.displayString=fontRendererObj.trimStringToWidth(definition==null?QuestText.tr("All chapters"):definition.title,100); }
             if(b.id==11) { QuestCore.Chapter definition=QuestPresentation.chapter(ClientProxy.snapshot.book,group); b.displayString=fontRendererObj.trimStringToWidth(definition==null?QuestText.tr("All groups"):definition.title,86); b.enabled=!groups().isEmpty(); }
             String state=ClientProxy.snapshot.states.get(selected);
+            if(b.id==13) { b.enabled=find(selected)!=null; b.displayString=QuestText.tr(ClientProxy.snapshot.pinned.contains(selected)?"Unpin quest":"Pin quest"); }
             if(b.id==10) b.enabled=!ClientProxy.snapshot.book.emergencyItems.isEmpty() && ClientProxy.snapshot.emergencyWait==0;
             if(b.id==8) { QuestCore.Quest q=find(selected); b.enabled=q!=null && (!q.pages.isEmpty() || !q.richPages.isEmpty() || !q.uri.isEmpty() || !q.guidePage.isEmpty() || !q.customClick.isEmpty()); }
             if(b.id==4) b.enabled="available".equals(state);
@@ -110,12 +113,23 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         else if(imageHover!=null && mouseX<split() && mouseY>60 && mouseY<height-48) { List<String> tooltip=imageHover.hover.isEmpty()?imageHover.uri.isEmpty()?Collections.<String>emptyList():Collections.singletonList(imageHover.uri):imageHover.hover; if(!tooltip.isEmpty()) func_146283_a(tooltip,mouseX,mouseY); }
     }
     private void node(int x,int y,int radius,String shape,int color) {
+        if(QuestPresentation.image(shape)) {
+            GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+            try { mc.getTextureManager().bindTexture(QuestImages.texture(shape)); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA); GL11.glColor4f((color>>16&255)/255f,(color>>8&255)/255f,(color&255)/255f,(color>>>24)/255f); func_152125_a(x-radius,y-radius,0,0,256,256,radius*2,radius*2,256,256); }
+            finally { GL11.glPopAttrib(); } return;
+        }
         if(shape.equals("square")) { drawRect(x-radius,y-radius,x+radius,y+radius,color); return; }
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT); GL11.glDisable(GL11.GL_CULL_FACE);
-        int count=shape.equals("circle")?32:shape.equals("diamond")?4:shape.equals("pentagon")?5:shape.equals("hexagon")?6:8;
+        int count=shape.equals("heart") || shape.equals("rsquare")?64:shape.equals("gear")?48:shape.equals("circle")?32:shape.equals("diamond")?4:shape.equals("pentagon")?5:shape.equals("hexagon")?6:8;
         GL11.glDisable(GL11.GL_TEXTURE_2D); GL11.glEnable(GL11.GL_BLEND); GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glColor4f((color>>16&255)/255f,(color>>8&255)/255f,(color&255)/255f,(color>>>24)/255f); GL11.glBegin(GL11.GL_TRIANGLE_FAN); GL11.glVertex2d(x,y);
-        for(int i=0;i<=count;i++) { double angle=-Math.PI/2+Math.PI*2*i/count; GL11.glVertex2d(x+Math.cos(angle)*radius,y+Math.sin(angle)*radius); }
+        for(int i=0;i<=count;i++) {
+            double angle=-Math.PI/2+Math.PI*2*i/count,dx=Math.cos(angle),dy=Math.sin(angle);
+            if(shape.equals("rsquare")) { dx=Math.copySign(Math.sqrt(Math.abs(dx)),dx); dy=Math.copySign(Math.sqrt(Math.abs(dy)),dy); }
+            else if(shape.equals("heart")) { double t=Math.PI*2*i/count; dx=Math.pow(Math.sin(t),3); dy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/17D; }
+            else if(shape.equals("gear")) { double gear=i%4<2?1:.76; dx*=gear; dy*=gear; }
+            GL11.glVertex2d(x+dx*radius,y+dy*radius);
+        }
         GL11.glEnd(); GL11.glColor4f(1,1,1,1); GL11.glDisable(GL11.GL_BLEND); GL11.glEnable(GL11.GL_TEXTURE_2D); GL11.glPopAttrib();
     }
     private void drawDetails() {
@@ -127,7 +141,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         lines.add("Dependencies ("+q.dependencyState+"): "+q.dependencies); lines.add("Tasks:");
         for(QuestCore.Task t:q.tasks) {
             Long value=ClientProxy.snapshot.counters.get(q.id+":"+t.id);
-            String line=(Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(q.id+":"+t.id))?"[done] ":"")+QuestPresentation.title(t)+" "+(t.target==null?"":t.target)+" x"+t.count+(t.consume?" (consume)":"")+" ["+(value==null?0:value)+"]";
+            String line=(Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(q.id+":"+t.id))?"[done] ":"")+QuestTaskLabels.title(t)+" "+(t.target==null?"":t.target)+" x"+t.count+(t.consume?" (consume)":"")+" ["+(value==null?0:value)+"]";
             if(!t.description.isEmpty()) lines.addAll(fontRendererObj.listFormattedStringToWidth(t.description,max));
             if(t.type.equals("dimension") || t.type.equals("location")) line+=" dim="+t.dimension;
             lines.addAll(fontRendererObj.listFormattedStringToWidth(line,max));
@@ -137,13 +151,15 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
         for(int i=detailsScroll;i<lines.size() && i<detailsScroll+end;i++) fontRendererObj.drawString(fontRendererObj.trimStringToWidth(lines.get(i),max),x,74+(i-detailsScroll)*11,QuestPresentation.color(ClientProxy.snapshot.book.theme.text));
     }
     private void rewardLines(List<String> lines,QuestCore.Reward r,String prefix,int max) {
-        lines.addAll(fontRendererObj.listFormattedStringToWidth(prefix+QuestPresentation.title(r),max));
+        lines.addAll(fontRendererObj.listFormattedStringToWidth(prefix+QuestTaskLabels.reward(r),max));
         if(!r.description.isEmpty()) lines.addAll(fontRendererObj.listFormattedStringToWidth(r.description,max));
         for(int i=0;i<r.options.size();i++) rewardLines(lines,r.options.get(i),prefix+i+": ",max);
     }
     @Override protected void actionPerformed(GuiButton button) {
         QuestNetwork.Action action=new QuestNetwork.Action(); action.id=selected;
         switch(button.id) {
+            case 13: action.action="pin"; ClientProxy.send(action); return;
+            case 14: mc.displayGuiScreen(new QuestPinScreen(this)); return;
             case 12: QuestGuides.open("",this); return;
             case 10: action.action="emergency"; ClientProxy.send(action); return;
             case 9: mc.displayGuiScreen(new QuestTeamScreen(this)); return;

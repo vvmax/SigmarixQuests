@@ -62,4 +62,8 @@ public class QuestPresentationTest {
         QuestCore.Book b=book(); b.gridScale=.25; b.validate(); assertEquals(.75,QuestPresentation.snap(b,.7,1),0); assertEquals(1,QuestPresentation.snap(b,.8,2),0);
         b.gridScale=1D/32; b.validate(); assertFalse(QuestPresentation.resource("https://example.org/texture.png"));
     }
+    @Test public void allClassicBuiltInShapesAndResourceMasksAreAcceptedWithoutOriginalAssets() {
+        QuestCore.Book b=book(); for(String shape:java.util.Arrays.asList("rsquare","heart","gear","pack:shapes/star.png","https://example.org/mask.png")) { b.defaultQuestShape=shape; b.quests.get(0).shape=shape; b.validate(); }
+    }
+
 }

@@ -27,7 +27,7 @@ public final class QuestPreview {
     private volatile boolean npcRequested,npcPassed,npcVerify,npcVerified;
     private volatile boolean bcRequested,bcPassed;
     private volatile boolean iconRequested,iconReady;
-    private boolean iconPassed;
+    private boolean iconPassed,pinPassed;
     private volatile boolean openStorageRequested,commandVerified;
     private boolean bcRunning;
     private boolean emcRunning;
@@ -217,8 +217,9 @@ public final class QuestPreview {
                     if(nativePassed && !nativeVerified) { nativeVerify=true; return; }
                     if(npcPassed && !npcVerified) { npcVerify=true; return; }
                     if(emcPassed && QuestProjectE.balance(mc.thePlayer)!=36) throw new IllegalStateException("ProjectE EMC did not survive world restart");
+                    if(pinPassed && (!snap.pinned.contains("welcome") || snap.percentages.getOrDefault("welcome",0)!=100)) throw new IllegalStateException("Pinned quest did not survive world restart");
                     if(!"claimed".equals(snap.states.get("welcome")) || bread(mc)!=4) throw new IllegalStateException("World persistence failed");
-                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, custom click callback, confirmed file action, permission-checked network command, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/smoke.txt").toPath(),"PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, pinned HUD and restart persistence, notification history, custom click callback, confirmed file action, permission-checked network command, object form save, native device container, checked device binding, linked 2x2 world screen and synchronized progress".concat(iconPassed?", custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint":"").concat(euPassed?", real IC2 EnergyNet transfer":"").concat(manaPassed?", real Botania mana burst":"").concat(teamPassed?", team GUI, leaderboard and server-checked disband":"").concat(bcPassed?", real BuildCraft engine and RF/MJ conversion":"").concat(presentationPassed?", nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen":"").concat(neiPassed?", real NEI recipes, uses, loot and GUI":"").concat(nativePassed?", native JavaScript, stages, skills, pack mode isolation and restart":"").concat(npcPassed?", real CustomNPCs tasks/rewards and restart persistence":"").concat(emcPassed?", real ProjectE wallet submission, sync and persistence":"").getBytes(StandardCharsets.UTF_8));
                     PreviewImageServer.stop(); mc.shutdown(); return;
                 }
                 if(!teamPassed) {
@@ -268,6 +269,7 @@ public final class QuestPreview {
                 for(QuestCore.Quest entry:edit.book.quests) if(entry.chapter.equals("start")) entry.shape="";
                 QuestPresentation.MapImage illustration=new QuestPresentation.MapImage(); illustration.x=1.5; illustration.y=.5; illustration.width=1.5; illustration.height=1.5; illustration.rotation=15; illustration.resource=remoteImage; illustration.uri="https://example.org/map-guide"; illustration.hover.add("Map illustration"); start.images.add(illustration);
                 QuestCore.Quest empty=new QuestCore.Quest(); empty.id="smoke-empty"; empty.title="Dependency-only"; empty.subtitle="Empty quests still require their dependencies"; empty.minWidth=240; empty.chapter="start"; empty.x=6; empty.y=3; empty.dependencies.add("welcome"); edit.book.quests.add(empty);
+                int shapeNumber=0; for(String shape:new String[]{"rsquare","heart","gear","minecraft:textures/items/diamond.png"}) { QuestCore.Quest shapeQuest=new QuestCore.Quest(); shapeQuest.id="shape_"+shapeNumber; shapeQuest.title=shape; shapeQuest.shape=shape; shapeQuest.optional=true; shapeQuest.chapter="start"; shapeQuest.x=shapeNumber++*1.2; shapeQuest.y=.95; QuestCore.Task shapeTask=new QuestCore.Task(); shapeTask.id="check"; shapeTask.type="check"; shapeQuest.tasks.add(shapeTask); edit.book.quests.add(shapeQuest); }
                 QuestCore.Quest commandQuest=new QuestCore.Quest(); commandQuest.id="smoke-command-click"; commandQuest.title="Command action"; commandQuest.customClick="command:/quests stage "+mc.thePlayer.getCommandSenderName()+" native-click add"; edit.book.quests.add(commandQuest);
                 QuestCore.Quest manual=new QuestCore.Quest(); manual.id="smoke-manual"; manual.title="Manual confirmation"; manual.guidePage="preview:event"; manual.customClick="custom:preview:click"; manual.shape="diamond"; manual.tags.add("important"); manual.pages.add("Guide page one\nA working independent quest guide."); manual.pages.add("Guide page two"); manual.uri="https://example.org/guide";
                 QuestPresentation.GuidePage rich=new QuestPresentation.GuidePage(); rich.title="Rich guide page";
@@ -287,8 +289,9 @@ public final class QuestPreview {
                 QuestNetwork.Action stale=new QuestNetwork.Action(); stale.action="save"; stale.revision=oldRevision; stale.book=original;
                 ClientProxy.send(stale); stage=6; break;
             case 6:
+                if(!pinPassed) { if(snap==null || !snap.message.startsWith("Error: Book changed")) return; QuestBookScreen pinBook=new QuestBookScreen(); mc.displayGuiScreen(pinBook); java.lang.reflect.Field selectedPin=QuestBookScreen.class.getDeclaredField("selected"); selectedPin.setAccessible(true); selectedPin.set(pinBook,"welcome"); pinBook.refresh(); press(pinBook,13); stage=50; waiting=0; return; }
                 if(!presentationPassed) {
-                    if(snap==null || !snap.message.startsWith("Error: Book changed")) return;
+                    if(snap==null) return;
                     QuestToasts.clear(); QuestBookScreen map=new QuestBookScreen(); mc.displayGuiScreen(map); press(map,11); press(map,2);
                     java.lang.reflect.Field chosen=QuestBookScreen.class.getDeclaredField("selected"); chosen.setAccessible(true); chosen.set(map,"smoke-empty"); map.refresh(); press(map,1); stage=36; waiting=0; return;
                 }
@@ -346,6 +349,20 @@ public final class QuestPreview {
                 if(waiting<20) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-guide-toast.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 java.lang.reflect.Field guideScroll=QuestGuideScreen.class.getDeclaredField("scroll"); guideScroll.setAccessible(true); guideScroll.setInt(mc.currentScreen,50); stage=35; waiting=0; break;
+            case 50:
+                if(!snap.pinned.contains("welcome") || snap.percentages.getOrDefault("welcome",0)!=100) return;
+                QuestToasts.clear(); mc.displayGuiScreen(null); stage=51; waiting=0; break;
+            case 51:
+                if(waiting<15) return; ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-pinned-hud.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.displayGuiScreen(new QuestPinScreen(new QuestBookScreen())); stage=52; waiting=0; break;
+            case 52:
+                if(waiting<10) return; ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-pins.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer()); press(mc.currentScreen,1); stage=53; waiting=0; break;
+            case 53:
+                if(waiting<10) return; if(QuestToasts.history().isEmpty()) throw new IllegalStateException("Notification history was lost when transient toasts were cleared");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-notifications.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                for(int i=0;i<71;i++) { QuestNetwork.Toast probe=new QuestNetwork.Toast(); probe.title="History probe "+i; QuestToasts.enqueue(QuestService.JSON.toJson(probe)); QuestToasts.pump(); }
+                if(QuestToasts.history().size()!=64 || !QuestToasts.history().get(0).title.equals("History probe 70")) throw new IllegalStateException("Notification history was not bounded or ordered"); QuestToasts.clear(); if(QuestToasts.history().size()!=64) throw new IllegalStateException("Transient toast reset erased history");
+                pinPassed=true; mc.displayGuiScreen(null); stage=6; break;
             case 39:
                 if(!iconReady || mc.thePlayer.getHeldItem()==null || !(mc.thePlayer.getHeldItem().getItem() instanceof QuestBlocks.CustomIconItem)) return;
                 QuestIconScreen iconEditor=new QuestIconScreen(); mc.displayGuiScreen(iconEditor);

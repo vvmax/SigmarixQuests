@@ -5,7 +5,7 @@ import java.util.*;
 
 /** Portable presentation schema; resource locations are resolved from installed resource packs. */
 public final class QuestPresentation {
-    public static final Set<String> SHAPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("square","circle","diamond","hexagon","octagon","pentagon")));
+    public static final Set<String> SHAPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("square","rsquare","circle","diamond","hexagon","octagon","pentagon","heart","gear")));
     public static final class MapImage {
         public String resource="minecraft:textures/blocks/stone.png",uri="";
         public List<String> hover=new ArrayList<String>();
@@ -24,6 +24,7 @@ public final class QuestPresentation {
     public static final class Style {
         public String selector="*",color="",textColor="",shape="";
     }
+    public static boolean shape(String value) { return value!=null && value.length()<=2048 && (SHAPES.contains(value) || image(value)); }
     public static int color(String value) {
         if(value==null || !value.matches("#?[0-9a-fA-F]{6}([0-9a-fA-F]{2})?")) throw new IllegalArgumentException("Expected RRGGBB or AARRGGBB color");
         String hex=value.startsWith("#")?value.substring(1):value;
@@ -42,25 +43,25 @@ public final class QuestPresentation {
     public static String title(QuestCore.Task task) { return task.title.isEmpty()?task.id+" - "+task.type:task.title; }
     public static String title(QuestCore.Reward reward) { return reward.title.isEmpty()?reward.type+" "+(reward.item!=null?reward.item:reward.target==null?"":reward.target)+" x"+reward.count:reward.title; }
     public static void validate(QuestCore.Book book) {
-        if(!Double.isFinite(book.gridScale) || book.gridScale<1D/32 || book.gridScale>8 || !SHAPES.contains(book.defaultQuestShape)) throw new IllegalArgumentException("Invalid map scale or default shape");
+        if(!Double.isFinite(book.gridScale) || book.gridScale<1D/32 || book.gridScale>8 || !shape(book.defaultQuestShape)) throw new IllegalArgumentException("Invalid map scale or default shape");
         if(book.theme==null || book.styles==null || book.styles.size()>128) throw new IllegalArgumentException("Invalid theme");
         Theme t=book.theme;
         for(String value:Arrays.asList(t.background,t.panel,t.text,t.edge,t.selected,t.available,t.complete,t.claimed,t.locked)) color(value);
         for(Style style:book.styles) {
             if(style==null || style.selector==null || style.selector.length()>512 || style.selector.trim().isEmpty()) throw new IllegalArgumentException("Invalid style selector");
             for(String token:style.selector.trim().split("\\s+")) if(!token.equals("*") && !token.equals("quest") && !(token.startsWith("#") && QuestCore.validId(token.substring(1))) && !(token.startsWith(".") && QuestCore.validId(token.substring(1))) && !(token.startsWith("chapter:") && QuestCore.validId(token.substring(8))) && !Arrays.asList("state:available","state:complete","state:claimed","state:locked").contains(token)) throw new IllegalArgumentException("Unsupported selector: "+token);
-            if(style.color==null || style.textColor==null || style.shape==null || !style.shape.isEmpty() && !SHAPES.contains(style.shape)) throw new IllegalArgumentException("Invalid style");
+            if(style.color==null || style.textColor==null || style.shape==null || !style.shape.isEmpty() && !shape(style.shape)) throw new IllegalArgumentException("Invalid style");
             if(!style.color.isEmpty()) color(style.color); if(!style.textColor.isEmpty()) color(style.textColor);
         }
         for(QuestCore.Chapter chapter:book.chapters) {
-            if(chapter.image==null || !chapter.image.isEmpty() && !image(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !SHAPES.contains(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
+            if(chapter.image==null || !chapter.image.isEmpty() && !image(chapter.image) || chapter.defaultQuestShape==null || !chapter.defaultQuestShape.isEmpty() && !shape(chapter.defaultQuestShape) || chapter.images==null || chapter.images.size()>128) throw new IllegalArgumentException("Invalid chapter presentation");
             for(MapImage image:chapter.images) {
                 if(image==null || !image(image.resource) || !link(image.uri) || !Double.isFinite(image.x) || !Double.isFinite(image.y) || Math.abs(image.x)>100000 || Math.abs(image.y)>100000 || !Double.isFinite(image.width) || !Double.isFinite(image.height) || image.width<.0625 || image.height<.0625 || image.width>128 || image.height>128 || !Double.isFinite(image.rotation) || Math.abs(image.rotation)>360000 || !Double.isFinite(image.opacity) || image.opacity<0 || image.opacity>1 || image.hover==null || image.hover.size()>32) throw new IllegalArgumentException("Invalid map illustration");
                 for(String line:image.hover) if(line==null || line.length()>1024) throw new IllegalArgumentException("Invalid map illustration hover");
             }
         }
         for(QuestCore.Quest q:book.quests) {
-            if(!Double.isFinite(q.size) || q.size<0.0625 || q.size>8 || q.iconMeta<0 || q.iconNbt==null || q.tags==null || q.tags.size()>64 || q.pages==null || q.pages.size()>64 || q.shape==null || !q.shape.isEmpty() && !SHAPES.contains(q.shape) || !Arrays.asList("inherit","enabled","disabled").contains(q.itemBrowser) || !link(q.uri)) throw new IllegalArgumentException("Invalid quest presentation: "+q.id);
+            if(!Double.isFinite(q.size) || q.size<0.0625 || q.size>8 || q.iconMeta<0 || q.iconNbt==null || q.tags==null || q.tags.size()>64 || q.pages==null || q.pages.size()>64 || q.shape==null || !q.shape.isEmpty() && !shape(q.shape) || !Arrays.asList("inherit","enabled","disabled").contains(q.itemBrowser) || !link(q.uri)) throw new IllegalArgumentException("Invalid quest presentation: "+q.id);
             for(String tag:q.tags) if(!QuestCore.validId(tag)) throw new IllegalArgumentException("Invalid quest tag");
             if(q.richPages==null || q.richPages.size()>64) throw new IllegalArgumentException("Invalid rich guide pages");
             for(GuidePage page:q.richPages) {

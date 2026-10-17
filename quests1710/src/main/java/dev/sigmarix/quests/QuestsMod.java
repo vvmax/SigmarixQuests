@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.12.0", acceptableRemoteVersions="[0.12.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.13.0", acceptableRemoteVersions="[0.13.0]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -55,7 +55,7 @@ public final class QuestsMod {
         for(QuestCore.Task task:quest.tasks) if(task.id.equals(event.task) && !task.disableToast) {
             for(Object raw:MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
                 EntityPlayerMP player=(EntityPlayerMP)raw;
-                if(service.progress().group(event.player).equals(service.progress().group(player.getUniqueID()))) QuestNetwork.toast(player,QuestPresentation.title(task),"Task complete",task.icon.isEmpty()?quest.icon:task.icon,task.icon.isEmpty()?quest.iconMeta:task.iconMeta,task.icon.isEmpty()?quest.iconNbt:task.iconNbt);
+                if(service.progress().group(event.player).equals(service.progress().group(player.getUniqueID()))) QuestNetwork.taskToast(player,quest,task);
             }
             break;
         }
@@ -147,6 +147,7 @@ public final class QuestsMod {
                     QuestStorage storage=((QuestStorageContainer)player.openContainer).storage;
                     if(!storage.isUseableByPlayer(player) || storage.xCoord!=action.x || storage.yCoord!=action.y || storage.zCoord!=action.z) throw new IllegalArgumentException("Storage unavailable");
                     storage.nextPage(); message="Storage page changed"; break;
+                case "pin": service.pin(player.getUniqueID(),action.id); message="Pinned quests updated"; break;
                 case "click_command":
                     String command=service.clickCommand(player.getUniqueID(),action.id);
                     MinecraftServer.getServer().getCommandManager().executeCommand(player,command); message="Command sent"; break;
@@ -212,6 +213,8 @@ public final class QuestsMod {
             for(List<QuestCore.Reward> table:snapshot.book.lootTables.values()) redact(table);
             for(QuestCore.Quest q:snapshot.book.quests) { redact(q.rewards); if(q.hideTextUntilComplete && !done.contains(q.id)) { q.subtitle=""; q.guidePage=""; q.customClick=""; q.description="Complete the quest to reveal its text"; q.pages.clear(); q.richPages.clear(); q.uri=""; } }
         }
+        Set<String> exposed=new HashSet<String>(); for(QuestCore.Quest q:snapshot.book.quests) exposed.add(q.id);
+        for(String pin:data.pins(id)) if(exposed.contains(pin) && service.visible(id,service.quests.get(pin))) { snapshot.pinned.add(pin); snapshot.percentages.put(pin,(int)Math.round(service.objectProgress(id,pin)*100)); }
         for(QuestCore.Quest q:snapshot.book.quests) {
             snapshot.states.put(q.id,done.contains(q.id) ? service.claimed(id,q) ? "claimed" : "complete" : service.unlocked(id,q) ? "available" : "locked");
             for(int i=0;i<q.rewards.size();i++) { QuestCore.Reward r=q.rewards.get(i); snapshot.rewardStates.put(q.id+":"+r.id,data.rewardClaimed(id,q.id,r.id,service.individual(q,r))); }
