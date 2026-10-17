@@ -15,6 +15,16 @@ class ImportTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 SNBT(text).parse()
 
+    def test_imported_repeat_quests_enable_automatic_reset(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'chapters' / '00000001').mkdir(parents=True)
+            (root / 'chapters' / '00000001' / 'chapter.snbt').write_text('{title:"Repeat"}')
+            (root / 'chapters' / '00000001' / '00000002.snbt').write_text('{title:"Loop" can_repeat:true tasks:[{type:"checkmark" uid:3}] rewards:[]}')
+            book = convert(root)
+            self.assertTrue(book['quests'][0]['repeatable'])
+            self.assertTrue(book['quests'][0]['autoRepeat'])
+
     def test_custom_counter_is_preserved_for_detectors_and_native_callbacks(self):
         task = convert_task({'type': 'ftbquests:custom', 'uid': 7}, 0)
         self.assertEqual(task['type'], 'custom')

@@ -117,6 +117,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
                 java.util.function.Consumer<net.minecraft.item.ItemStack> sink=stack->{ if(!QuestRewardBuffer.add(collectorItems,stack)) throw new IllegalStateException("Collector capacity changed during reward transaction"); markDirty(); };
                 if(player!=null) s.collect(player,q,task,capacity,sink); else s.collectStored(owner,q,task,worldObj.rand,capacity,sink);
             }
+            if(mode==3 && q!=null && owner!=null) s.repeatAutomated(owner,q,worldObj.getTotalWorldTime());
         } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest device at %s,%s,%s: %s",xCoord,yCoord,zCoord,ex.toString()); }
         if(signal!=next) { signal=next; markDirty(); worldObj.markBlockForUpdate(xCoord,yCoord,zCoord); worldObj.notifyBlocksOfNeighborChange(xCoord,yCoord,zCoord,getBlockType()); }
     }

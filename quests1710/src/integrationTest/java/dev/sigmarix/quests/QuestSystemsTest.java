@@ -38,6 +38,35 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void automaticRepeatRunsAfterRewardEventsAndPreservesManualMode() {
+        task("check",null,1,false); quest.repeatable=true; quest.autoRepeat=true; xpReward(1,"team"); service.finish(player,quest);
+        java.util.function.Consumer<QuestEvents.Event> listener=event->{ if(event.quest.equals(quest.id)) { assertTrue(service.claimed(event.player,quest)); assertEquals(0,data.cycle(event.player,quest.id)); } }; QuestEvents.on("reward_claimed",listener);
+        try { service.claim(player,quest,Collections.<Integer>emptyList()); } finally { QuestEvents.off("reward_claimed",listener); }
+        assertEquals(1,data.cycle(player.getUniqueID(),quest.id)); assertFalse(data.completed(player.getUniqueID()).contains(quest.id)); verify(player).addExperience(1);
+        quest.autoRepeat=false; service.finish(player,quest); service.claim(player,quest,Collections.<Integer>emptyList()); assertEquals(1,data.cycle(player.getUniqueID(),quest.id)); assertTrue(service.claimed(player.getUniqueID(),quest));
+    }
+    @Test public void automatedRepeatWaitsForCooldownAndEveryPersonalClaim() {
+        EntityPlayerMP other=teammate(); task("check",null,1,false); xpReward(4,"individual"); quest.repeatable=true; quest.cooldownSeconds=10; service.finish(player,quest); service.claim(player,quest,Collections.<Integer>emptyList());
+        assertFalse(service.repeatAutomated(player.getUniqueID(),quest,300)); service.claim(other,quest,Collections.<Integer>emptyList()); assertFalse(service.repeatAutomated(other.getUniqueID(),quest,299));
+        assertTrue(service.repeatAutomated(other.getUniqueID(),quest,300)); assertEquals(1,data.cycle(player.getUniqueID(),quest.id)); assertFalse(data.completed(player.getUniqueID()).contains(quest.id));
+        when(player.worldObj.getTotalWorldTime()).thenReturn(300L); service.finish(player,quest); service.claim(player,quest,Collections.<Integer>emptyList()); verify(player,times(2)).addExperience(4); verify(other,times(1)).addExperience(4);
+    }
+    @Test public void offlineCollectorRepeatsOnlyAfterSuccessfulRewardInsertion() {
+        QuestCore.Task energy=task("energy",null,100,false); quest.repeatable=true; QuestCore.Reward item=new QuestCore.Reward(); item.id="gold"; item.item="minecraft:gold_ingot"; quest.rewards.add(item);
+        QuestDevice tile=new QuestDevice(); tile.setWorldObj(player.worldObj); tile.owner=UUID.randomUUID(); tile.quest=quest.id; tile.task="gold"; when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(3,"repeat_collector")); QuestsMod.service=service;
+        try {
+            for(int cycle=1;cycle<=2;cycle++) { service.creditTask(tile.owner,quest.id,energy.id,100); assertTrue(service.finishStored(tile.owner,quest,100)); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(cycle,data.cycle(tile.owner,quest.id)); assertEquals(cycle,tile.getStackInSlot(0).stackSize); assertEquals(0,data.value(tile.owner,quest.id,energy.id)); }
+            for(int slot=0;slot<9;slot++) tile.setInventorySlotContents(slot,new ItemStack(Items.gold_ingot,64)); service.creditTask(tile.owner,quest.id,energy.id,100); service.finishStored(tile.owner,quest,100); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(2,data.cycle(tile.owner,quest.id)); assertTrue(data.completed(tile.owner).contains(quest.id));
+            tile.setInventorySlotContents(8,null); for(int i=0;i<20;i++) tile.updateEntity(); assertEquals(3,data.cycle(tile.owner,quest.id)); assertEquals(1,tile.getStackInSlot(8).stackSize);
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void repeatingAnObservationRequiresFreshTicksAndCompletionEventSeesItsTimestamp() {
+        QuestCore.Task task=task("observation","minecraft:stone",1,false); task.lookTicks=3; quest.repeatable=true;
+        net.minecraft.util.MovingObjectPosition hit=new net.minecraft.util.MovingObjectPosition(1,2,3,1,net.minecraft.util.Vec3.createVectorHelper(1,2,3)); when(player.rayTrace(8,1)).thenReturn(hit); when(player.worldObj.getBlock(1,2,3)).thenReturn(Blocks.stone);
+        java.util.function.Consumer<QuestEvents.Event> listener=event->{ if(event.quest.equals(quest.id)) assertEquals(100,data.completedAt(event.player,event.quest)); }; QuestEvents.on("quest_completed",listener);
+        try { for(int i=0;i<3;i++) service.observe(player); assertTrue(service.finish(player,quest)); service.claim(player,quest,Collections.<Integer>emptyList()); service.repeat(player,quest); service.observe(player); assertFalse(service.check(player,quest,false)); service.observe(player); service.observe(player); assertTrue(service.check(player,quest,false)); }
+        finally { QuestEvents.off("quest_completed",listener); }
+    }
     @Test public void screenSkinsAndProtectionValidatePermissionsWithoutConsumingHeldItems() {
         QuestDevice tile=new QuestDevice(); tile.setWorldObj(player.worldObj); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(0,"skin_screen"));
         ItemStack wool=new ItemStack(Blocks.wool,2,14); QuestScreenSettings.appearance(tile,player,wool,false); assertEquals("minecraft:wool",tile.screenSkin); assertEquals(14,tile.screenSkinMeta); assertEquals(2,wool.stackSize);

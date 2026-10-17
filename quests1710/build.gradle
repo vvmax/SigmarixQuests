@@ -4,14 +4,17 @@ plugins {
 }
 def previewConfigBackups=[:]
 group = 'dev.sigmarix'
-version = '0.20.0'
+version = '0.21.0'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }
 minecraft {
     mcVersion = '1.7.10'
     username = 'Developer'
+    injectedTags.put('VERSION', project.version)
 }
+tasks.named('injectTags') { outputClassName.set('dev.sigmarix.quests.BuildTags'); outputClassPublic.set(true) }
+tasks.named('processResources') { inputs.property('modVersion', project.version); filesMatching('mcmod.info') { expand(version: project.version) } }
 repositories {
     mavenCentral()
     maven { url=uri('https://chickenbones.net/maven/'); metadataSources { artifact() }; content { includeGroup 'codechicken' } }

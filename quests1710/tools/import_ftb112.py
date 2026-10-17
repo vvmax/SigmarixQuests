@@ -520,7 +520,7 @@ def convert(folder):
                          'hideDependencyLines': bool(raw.get('hide_dependency_lines', False)), 'hideTextUntilComplete': bool(raw.get('hide_text_until_complete', False)), 'disableToast': bool(raw.get('disable_toast', False)),
                          'rewardMode': 'team' if repeat or defaults.get('default_reward_team') else 'individual',
                          'hidden': bool(raw.get('hide', False)), 'optional': bool(raw.get('optional', False)),
-                         'repeatable': repeat, 'anyTask': bool(raw.get('or_tasks', False)),
+                         'repeatable': repeat, 'autoRepeat': repeat, 'anyTask': bool(raw.get('or_tasks', False)),
                          'anyDependency': requirement.startswith('one_'), 'dependencyState': 'started' if requirement.endswith('started') else 'completed',
                          'minDependencies': int(raw.get('min_required_dependencies', 0)), 'dependencies': [],
                          'tasks': [convert_task(t, i, defaults, repeat) for i, t in enumerate(raw.get('tasks', []))],

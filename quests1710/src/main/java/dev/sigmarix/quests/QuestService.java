@@ -431,7 +431,7 @@ public class QuestService {
             for (ItemStack empty : containers) give(p,empty);
             p.inventory.markDirty(); p.inventoryContainer.detectAndSendChanges();
             for(QuestCore.Task t:q.tasks) progress().markTask(p.getUniqueID(),q.id,t.id);
-            progress().complete(p.getUniqueID(),q.id); if(!q.disableToast) QuestNetwork.toast(p,q.title,"Quest complete",q.icon,q.iconMeta,q.iconNbt); progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime());
+            progress().timestamp(p.getUniqueID(),q.id,p.worldObj.getTotalWorldTime()); progress().complete(p.getUniqueID(),q.id); if(!q.disableToast) QuestNetwork.toast(p,q.title,"Quest complete",q.icon,q.iconMeta,q.iconNbt);
         }
         return true;
     }
@@ -631,6 +631,7 @@ public class QuestService {
         if(allShared && (rootId==null || claimed(id,q)) && (!automatic || pending.size()>0 && claimed(id,q) || q.rewards.isEmpty() && q.autoClaim)) data.claim(id,q.id);
         applyRewards(p,leaves,itemSink);
         for(int index:pending) QuestEvents.fire("reward_claimed",id,q.id,rewardId(q.rewards.get(index),index));
+        if(q.autoRepeat) repeatAutomated(id,q,p.worldObj.getTotalWorldTime());
     }
     public long emergencyWait(EntityPlayerMP player) { return (progress().emergencyWait(player.getUniqueID(),player.worldObj.getTotalWorldTime(),book.emergencyCooldownSeconds*20L)+19)/20; }
     public void emergency(EntityPlayerMP player) {
@@ -709,7 +710,17 @@ public class QuestService {
             throw new IllegalArgumentException("Quest cannot be repeated yet");
         if(!data.team(id).isEmpty() && !data.leader(id)) throw new IllegalArgumentException("Only the team leader can repeat a quest");
         for(UUID member:data.members(id)) if(!claimed(member,q)) throw new IllegalArgumentException("Team members still have unclaimed rewards");
-        data.reset(id,q.id);
+        resetRepeat(id,q);
+    }
+    public boolean repeatAutomated(UUID owner,QuestCore.Quest quest,long worldTime) {
+        QuestProgress data=progress();
+        if(!quest.repeatable || !data.completed(owner).contains(quest.id) || !claimed(owner,quest) || worldTime-data.completedAt(owner,quest.id)<(long)quest.cooldownSeconds*20) return false;
+        for(UUID member:data.members(owner)) if(!claimed(member,quest)) return false;
+        resetRepeat(owner,quest); return true;
+    }
+    private void resetRepeat(UUID owner,QuestCore.Quest quest) {
+        for(UUID member:progress().members(owner)) { Map<String,Integer> timers=lookTimers.get(member); if(timers!=null) timers.keySet().removeIf(key->key.startsWith(quest.id+":")); }
+        progress().reset(owner,quest.id);
     }
     public static final class XP {
         public static int cap(int level) { return level>=30 ? 62+(level-30)*7 : level>=15 ? 17+(level-15)*3 : 17; }

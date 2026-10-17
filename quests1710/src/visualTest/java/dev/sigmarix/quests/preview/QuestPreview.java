@@ -15,7 +15,7 @@ import net.minecraft.util.ScreenShotHelper;
 @Mod(modid="sigmarixquestpreview",name="Quest GUI preview fixture",version="1",dependencies="required-after:sigmarixquests")
 public final class QuestPreview {
     private QuestNetwork.Snapshot fixture;
-    private int ticks,stage,waiting,loginRetries;
+    private int ticks,stage,waiting,loginRetries,lastServerStep=-3;
     private boolean testing,teamPassed,neiPassed,presentationPassed,bookPrepared;
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
     private QuestCore.Book original;
@@ -214,7 +214,9 @@ public final class QuestPreview {
             waiting=0; mc.launchIntegratedServer(worldName,"Quest smoke fixture",null); return;
         }
         if(mc.thePlayer==null || mc.theWorld==null || waiting%5!=0) return;
-        long realNow=System.nanoTime(); if(realNow-lastSmokeStep<java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(200)) return; lastSmokeStep=realNow;
+        java.lang.reflect.Field serverClock=QuestsMod.class.getDeclaredField("ticks"); serverClock.setAccessible(true); int serverNow=serverClock.getInt(QuestsMod.instance); if(serverNow<lastServerStep) lastServerStep=-3;
+        if(serverNow-lastServerStep<3) return;
+        long realNow=System.nanoTime(); if(realNow-lastSmokeStep<java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(200)) return; lastSmokeStep=realNow; lastServerStep=serverNow;
         QuestNetwork.Snapshot snap=ClientProxy.snapshot;
         switch(stage) {
             case 0: if(waiting<20 || snap==null || snap.book==null) return;
@@ -367,7 +369,7 @@ public final class QuestPreview {
                 if(snap==null || !snap.message.equals("Quest started")) return;
                 QuestNetwork.Action premature=new QuestNetwork.Action(); premature.action="check"; premature.id="smoke-manual"; ClientProxy.send(premature); stage=10; break;
             case 10:
-                if(snap==null || !snap.message.startsWith("Error: Tasks incomplete")) return;
+                if(snap==null || !snap.message.startsWith("Error: Tasks incomplete")) { if(waiting>=40 && waiting%20==0) { QuestNetwork.Action retry=new QuestNetwork.Action(); retry.action="check"; retry.id="smoke-manual"; ClientProxy.send(retry); } return; }
                 QuestNetwork.Action confirm=new QuestNetwork.Action(); confirm.action="task"; confirm.id="smoke-manual"; confirm.text="confirm"; ClientProxy.send(confirm); stage=11; break;
             case 11:
                 if(snap==null || !snap.message.equals("Task confirmed")) return;

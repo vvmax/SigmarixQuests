@@ -20,7 +20,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(modid="sigmarixquests", name="Sigmarix Quests", version="0.14.0", acceptableRemoteVersions="[0.14.0]")
+@Mod(modid="sigmarixquests", name="Sigmarix Quests", version=BuildTags.VERSION, acceptableRemoteVersions="["+BuildTags.VERSION+"]")
 public final class QuestsMod {
     @Mod.Instance("sigmarixquests") public static QuestsMod instance;
     @SidedProxy(clientSide="dev.sigmarix.quests.client.ClientProxy",serverSide="dev.sigmarix.quests.CommonProxy")
@@ -118,6 +118,7 @@ public final class QuestsMod {
                 try { if(service.finish(p,q)) { QuestService.say(p,"Quest complete: "+q.title); } }
                 catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest auto-completion failed for %s: %s",q.id,ex.toString()); }
             }
+                if(q.autoRepeat) { try { service.repeatAutomated(p.getUniqueID(),q,p.worldObj.getTotalWorldTime()); } catch(RuntimeException ex) { if(ticks%1200==0) cpw.mods.fml.common.FMLLog.warning("Quest repeat failed for %s: %s",q.id,ex.toString()); } }
             }
         }
     }

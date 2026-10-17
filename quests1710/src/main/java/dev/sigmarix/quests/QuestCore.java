@@ -54,6 +54,7 @@ public final class QuestCore {
                     q.chapter == null || (!q.chapter.isEmpty() && !chapterIds.contains(q.chapter)) ||
                     !Double.isFinite(q.x) || !Double.isFinite(q.y) || Math.abs(q.x) > 100000 || Math.abs(q.y) > 100000 || q.cooldownSeconds < 0 || q.minDependencies<0 || q.minDependencies>q.dependencies.size())
                     throw new IllegalArgumentException("Incomplete or invalid quest: " + q.id);
+                if(q.autoRepeat && !q.repeatable) throw new IllegalArgumentException("Automatic repeat requires repeatable: "+q.id);
                 new QuestClick(q.customClick);
                 Set<String> taskIds = new HashSet<String>();
                 for (int i = 0; i < q.tasks.size(); i++) {
@@ -155,7 +156,7 @@ public final class QuestCore {
         public int iconMeta,minWidth;
         public String iconNbt="";
         public boolean hideDependencyLines,hideTextUntilComplete,disableToast;
-        public boolean hidden, optional, repeatable, autoComplete, autoClaim, anyDependency, anyTask;
+        public boolean hidden, optional, repeatable, autoRepeat, autoComplete, autoClaim, anyDependency, anyTask;
         public int minDependencies;
         public int cooldownSeconds;
         public List<String> dependencies = new ArrayList<String>();
