@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 /** Native text editing with FTBLib's unshadowed text, cursor and selection appearance. */
 final class QuestLibraryTextField extends GuiTextField {
     private final FontRenderer font;private final int left,top,contentWidth;private int tint=0xFFFFFF,offset,clipX,clipY,clipW,clipH;
-    QuestLibraryTextField(FontRenderer font,int x,int y,int w,int h){super(font,x,y,w,h);this.font=font;left=x;top=y;contentWidth=w;setEnableBackgroundDrawing(false);clipX=x-4;clipY=y-4;clipW=w+8;clipH=h+4;}
+    QuestLibraryTextField(FontRenderer font,int x,int y,int w,int h){super(QuestLibraryScreen.inputFont(font),x,y,w,h);this.font=QuestLibraryScreen.inputFont(font);left=x;top=y;contentWidth=w;setEnableBackgroundDrawing(false);clipX=x-4;clipY=y-4;clipW=w+8;clipH=h+4;}
     QuestLibraryTextField clip(int x,int y,int w,int h){clipX=x;clipY=y;clipW=w;clipH=h;return this;}
     @Override public void setTextColor(int color){super.setTextColor(color);tint=color;}
     @Override public void drawTextBox(){

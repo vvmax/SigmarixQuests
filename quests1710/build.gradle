@@ -4,7 +4,7 @@ plugins {
 }
 def previewConfigBackups=[:]
 group = 'dev.sigmarix'
-version = '0.25.0-SNAPSHOT'
+version = '0.26.0-SNAPSHOT'
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(8) }
 }
@@ -216,3 +216,6 @@ if (providers.gradleProperty('questNEI').isPresent()) {
         finalizedBy 'cleanNEIPreview'
     }
 }
+
+// The distributed book is tested as external data, not copied into the mod resources.
+tasks.named("test") { inputs.dir("../quest-packs/ru-six-mods-1.7.10/config") }

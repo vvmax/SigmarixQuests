@@ -29,7 +29,7 @@ public final class QuestClicks {
                 return true;
             }
             QuestClickEvent.Open event=new QuestClickEvent.Open(quest,click.type,click.value,parent); MinecraftForge.EVENT_BUS.post(event); return event.opened;
-        } catch(Exception ex) { Minecraft.getMinecraft().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText("Quest action: "+ex.getMessage())); return false; }
+        } catch(Exception ex) { Minecraft.getMinecraft().thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component("Quest action: "+ex.getMessage())); return false; }
     }
     public static File file(String path) throws java.io.IOException {
         File root=Minecraft.getMinecraft().mcDataDir.getCanonicalFile(),candidate=new File(path); File file=(candidate.isAbsolute()?candidate:new File(root,path)).getCanonicalFile();

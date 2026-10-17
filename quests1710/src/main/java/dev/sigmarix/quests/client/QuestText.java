@@ -3,7 +3,8 @@ import java.util.Locale;
 import net.minecraft.util.StatCollector;
 public final class QuestText {
     public static String tr(String text) {
+        if(text==null)return null;
         String key="quests.ui."+text.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+","_").replaceAll("^_|_$","");
-        return StatCollector.canTranslate(key)?StatCollector.translateToLocal(key):text;
+        return StatCollector.canTranslate(key)?StatCollector.translateToLocal(key):dev.sigmarix.quests.QuestMessages.translate(text);
     }
 }

@@ -1,0 +1,189 @@
+[
+  {
+    "mod": "ae2",
+    "source_container": "ae2.jar",
+    "source_entry": "assets/appliedenergistics2/textures/guis/inscriber.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/ae2_inscriber.png",
+    "sha256": "090eef32059e98c07f29ef49c3dd71b559b71a7a1a74b4dc99ce62096118c1c3",
+    "width": 256,
+    "height": 256,
+    "caption": "Высекатель AE2: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "ae2",
+    "source_container": "ae2.jar",
+    "source_entry": "assets/appliedenergistics2/textures/guis/craftingcpu.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/ae2_cpu.png",
+    "sha256": "6ef1e68862ac61d67785c7d05a74f3384f85036f2662e42792ac36f53c0d65cd",
+    "width": 256,
+    "height": 256,
+    "caption": "Процессор автокрафта: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "ae2",
+    "source_container": "ae2.jar",
+    "source_entry": "assets/appliedenergistics2/textures/guis/drive.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/ae2_drive.png",
+    "sha256": "f3bd1ee140415400043279a217632f57c14688ad54035644b06f9d38a673fa7e",
+    "width": 256,
+    "height": 256,
+    "caption": "МЭ-накопитель: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "thaumcraft",
+    "source_container": "thaumcraft.jar",
+    "source_entry": "assets/thaumcraft/textures/items/thaumonomicon.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/thaumcraft_book.png",
+    "sha256": "31231734fee929ee7e29998cd0ced59135aedfd72830bf1d5b4122145367cf3d",
+    "width": 32,
+    "height": 32,
+    "caption": "Таумономикон: игровой предмет",
+    "unchanged": true
+  },
+  {
+    "mod": "thaumcraft",
+    "source_container": "thaumcraft.jar",
+    "source_entry": "assets/thaumcraft/textures/gui/gui_arcaneworkbench.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/thaumcraft_workbench.png",
+    "sha256": "e354cc24f893d7c6c4de0599c8f24d94d8781f50d66498a66ea2befc1004bec9",
+    "width": 256,
+    "height": 256,
+    "caption": "Магический верстак: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "witchery",
+    "source_container": "witchery.jar",
+    "source_entry": "assets/witchery/textures/gui/witchesOven.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/witchery_oven.png",
+    "sha256": "c9b6c84d14d30aed4a71cf17c2fd80df8eee9fc25bacb8ba5c276f2a84911ec3",
+    "width": 256,
+    "height": 256,
+    "caption": "Ведьмина печь: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "witchery",
+    "source_container": "witchery.jar",
+    "source_entry": "assets/witchery/textures/gui/altar.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/witchery_altar.png",
+    "sha256": "ea19a4a3f0ce7e456413ec7a047e294683675b9c95449a7f9804a68dcdf6f95d",
+    "width": 256,
+    "height": 256,
+    "caption": "Алтарь Witchery: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "botania",
+    "source_container": "Botania-r1.8-249.jar",
+    "source_entry": "assets/botania/textures/gui/entries/pureDaisy.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/botania_daisy.png",
+    "sha256": "762c50be8fe496b2a495f63193fc70c3a288895198063bf0c7a5e87d66f57cd0",
+    "width": 256,
+    "height": 256,
+    "caption": "Чистая маргаритка: иллюстрация из Лексики",
+    "unchanged": true
+  },
+  {
+    "mod": "botania",
+    "source_container": "Botania-r1.8-249.jar",
+    "source_entry": "assets/botania/textures/gui/entries/apothecary.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/botania_apothecary.png",
+    "sha256": "1600b5de15f6ebea642b67ec986f67bd16b335986922d0231a852fb5a1c8a782",
+    "width": 256,
+    "height": 256,
+    "caption": "Аптекарь: иллюстрация из Лексики",
+    "unchanged": true
+  },
+  {
+    "mod": "botania",
+    "source_container": "Botania-r1.8-249.jar",
+    "source_entry": "assets/botania/textures/gui/entries/spreader.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/botania_spreader.png",
+    "sha256": "41a3156aef0a2d2a79d8ad1d83e576cc35f75083b161e929398d49e15dd83864",
+    "width": 256,
+    "height": 256,
+    "caption": "Распространитель: иллюстрация из Лексики",
+    "unchanged": true
+  },
+  {
+    "mod": "ic2",
+    "source_container": "industrialcraft-2-2.2.828-experimental-dev.jar",
+    "source_entry": "assets/ic2/textures/gui/GUIGenerator.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/ic2_generator.png",
+    "sha256": "031f93c86b7babefba0ae61567b470cc9817994be4f914e36e254821b0ec6c52",
+    "width": 256,
+    "height": 256,
+    "caption": "Генератор IC2: игровая панель",
+    "unchanged": true
+  },
+  {
+    "mod": "ic2",
+    "source_container": "industrialcraft-2-2.2.828-experimental-dev.jar",
+    "source_entry": "assets/ic2/textures/items/itemCellUranEnriched.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/ic2_reactor.png",
+    "sha256": "f1c4360f06cde8b4273f1e51bb3ac605108184eeab5c3d46231decf87a87278e",
+    "width": 16,
+    "height": 16,
+    "caption": "Урановый топливный стержень: игровой предмет",
+    "unchanged": true
+  },
+  {
+    "mod": "bloodmagic",
+    "source_container": "bloodmagic-src.zip",
+    "source_entry": "BloodMagic-1.7.10/src/main/resources/assets/alchemicalwizardry/textures/misc/screenshots/altars/T1.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/bloodmagic_altar1.png",
+    "sha256": "8364ccf19f6ba0fa9022ff750420b3895a46bd8c79dfcbd9e5b4276a52996845",
+    "width": 493,
+    "height": 491,
+    "caption": "Алтарь 1-го уровня: игровой снимок из руководства Blood Magic",
+    "unchanged": true
+  },
+  {
+    "mod": "bloodmagic",
+    "source_container": "bloodmagic-src.zip",
+    "source_entry": "BloodMagic-1.7.10/src/main/resources/assets/alchemicalwizardry/textures/misc/screenshots/altars/T2.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/bloodmagic_altar2.png",
+    "sha256": "9b14fbcc3786b4860b07ccfe4d92146cbcd3e2454c6a60180bf6022b61ea9e6d",
+    "width": 493,
+    "height": 494,
+    "caption": "Алтарь 2-го уровня: игровой снимок из руководства Blood Magic",
+    "unchanged": true
+  },
+  {
+    "mod": "bloodmagic",
+    "source_container": "bloodmagic-src.zip",
+    "source_entry": "BloodMagic-1.7.10/src/main/resources/assets/alchemicalwizardry/textures/misc/screenshots/altars/T3.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/bloodmagic_altar3.png",
+    "sha256": "39bb82934d3553e4cd57030f72f561c0529db5762d59f3624d585a7016f43e4d",
+    "width": 493,
+    "height": 494,
+    "caption": "Алтарь 3-го уровня: игровой снимок из руководства Blood Magic",
+    "unchanged": true
+  },
+  {
+    "mod": "bloodmagic",
+    "source_container": "bloodmagic-src.zip",
+    "source_entry": "BloodMagic-1.7.10/src/main/resources/assets/alchemicalwizardry/textures/misc/screenshots/altars/T4.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/bloodmagic_altar4.png",
+    "sha256": "ff3b95211efe8e07f38c31ae6e51d2d849efb7413ae25b58350c0a6f2027b422",
+    "width": 493,
+    "height": 494,
+    "caption": "Алтарь 4-го уровня: игровой снимок из руководства Blood Magic",
+    "unchanged": true
+  },
+  {
+    "mod": "bloodmagic",
+    "source_container": "bloodmagic-src.zip",
+    "source_entry": "BloodMagic-1.7.10/src/main/resources/assets/alchemicalwizardry/textures/misc/screenshots/altars/T5.png",
+    "pack_entry": "assets/sigmarixquestpack/textures/guides/bloodmagic_altar5.png",
+    "sha256": "0b5203cf1bb0d5fdadafc5ce311a44ba330ea4863961964b6bd08b54f121b777",
+    "width": 493,
+    "height": 494,
+    "caption": "Алтарь 5-го уровня: игровой снимок из руководства Blood Magic",
+    "unchanged": true
+  }
+]

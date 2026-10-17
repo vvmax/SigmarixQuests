@@ -1,0 +1,1037 @@
+{
+  "format": 2,
+  "chapters": [
+    {
+      "id": "pack_ae2",
+      "title": "Applied Energistics 2 — МЭ-сеть",
+      "description": "Путь от первых ресурсов до развитой инфраструктуры. Рецепты смотрите в NEI: дополнения сборки могут их менять. Предметные задачи ничего не расходуют. Задачи с кнопкой подтверждения проверяются вами вручную.",
+      "icon": "appliedenergistics2:tile.BlockController",
+      "defaultQuestShape": "circle",
+      "images": [
+        {
+          "resource": "sigmarixquestpack:textures/guides/ae2_inscriber.png",
+          "x": -4,
+          "y": 4,
+          "width": 4,
+          "height": 4.0,
+          "hover": [
+            "Высекатель AE2: игровая панель"
+          ]
+        }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "ae2_intro",
+      "chapter": "pack_ae2",
+      "title": "Информация под контролем",
+      "description": "В AE2 предметы живут в цифровой сети, а устройства требуют энергии и каналов. Эта глава рассчитана на rv3-beta-6. Начните с отдельной площадки и сверяйте рецепты с NEI.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 0.0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ae2_certus",
+      "chapter": "pack_ae2",
+      "title": "Кварц истинного порядка",
+      "description": "Добудьте 16 кристаллов истинного кварца. Сохраните часть для стекла и процессоров; заряженный кварц нужен отдельно.",
+      "x": 1.5,
+      "y": 0.0,
+      "dependencies": [
+        "ae2_intro"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 0,
+          "count": 16,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_charged",
+      "chapter": "pack_ae2",
+      "title": "Заряженный кристалл",
+      "description": "Найдите заряженный истинный кварц в руде. Позже заряжатель позволит получать его из обычного кварца.",
+      "x": 3.0,
+      "y": 0.0,
+      "dependencies": [
+        "ae2_certus"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 1,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 1
+    },
+    {
+      "id": "ae2_fluix",
+      "chapter": "pack_ae2",
+      "title": "Изменчивые кристаллы",
+      "description": "Бросьте в воду заряженный истинный кварц, кварц Нижнего мира и красную пыль. Дождитесь превращения в изменчивые кристаллы и соберите восемь.",
+      "x": 4.5,
+      "y": 0.0,
+      "dependencies": [
+        "ae2_charged"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 7,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 7
+    },
+    {
+      "id": "ae2_grinder",
+      "chapter": "pack_ae2",
+      "title": "Ручное измельчение",
+      "description": "Сделайте кварцевый жернов и установите деревянную рукоятку сверху. В начале он заменит электрическую дробилку для кварцевой пыли.",
+      "x": 6.0,
+      "y": 0.0,
+      "dependencies": [
+        "ae2_fluix"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockGrinder",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockGrinder",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_charger",
+      "chapter": "pack_ae2",
+      "title": "Заряжатель",
+      "description": "Соберите заряжатель и обеспечьте питание либо ручную работу рукояткой. Проверьте превращение обычного истинного кварца в заряженный.",
+      "x": 7.5,
+      "y": 0.0,
+      "dependencies": [
+        "ae2_grinder"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockCharger",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockCharger",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_meteor",
+      "chapter": "pack_ae2",
+      "title": "Тайна метеоритов",
+      "description": "Создайте метеоритный компас и найдите небесный камень. Обыщите сундуки метеоритов: нужны прессы логики, вычислений, инженерии и кремния.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 1.5,
+      "dependencies": [
+        "ae2_charger"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ae2_inscriber",
+      "chapter": "pack_ae2",
+      "title": "Пресс для процессоров",
+      "description": "Сделайте высекатель. Подавайте питание с разрешённой стороны; размещайте пресс и материал в правильных слотах.",
+      "x": 6.0,
+      "y": 1.5,
+      "dependencies": [
+        "ae2_meteor"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockInscriber",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockInscriber",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Пресс для процессоров",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/ae2_inscriber.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Высекатель AE2: игровая панель\n\nСделайте высекатель. Подавайте питание с разрешённой стороны; размещайте пресс и материал в правильных слотах."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ae2_silicon",
+      "chapter": "pack_ae2",
+      "title": "Кремний",
+      "description": "Переплавьте подходящую кварцевую пыль в кремний. Проверяйте выход в NEI: в сборке могут присутствовать несколько вариантов кремния.",
+      "x": 4.5,
+      "y": 1.5,
+      "dependencies": [
+        "ae2_inscriber"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 5,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 5
+    },
+    {
+      "id": "ae2_logic",
+      "chapter": "pack_ae2",
+      "title": "Логический процессор",
+      "description": "Высеките золотую логическую печатную схему, кремниевую печать и соедините их с красной пылью. Подготовьте четыре логических процессора.",
+      "x": 3.0,
+      "y": 1.5,
+      "dependencies": [
+        "ae2_silicon"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 22,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 22
+    },
+    {
+      "id": "ae2_calculation",
+      "chapter": "pack_ae2",
+      "title": "Вычислительный процессор",
+      "description": "Вырастите чистый истинный кварц из семени в воде и изготовьте вычислительную печатную схему. Соедините её с кремниевой печатью и красной пылью.",
+      "x": 1.5,
+      "y": 1.5,
+      "dependencies": [
+        "ae2_logic"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 23,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 23
+    },
+    {
+      "id": "ae2_engineering",
+      "chapter": "pack_ae2",
+      "title": "Инженерный процессор",
+      "description": "Высеките инженерную схему из алмаза. Этот процессор открывает контроллер и крупные компоненты сети.",
+      "x": 0.0,
+      "y": 1.5,
+      "dependencies": [
+        "ae2_calculation"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 24,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 24
+    },
+    {
+      "id": "ae2_acceptor",
+      "chapter": "pack_ae2",
+      "title": "Питание МЭ-сети",
+      "description": "Подключите приёмник энергии к доступному источнику, например IC2 или другому совместимому источнику сборки. Приёмник переводит входную энергию в AE.",
+      "x": 0.0,
+      "y": 3.0,
+      "dependencies": [
+        "ae2_engineering"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockEnergyAcceptor",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockEnergyAcceptor",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_controller",
+      "chapter": "pack_ae2",
+      "title": "Сердце сети",
+      "description": "Установите МЭ-контроллер и подайте питание. Одна грань контроллера предоставляет до 32 каналов; обычная кабельная ветвь пропускает восемь.",
+      "x": 1.5,
+      "y": 3.0,
+      "dependencies": [
+        "ae2_acceptor"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockController",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockController",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_drive",
+      "chapter": "pack_ae2",
+      "title": "Хранилище ячеек",
+      "description": "Сделайте МЭ-накопитель и подключите его к сети. Каждое устройство, использующее канал, должно иметь путь к контроллеру.",
+      "x": 3.0,
+      "y": 3.0,
+      "dependencies": [
+        "ae2_controller"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockDrive",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockDrive",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Хранилище ячеек",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/ae2_drive.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "МЭ-накопитель: игровая панель\n\nСделайте МЭ-накопитель и подключите его к сети. Каждое устройство, использующее канал, должно иметь путь к контроллеру."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ae2_cell",
+      "chapter": "pack_ae2",
+      "title": "Компонент хранения 1k",
+      "description": "Изготовьте компонент хранения 1k, затем оформите его в ячейку хранения по NEI и установите в накопитель. В AE2 ограничены и байты, и число типов.",
+      "x": 4.5,
+      "y": 3.0,
+      "dependencies": [
+        "ae2_drive"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 35,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 35
+    },
+    {
+      "id": "ae2_terminal",
+      "chapter": "pack_ae2",
+      "title": "Первый терминал",
+      "description": "Подключите МЭ-терминал через кабель и убедитесь, что он показывает содержимое ячейки. Положите пробный предмет и извлеките его обратно.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 3.0,
+      "dependencies": [
+        "ae2_cell"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ae2_backup",
+      "chapter": "pack_ae2",
+      "title": "Резерв энергии",
+      "description": "Установите энергетическую ячейку AE2. Она смягчит кратковременные перебои, но не заменит постоянный источник питания.",
+      "x": 7.5,
+      "y": 3.0,
+      "dependencies": [
+        "ae2_terminal"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockEnergyCell",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockEnergyCell",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_external",
+      "chapter": "pack_ae2",
+      "title": "Внешние хранилища",
+      "description": "Подключите шину хранения к сундуку или контроллеру Storage Drawers. Задайте приоритет и проверьте, куда попадают новые предметы; не соединяйте две сети в кольцо.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 4.5,
+      "dependencies": [
+        "ae2_backup"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ae2_processing",
+      "chapter": "pack_ae2",
+      "title": "Ввод и вывод",
+      "description": "Подключите шины импорта и экспорта к рабочей машине. Настройте фильтры и убедитесь, что она получает только необходимые ингредиенты.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 4.5,
+      "dependencies": [
+        "ae2_external"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ae2_interface",
+      "chapter": "pack_ae2",
+      "title": "МЭ-интерфейс",
+      "description": "Интерфейс хранит шаблоны и подаёт ингредиенты в смежные машины. Для обработки настройте шаблон с точными входами и выходами.",
+      "x": 4.5,
+      "y": 4.5,
+      "dependencies": [
+        "ae2_processing"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockInterface",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockInterface",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_patterns",
+      "chapter": "pack_ae2",
+      "title": "Чистые шаблоны",
+      "description": "Создайте восемь чистых шаблонов и терминал шаблонов. Отличайте обычное изготовление от обработки: у обработки результаты указываются вручную.",
+      "x": 3.0,
+      "y": 4.5,
+      "dependencies": [
+        "ae2_interface"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 52,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 52
+    },
+    {
+      "id": "ae2_assembler",
+      "chapter": "pack_ae2",
+      "title": "Молекулярный сборщик",
+      "description": "Поставьте молекулярный сборщик рядом с интерфейсом. Загрузите шаблон простого рецепта; самому сборщику канал не нужен, а интерфейсу нужен.",
+      "x": 1.5,
+      "y": 4.5,
+      "dependencies": [
+        "ae2_patterns"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockMolecularAssembler",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockMolecularAssembler",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_cpu",
+      "chapter": "pack_ae2",
+      "title": "Процессор автокрафта",
+      "description": "Соберите процессор автокрафта с блоком хранения 1k. Он должен быть прямоугольным монолитным многоблоком с доступом к сети.",
+      "x": 0.0,
+      "y": 4.5,
+      "dependencies": [
+        "ae2_assembler"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockCraftingStorage",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockCraftingStorage",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Процессор автокрафта",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/ae2_cpu.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Процессор автокрафта: игровая панель\n\nСоберите процессор автокрафта с блоком хранения 1k. Он должен быть прямоугольным монолитным многоблоком с доступом к сети."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ae2_autocraft",
+      "chapter": "pack_ae2",
+      "title": "Первый заказ",
+      "description": "Закажите в терминале предмет, которого нет в хранилище. Проследите выдачу ингредиентов, работу сборщика и возврат готового результата.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 6.0,
+      "dependencies": [
+        "ae2_cpu"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ae2_largecell",
+      "chapter": "pack_ae2",
+      "title": "Хранение 64k",
+      "description": "Изготовьте компонент 64k и соберите соответствующую ячейку. Для массовых однотипных ресурсов выгодно отдельное внешнее хранилище.",
+      "x": 1.5,
+      "y": 6.0,
+      "dependencies": [
+        "ae2_autocraft"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:item.ItemMultiMaterial",
+          "meta": 38,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:item.ItemMultiMaterial",
+      "iconMeta": 38
+    },
+    {
+      "id": "ae2_wireless",
+      "chapter": "pack_ae2",
+      "title": "Беспроводная точка",
+      "description": "Сделайте беспроводную точку доступа. Для терминала потребуется настройка безопасности; усилители увеличивают радиус вместе с потреблением энергии.",
+      "x": 3.0,
+      "y": 6.0,
+      "dependencies": [
+        "ae2_largecell"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockWireless",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockWireless",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_security",
+      "chapter": "pack_ae2",
+      "title": "Безопасность сети",
+      "description": "Установите терминал безопасности и настройте права биометрическими картами. Сохраните возможность доступа владельцу перед подключением чужих игроков.",
+      "x": 4.5,
+      "y": 6.0,
+      "dependencies": [
+        "ae2_wireless"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockSecurity",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockSecurity",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_quantum",
+      "chapter": "pack_ae2",
+      "title": "Квантовый мост",
+      "description": "Подготовьте восемь колец для одной стороны моста и квантовую камеру. Для пары сетей нужны два многоблока и связанные сингулярности, полученные одним взрывом.",
+      "x": 6.0,
+      "y": 6.0,
+      "dependencies": [
+        "ae2_security"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "appliedenergistics2:tile.BlockQuantumRing",
+          "meta": 0,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "appliedenergistics2:tile.BlockQuantumRing",
+      "iconMeta": 0
+    },
+    {
+      "id": "ae2_bonus_integrations",
+      "chapter": "pack_ae2",
+      "title": "Магия и каналы",
+      "description": "По желанию соедините сеть с Thaumic Energistics или Flora Energistics из вашей сборки. Проверьте питание, каналы и перенос эссенции либо маны согласно руководству дополнения.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 6.0,
+      "dependencies": [
+        "ae2_autocraft"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    }
+  ]
+}

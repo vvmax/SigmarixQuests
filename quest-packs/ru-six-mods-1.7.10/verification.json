@@ -1,0 +1,21 @@
+{
+  "quest_mod_version": "0.26.0-SNAPSHOT",
+  "quest_mod_sha256": "c71325755ffb4919d2e693abb4a707d0eea01dd8f0676c0c207f4bb803020f49",
+  "tests": {
+    "junit": 68,
+    "forge_integration": 154,
+    "python_migration": 43,
+    "failures": 0
+  },
+  "pack": {
+    "chapters": 6,
+    "quests": 180,
+    "non_consuming_item_checks": 139,
+    "explicit_manual_checks": 41,
+    "original_game_illustrations": 17,
+    "files_external_to_jar": true,
+    "image_and_graph_verifier": "PASS",
+    "registry_evidence": "quest-packs/ru-six-mods-1.7.10/registry-evidence.json"
+  },
+  "client_preview": "PASS; see previews/"
+}

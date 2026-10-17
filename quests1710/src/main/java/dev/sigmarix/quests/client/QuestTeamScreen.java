@@ -8,11 +8,11 @@ public final class QuestTeamScreen extends QuestListScreen {
     private boolean inTeam;
     public QuestTeamScreen(GuiScreen parent){super(parent,ClientProxy.snapshot.teamId.isEmpty(),false,0,0,0);inTeam=!ClientProxy.snapshot.teamId.isEmpty();}
     static String tr(String key){return StatCollector.translateToLocal(key);}
-    static String teamTitle(QuestNetwork.TeamEntry entry){return chatColor(entry.color)+(entry.title.isEmpty()?ownerName(entry.owner)+"'s Team":entry.title);}
+    static String teamTitle(QuestNetwork.TeamEntry entry){return chatColor(entry.color)+(entry.title.isEmpty()?StatCollector.translateToLocalFormatted("quests.ui.default_team_name",ownerName(entry.owner)):entry.title);}
     static String chatColor(int color){int[] values=QuestTeamCreateScreen.COLORS;String[] names={"9","b","a","e","6","c","d","d","5","7"};for(int i=0;i<values.length;i++)if(values[i]==color)return "\u00a7"+names[i];return "\u00a7f";}
     static String ownerName(String id){if(MinecraftOwner.id().equals(id))return net.minecraft.client.Minecraft.getMinecraft().thePlayer.getCommandSenderName();for(QuestNetwork.TeamPlayer p:ClientProxy.snapshot.teamPlayers)if(p.id.equals(id))return p.name;return id;}
     private static final class MinecraftOwner{static String id(){return net.minecraft.client.Minecraft.getMinecraft().thePlayer.getUniqueID().toString();}}
-    @Override protected String title(){if(!inTeam)return tr("team_action.ftblib.select_team");QuestNetwork.TeamSettings s=ClientProxy.snapshot.teamSettings;String owner="";for(QuestNetwork.TeamEntry e:ClientProxy.snapshot.teams)if(e.id.equals(ClientProxy.snapshot.teamId))owner=e.owner;return chatColor(s.color)+(s.title.isEmpty()?ownerName(owner)+"'s Team":s.title);}
+    @Override protected String title(){if(!inTeam)return tr("team_action.ftblib.select_team");QuestNetwork.TeamSettings s=ClientProxy.snapshot.teamSettings;String owner="";for(QuestNetwork.TeamEntry e:ClientProxy.snapshot.teams)if(e.id.equals(ClientProxy.snapshot.teamId))owner=e.owner;return chatColor(s.color)+(s.title.isEmpty()?StatCollector.translateToLocalFormatted("quests.ui.default_team_name",ownerName(owner)):s.title);}
     @Override protected List<Row> rows(){
         List<Row> rows=new ArrayList<Row>();QuestNetwork.Snapshot snap=ClientProxy.snapshot;
         if(!inTeam){

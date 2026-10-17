@@ -1148,4 +1148,16 @@ public class QuestSystemsTest {
         finally { QuestsMod.service=null; }
     }
 
+    @Test public void externalVanillaChaptersValidateSaveAndCreateIndependentProfiles() throws Exception {
+        java.nio.file.Path folder=java.nio.file.Files.createTempDirectory("quest-external-world-");java.nio.file.Files.createDirectory(folder.resolve("chapters"));
+        java.nio.file.Path root=folder.resolve("quests.json");
+        java.nio.file.Files.write(root,"{format:2,title:'External',chapterDirectory:'chapters',chapters:[],quests:[]}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        java.nio.file.Path chapter=folder.resolve("chapters/first.json");
+        java.nio.file.Files.write(chapter,"{format:2,chapters:[{id:'first',title:'Первая'}],quests:[{id:'external',title:'Камень',chapter:'first',tasks:[{type:'item',target:'minecraft:stone'}]}]}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        QuestService external=new QuestService(root.toFile());external.load();assertEquals(1,external.quests.size());long revision=external.revision;
+        QuestCore.Book draft=QuestService.JSON.fromJson(QuestService.JSON.toJson(external.book),QuestCore.Book.class);draft.quests.get(0).title="Новое имя";external.save(draft,revision);external.load();assertEquals("Новое имя",external.quests.get("external").title);
+        external.createProfile("copy");QuestService copy=new QuestService(folder.resolve("profiles/copy.json").toFile());copy.load();assertEquals("",copy.book.chapterDirectory);assertEquals("Новое имя",copy.quests.get("external").title);
+        java.nio.file.Files.write(chapter,"broken".getBytes(java.nio.charset.StandardCharsets.UTF_8));try{external.load();fail();}catch(java.io.IOException expected){}assertEquals("Новое имя",external.quests.get("external").title);
+        try(java.util.stream.Stream<java.nio.file.Path> paths=java.nio.file.Files.walk(folder)){for(java.nio.file.Path path:paths.sorted(java.util.Comparator.reverseOrder()).collect(java.util.stream.Collectors.toList()))java.nio.file.Files.deleteIfExists(path);}
+    }
 }

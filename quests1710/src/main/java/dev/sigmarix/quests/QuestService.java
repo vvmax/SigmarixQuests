@@ -25,6 +25,7 @@ public class QuestService {
     public long revision;
     private final Map<UUID,Map<String,Integer>> lookTimers=new HashMap<UUID,Map<String,Integer>>();
     private File config;
+    private QuestBookFiles.Loaded fileLayout;
     private final File defaultConfig;
     public QuestService(File config) { this.config = this.defaultConfig = config; }
     private File profileFile(String key) {
@@ -35,11 +36,12 @@ public class QuestService {
     public void loadActiveProfile() throws IOException { config=profileFile(progress().profile()); load(); }
     public void switchProfile(String key) throws IOException {
         File source=profileFile(key); QuestService candidate=new QuestService(source); candidate.load();
-        progress().profile(key); config=source; book=candidate.book; quests=candidate.quests; lookTimers.clear(); revision++;
+        progress().profile(key); config=source; fileLayout=candidate.fileLayout; book=candidate.book; quests=candidate.quests; lookTimers.clear(); revision++;
     }
     public void createProfile(String key) throws IOException {
         File target=profileFile(key); Files.createDirectories(target.getParentFile().toPath());
-        Files.write(target.toPath(),JSON.toJson(book).getBytes(StandardCharsets.UTF_8),StandardOpenOption.CREATE_NEW);
+        QuestCore.Book copy=JSON.fromJson(JSON.toJson(book),QuestCore.Book.class);copy.chapterDirectory="";
+        Files.write(target.toPath(),JSON.toJson(copy).getBytes(StandardCharsets.UTF_8),StandardOpenOption.CREATE_NEW);
     }
     public List<String> profiles() {
         List<String> result=new ArrayList<String>(); result.add("default");
@@ -48,15 +50,8 @@ public class QuestService {
         Collections.sort(result); return result;
     }
     public void load() throws IOException {
-        if(config.length()>900000) throw new IOException("Quest book exceeds 900 KB");
-        byte[] source=Files.readAllBytes(config.toPath());
-        QuestNetwork.guardJson(new String(source,StandardCharsets.UTF_8));
-        try (Reader reader = new InputStreamReader(new ByteArrayInputStream(source), StandardCharsets.UTF_8)) {
-            JsonObject root=new JsonParser().parse(reader).getAsJsonObject();
-            QuestCore.Book next=JSON.fromJson(root,QuestCore.Book.class);
-            if(!root.has("format")) for(int i=0;i<next.quests.size();i++) { next.quests.get(i).x=(i%6)*3; next.quests.get(i).y=(i/6)*2; }
-            install(next);
-        }
+        QuestBookFiles.Loaded loaded=QuestBookFiles.read(config);
+        install(loaded.book);fileLayout=loaded;
     }
     private void install(QuestCore.Book next) {
         Map<String, QuestCore.Quest> validated = validate(next);
@@ -67,11 +62,7 @@ public class QuestService {
         validate(next);
         byte[] bytes = JSON.toJson(next).getBytes(StandardCharsets.UTF_8);
         if (bytes.length > 900000) throw new IllegalArgumentException("Book too large (900 KB maximum)");
-        Path target = config.toPath(), temporary = target.resolveSibling(target.getFileName()+".tmp");
-        if (Files.exists(target)) Files.copy(target, target.resolveSibling(target.getFileName()+".bak"), StandardCopyOption.REPLACE_EXISTING);
-        Files.write(temporary, bytes);
-        try { Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING); }
-        catch (AtomicMoveNotSupportedException e) { Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING); }
+        QuestBookFiles.write(config,next,fileLayout);
         install(next);
     }
     private Map<String, QuestCore.Quest> validate(QuestCore.Book next) {
@@ -152,7 +143,7 @@ public class QuestService {
         if (data == null) { data = new QuestProgress(); world.mapStorage.setData("sigmarixquests", data); }
         return data;
     }
-    public static void say(ICommandSender sender, String message) { sender.addChatMessage(new ChatComponentText(message)); }
+    public static void say(ICommandSender sender, String message) { sender.addChatMessage(QuestMessages.component(message)); }
     public boolean active(EntityPlayerMP p, QuestCore.Quest q) {
         return p!=null && active(p.getUniqueID(),q);
     }

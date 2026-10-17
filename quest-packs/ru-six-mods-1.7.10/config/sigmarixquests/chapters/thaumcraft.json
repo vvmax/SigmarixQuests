@@ -1,0 +1,1017 @@
+{
+  "format": 2,
+  "chapters": [
+    {
+      "id": "pack_thaumcraft",
+      "title": "Thaumcraft — Исследования и эссенция",
+      "description": "Путь от первых ресурсов до развитой инфраструктуры. Рецепты смотрите в NEI: дополнения сборки могут их менять. Предметные задачи ничего не расходуют. Задачи с кнопкой подтверждения проверяются вами вручную.",
+      "icon": "Thaumcraft:ItemThaumonomicon",
+      "defaultQuestShape": "circle",
+      "images": [
+        {
+          "resource": "sigmarixquestpack:textures/guides/thaumcraft_book.png",
+          "x": -4,
+          "y": 4,
+          "width": 4,
+          "height": 4.0,
+          "hover": [
+            "Таумономикон: игровой предмет"
+          ]
+        }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "thaumcraft_intro",
+      "chapter": "pack_thaumcraft",
+      "title": "Первые шаги тауматурга",
+      "description": "Глава посвящена Thaumcraft 4.2.3.5. Исследования открываются в Таумономиконе; предметные квесты проверяют результаты, но не выдают исследования и аспекты.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 0.0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "thaumcraft_wand",
+      "chapter": "pack_thaumcraft",
+      "title": "Первая палочка",
+      "description": "Изготовьте палочку с железными наконечниками и деревянным стержнем. Палочка хранит вис; для зарядки найдите подходящие узлы ауры.",
+      "x": 1.5,
+      "y": 0.0,
+      "dependencies": [
+        "thaumcraft_intro"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:WandCasting",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:WandCasting",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_book",
+      "chapter": "pack_thaumcraft",
+      "title": "Таумономикон",
+      "description": "Установите книжную полку и используйте на ней палочку. Полученный Таумономикон служит главным справочником исследований и конструкций.",
+      "x": 3.0,
+      "y": 0.0,
+      "dependencies": [
+        "thaumcraft_wand"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemThaumonomicon",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemThaumonomicon",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Таумономикон",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/thaumcraft_book.png",
+              "width": 96,
+              "height": 96
+            },
+            {
+              "type": "text",
+              "text": "Таумономикон: игровой предмет\n\nУстановите книжную полку и используйте на ней палочку. Полученный Таумономикон служит главным справочником исследований и конструкций."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "thaumcraft_scanner",
+      "chapter": "pack_thaumcraft",
+      "title": "Таумометр",
+      "description": "Сделайте таумометр. Начинайте сканирование с простых объектов и постепенно открывайте составные аспекты, если сложный объект ещё непонятен.",
+      "x": 4.5,
+      "y": 0.0,
+      "dependencies": [
+        "thaumcraft_book"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemThaumometer",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemThaumometer",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_researchtools",
+      "chapter": "pack_thaumcraft",
+      "title": "Письменные принадлежности",
+      "description": "Подготовьте письменные принадлежности и бумагу. Для исследований нужны чернила и запас аспектов, а не только сканирование предмета.",
+      "x": 6.0,
+      "y": 0.0,
+      "dependencies": [
+        "thaumcraft_scanner"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemInkwell",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemInkwell",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_researchtable",
+      "chapter": "pack_thaumcraft",
+      "title": "Стол исследований",
+      "description": "Установите рядом два деревянных стола Thaumcraft и примените письменные принадлежности. Откройте исследование и соедините аспекты корректными связями.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 0.0,
+      "dependencies": [
+        "thaumcraft_researchtools"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "thaumcraft_arcane",
+      "chapter": "pack_thaumcraft",
+      "title": "Магический верстак",
+      "description": "Преобразуйте деревянный стол палочкой в магический верстак. Положите палочку в его слот и проверьте, какие аспекты требуются выбранному рецепту.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 1.5,
+      "dependencies": [
+        "thaumcraft_researchtable"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book",
+      "richPages": [
+        {
+          "title": "Магический верстак",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/thaumcraft_workbench.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Магический верстак: игровая панель\n\nПреобразуйте деревянный стол палочкой в магический верстак. Положите палочку в его слот и проверьте, какие аспекты требуются выбранному рецепту.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "thaumcraft_crucible",
+      "chapter": "pack_thaumcraft",
+      "title": "Тигель",
+      "description": "Превратите обычный котёл палочкой в тигель. Обеспечьте нагрев снизу и воду; держите рядом источник пополнения воды.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 1.5,
+      "dependencies": [
+        "thaumcraft_arcane"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "thaumcraft_alumentum",
+      "chapter": "pack_thaumcraft",
+      "title": "Алхимическое топливо",
+      "description": "Откройте рецепт алхимического топлива и выполните его в тигле. Добавляйте ингредиенты по аспектам: лишнее содержимое создаёт загрязнение.",
+      "x": 4.5,
+      "y": 1.5,
+      "dependencies": [
+        "thaumcraft_crucible"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemResource",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemResource",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_nitor",
+      "chapter": "pack_thaumcraft",
+      "title": "Нитор",
+      "description": "Получите нитор через алхимию. Он удобен как постоянный источник нагрева тигля и декоративный свет.",
+      "x": 3.0,
+      "y": 1.5,
+      "dependencies": [
+        "thaumcraft_alumentum"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemResource",
+          "meta": 1,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemResource",
+      "iconMeta": 1
+    },
+    {
+      "id": "thaumcraft_thaumium",
+      "chapter": "pack_thaumcraft",
+      "title": "Таумий",
+      "description": "Исследуйте таумий и создайте восемь слитков. Рассчитайте аспекты до бросания катализатора в тигель.",
+      "x": 1.5,
+      "y": 1.5,
+      "dependencies": [
+        "thaumcraft_nitor"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemResource",
+          "meta": 2,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemResource",
+      "iconMeta": 2
+    },
+    {
+      "id": "thaumcraft_goggles",
+      "chapter": "pack_thaumcraft",
+      "title": "Очки откровения",
+      "description": "Изготовьте очки откровения после соответствующего исследования. Они помогают видеть узлы и содержимое эссенции, а также снижают затраты вис.",
+      "x": 0.0,
+      "y": 1.5,
+      "dependencies": [
+        "thaumcraft_thaumium"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemGoggles",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemGoggles",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_robes",
+      "chapter": "pack_thaumcraft",
+      "title": "Мантия тауматурга",
+      "description": "Сделайте мантию для магического изготовления. Бонус к экономии вис не заменяет правильную зарядку палочки.",
+      "x": 0.0,
+      "y": 3.0,
+      "dependencies": [
+        "thaumcraft_goggles"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemChestplateRobe",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemChestplateRobe",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_distillation",
+      "chapter": "pack_thaumcraft",
+      "title": "Алхимическая печь",
+      "description": "Установите алхимическую печь и перегонные кубы. Сжигаемые предметы превращаются в эссенцию, которую необходимо собрать.",
+      "x": 1.5,
+      "y": 3.0,
+      "dependencies": [
+        "thaumcraft_robes"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:blockAlchemyFurnace",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:blockAlchemyFurnace",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_jars",
+      "chapter": "pack_thaumcraft",
+      "title": "Банки эссенции",
+      "description": "Подготовьте четыре пустые банки. Используйте метки и следите за назначенными аспектами, чтобы не перемешивать транспортные линии.",
+      "x": 3.0,
+      "y": 3.0,
+      "dependencies": [
+        "thaumcraft_distillation"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:blockJar",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:blockJar",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_pipes",
+      "chapter": "pack_thaumcraft",
+      "title": "Транспорт эссенции",
+      "description": "Создайте восемь труб эссенции. В TC4 поток зависит от всасывания; отдельные линии и буферы надёжнее общей разветвлённой трубы.",
+      "x": 4.5,
+      "y": 3.0,
+      "dependencies": [
+        "thaumcraft_jars"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:blockTube",
+          "meta": 0,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:blockTube",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_infusion",
+      "chapter": "pack_thaumcraft",
+      "title": "Алтарь наполнения",
+      "description": "Откройте наполнение и соберите многоблок алтаря. Размещайте пьедесталы и стабилизаторы симметрично; держите запас нужной эссенции.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 3.0,
+      "dependencies": [
+        "thaumcraft_pipes"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "thaumcraft_boots",
+      "chapter": "pack_thaumcraft",
+      "title": "Ботинки путешественника",
+      "description": "Проведите наполнение для ботинок путешественника. Заранее разместите ингредиенты на пьедесталах и подключите банки с правильными аспектами.",
+      "x": 7.5,
+      "y": 3.0,
+      "dependencies": [
+        "thaumcraft_infusion"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:BootsTraveller",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:BootsTraveller",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_bell",
+      "chapter": "pack_thaumcraft",
+      "title": "Управление големами",
+      "description": "Сделайте колокольчик големанта. Он нужен для настройки области, привязки и снятия големов без обычного разрушения.",
+      "x": 7.5,
+      "y": 4.5,
+      "dependencies": [
+        "thaumcraft_boots"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:GolemBell",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:GolemBell",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_golem",
+      "chapter": "pack_thaumcraft",
+      "title": "Первый голем",
+      "description": "Создайте голема и подходящее ядро. Выберите одну простую задачу, например сбор предметов, и проверьте его работу в ограниченной зоне.",
+      "x": 6.0,
+      "y": 4.5,
+      "dependencies": [
+        "thaumcraft_bell"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemGolemPlacer",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemGolemPlacer",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_alchemy",
+      "chapter": "pack_thaumcraft",
+      "title": "Автоматическая алхимия",
+      "description": "Исследуйте алхимическую конструкцию и настройте повторяемый рецепт с подачей эссенции. Убедитесь, что выходной предмет извлекается автоматически.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 4.5,
+      "y": 4.5,
+      "dependencies": [
+        "thaumcraft_golem"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "thaumcraft_wandfocus",
+      "chapter": "pack_thaumcraft",
+      "title": "Фокус раскопок",
+      "description": "Создайте фокус раскопок. Установите на палочку и проверьте расход вис на безопасной площадке.",
+      "x": 3.0,
+      "y": 4.5,
+      "dependencies": [
+        "thaumcraft_alchemy"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:FocusExcavation",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:FocusExcavation",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_primal",
+      "chapter": "pack_thaumcraft",
+      "title": "Резонирующий инструмент",
+      "description": "Создайте резонатор и исследуйте доступные магические устройства. Он пригодится для работы с продвинутой инфраструктурой вис.",
+      "x": 1.5,
+      "y": 4.5,
+      "dependencies": [
+        "thaumcraft_wandfocus"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemResonator",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemResonator",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_runic",
+      "chapter": "pack_thaumcraft",
+      "title": "Руническая защита",
+      "description": "Изготовьте кольцо рунической защиты. Оцените восстановление щита и ограничения защиты до рискованной экспедиции.",
+      "x": 0.0,
+      "y": 4.5,
+      "dependencies": [
+        "thaumcraft_primal"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemRingRunic",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemRingRunic",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_sanity",
+      "chapter": "pack_thaumcraft",
+      "title": "Цена запретных знаний",
+      "description": "Сделайте измеритель рассудка после исследования соответствующей ветви. Искажение имеет разные составляющие, и не всё можно снять обычной ванной.",
+      "x": 0.0,
+      "y": 6.0,
+      "dependencies": [
+        "thaumcraft_runic"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemSanityChecker",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemSanityChecker",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_soap",
+      "chapter": "pack_thaumcraft",
+      "title": "Средство очищения",
+      "description": "Подготовьте очищающее мыло и изучите очищающую ванну. Используйте средства по назначению; они не стирают все последствия запретных исследований.",
+      "x": 1.5,
+      "y": 6.0,
+      "dependencies": [
+        "thaumcraft_sanity"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemSanitySoap",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemSanitySoap",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_eldritch",
+      "chapter": "pack_thaumcraft",
+      "title": "Древнее измерение",
+      "description": "Найдите древние обелиски, откройте исследования и подготовьте безопасную экспедицию в древний лабиринт. Возьмите еду, свет и средства возвращения.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 3.0,
+      "y": 6.0,
+      "dependencies": [
+        "thaumcraft_soap"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "thaumcraft_void",
+      "chapter": "pack_thaumcraft",
+      "title": "Пустотный металл",
+      "description": "Откройте пустотный металл и изготовьте слиток. Это поздний материал, связанный с запретными исследованиями и опасными противниками.",
+      "x": 4.5,
+      "y": 6.0,
+      "dependencies": [
+        "thaumcraft_eldritch"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemResource",
+          "meta": 16,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemResource",
+      "iconMeta": 16
+    },
+    {
+      "id": "thaumcraft_crusher",
+      "chapter": "pack_thaumcraft",
+      "title": "Разрушитель первобытного",
+      "description": "Создайте разрушитель первобытного через позднее наполнение. Подготовьте все исследования, эссенцию и устойчивый алтарь заранее.",
+      "x": 6.0,
+      "y": 6.0,
+      "dependencies": [
+        "thaumcraft_void"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Thaumcraft:ItemPrimalCrusher",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Thaumcraft:ItemPrimalCrusher",
+      "iconMeta": 0
+    },
+    {
+      "id": "thaumcraft_bonus_energistics",
+      "chapter": "pack_thaumcraft",
+      "title": "Цифровая эссенция",
+      "description": "По желанию подключите Thaumic Energistics 1.1.3.0 к своей МЭ-сети. Проверьте хранение и выдачу одной эссенции, прежде чем переносить весь запас.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 6.0,
+      "dependencies": [
+        "thaumcraft_jars"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    }
+  ]
+}

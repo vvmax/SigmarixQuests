@@ -28,3 +28,9 @@ The three toast sounds in `assets/sigmarixquests/sounds/reference/toast/` are
 unchanged Minecraft 1.12 asset-index objects (`ui/toast/in`, `out`, and
 `challenge_complete`). Mojang retains rights to these sounds. The reference
 manifest records their source keys, object SHA-1s and included-file SHA-256s.
+
+Version 0.26 adds independently written Russian translation overrides in the
+Sigmarix namespace. The attributed original FTB/FTBLib language files remain
+unchanged. The six-mod quest book and its illustrated resource pack are external
+files in `../quest-packs/ru-six-mods-1.7.10`; those images have their own source/hash
+manifest and credits and are not included in the production mod JAR.

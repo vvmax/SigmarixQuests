@@ -1,0 +1,18 @@
+{
+  "chapters": 6,
+  "quests": 180,
+  "automatic_item_tasks": 139,
+  "manual_tasks": 41,
+  "required_mod_versions": {
+    "Applied Energistics 2": "rv3-beta-6",
+    "Blood Magic": "1.3.3-17",
+    "Thaumcraft": "4.2.3.5",
+    "Botania": "r1.8-249 (official)",
+    "Witchery": "0.24.1",
+    "IndustrialCraft 2 Experimental": "2.2.828"
+  },
+  "tasks_consume_items": false,
+  "illustrations": 17,
+  "resource_pack": "Sigmarix-Quest-Illustrations-1.7.10.zip",
+  "quest_mod_version": "0.26.0-SNAPSHOT"
+}

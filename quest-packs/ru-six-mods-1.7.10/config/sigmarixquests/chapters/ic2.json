@@ -1,0 +1,1041 @@
+{
+  "format": 2,
+  "chapters": [
+    {
+      "id": "pack_ic2",
+      "title": "IndustrialCraft 2 — От генератора до материи",
+      "description": "Путь от первых ресурсов до развитой инфраструктуры. Рецепты смотрите в NEI: дополнения сборки могут их менять. Предметные задачи ничего не расходуют. Задачи с кнопкой подтверждения проверяются вами вручную.",
+      "icon": "IC2:blockGenerator",
+      "defaultQuestShape": "circle",
+      "images": [
+        {
+          "resource": "sigmarixquestpack:textures/guides/ic2_generator.png",
+          "x": -4,
+          "y": 4,
+          "width": 4,
+          "height": 4.0,
+          "hover": [
+            "Генератор IC2: игровая панель"
+          ]
+        }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "ic2_intro",
+      "chapter": "pack_ic2",
+      "title": "Электрическая мастерская",
+      "description": "Глава для IC2 Experimental 2.2.828. Энергия измеряется в EU; напряжение должно соответствовать машине. Перед подключением мощного накопителя проверьте трансформаторы и кабели.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 0.0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ic2_rubber",
+      "chapter": "pack_ic2",
+      "title": "Резина",
+      "description": "Соберите латекс с гевеи и получите шестнадцать единиц резины. Позже экстрактор повысит выход по сравнению с обычной переплавкой.",
+      "x": 1.5,
+      "y": 0.0,
+      "dependencies": [
+        "ic2_intro"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemRubber",
+          "meta": 0,
+          "count": 16,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemRubber",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_hammer",
+      "chapter": "pack_ic2",
+      "title": "Кузнечный молот",
+      "description": "Сделайте кузнечный молот для пластин. На раннем этапе ручные инструменты заменяют металлоформовочную машину, но расходуют прочность.",
+      "x": 3.0,
+      "y": 0.0,
+      "dependencies": [
+        "ic2_rubber"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemToolForgeHammer",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemToolForgeHammer",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_cutter",
+      "chapter": "pack_ic2",
+      "title": "Кусачки",
+      "description": "Подготовьте кусачки и изготовьте провод из пластины. Затем добавьте изоляцию согласно выбранному кабелю.",
+      "x": 4.5,
+      "y": 0.0,
+      "dependencies": [
+        "ic2_hammer"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemToolCutter",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemToolCutter",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_circuit",
+      "chapter": "pack_ic2",
+      "title": "Электронная схема",
+      "description": "Создайте четыре обычные электронные схемы. Не тратьте весь запас меди и резины: они нужны для машин и соединений.",
+      "x": 6.0,
+      "y": 0.0,
+      "dependencies": [
+        "ic2_cutter"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemPartCircuit",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemPartCircuit",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_casing",
+      "chapter": "pack_ic2",
+      "title": "Корпус машины",
+      "description": "Сделайте основной корпус машины из железных пластин. Установленный пустой корпус ещё не выполняет обработку ресурсов.",
+      "x": 7.5,
+      "y": 0.0,
+      "dependencies": [
+        "ic2_circuit"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_generator",
+      "chapter": "pack_ic2",
+      "title": "Первый генератор",
+      "description": "Установите генератор на топливе и подключите простую низковольтную сеть. Оставьте доступ к входу топлива и выходной стороне накопителя.",
+      "x": 7.5,
+      "y": 1.5,
+      "dependencies": [
+        "ic2_casing"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockGenerator",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockGenerator",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Первый генератор",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/ic2_generator.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Генератор IC2: игровая панель\n\nУстановите генератор на топливе и подключите простую низковольтную сеть. Оставьте доступ к входу топлива и выходной стороне накопителя."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ic2_cables",
+      "chapter": "pack_ic2",
+      "title": "Медная проводка",
+      "description": "Подготовьте шестнадцать изолированных медных проводов. Учитывайте потери на расстоянии и допустимую нагрузку кабеля.",
+      "x": 6.0,
+      "y": 1.5,
+      "dependencies": [
+        "ic2_generator"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemCable",
+          "meta": 0,
+          "count": 16,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemCable",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_batbox",
+      "chapter": "pack_ic2",
+      "title": "Буфер низкого напряжения",
+      "description": "Подключите BatBox. Отмеченная сторона — выход: ориентация накопителя определяет направление питания сети.",
+      "x": 4.5,
+      "y": 1.5,
+      "dependencies": [
+        "ic2_cables"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockElectric",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockElectric",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_electricfurnace",
+      "chapter": "pack_ic2",
+      "title": "Электропечь",
+      "description": "Поставьте электрическую печь и проверьте плавку от EU. Перед подключением убедитесь, что напряжение соответствует её уровню.",
+      "x": 3.0,
+      "y": 1.5,
+      "dependencies": [
+        "ic2_batbox"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 2,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 2
+    },
+    {
+      "id": "ic2_macerator",
+      "chapter": "pack_ic2",
+      "title": "Дробитель",
+      "description": "Сделайте дробитель. Начните переработку руд в измельчённые материалы; дальнейшая промывка и центрифуга дают дополнительные продукты.",
+      "x": 1.5,
+      "y": 1.5,
+      "dependencies": [
+        "ic2_electricfurnace"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 3,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 3
+    },
+    {
+      "id": "ic2_extractor",
+      "chapter": "pack_ic2",
+      "title": "Экстрактор",
+      "description": "Создайте экстрактор для эффективной переработки латекса и других рецептов. Оставьте запас резины для изоляции кабелей.",
+      "x": 0.0,
+      "y": 1.5,
+      "dependencies": [
+        "ic2_macerator"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 4,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 4
+    },
+    {
+      "id": "ic2_compressor",
+      "chapter": "pack_ic2",
+      "title": "Компрессор",
+      "description": "Подключите компрессор и проверьте подходящий рецепт. Сжатые материалы потребуются для развитых инструментов и брони.",
+      "x": 0.0,
+      "y": 3.0,
+      "dependencies": [
+        "ic2_extractor"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 5,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 5
+    },
+    {
+      "id": "ic2_metalformer",
+      "chapter": "pack_ic2",
+      "title": "Металлоформовочная машина",
+      "description": "Создайте машину и разберитесь с режимами прокатки, резки и выдавливания. Один и тот же вход в разных режимах даёт разные результаты.",
+      "x": 1.5,
+      "y": 3.0,
+      "dependencies": [
+        "ic2_compressor"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine2",
+          "meta": 4,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine2",
+      "iconMeta": 4
+    },
+    {
+      "id": "ic2_wrench",
+      "chapter": "pack_ic2",
+      "title": "Гаечный ключ",
+      "description": "Изготовьте ключ и используйте его для ориентации и демонтажа машин. Не разбивайте дорогие устройства обычной киркой без проверки результата.",
+      "x": 3.0,
+      "y": 3.0,
+      "dependencies": [
+        "ic2_metalformer"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemToolWrench",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemToolWrench",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_washer",
+      "chapter": "pack_ic2",
+      "title": "Промывка руд",
+      "description": "Подведите воду к рудопромывочной машине. Сравните выход полной цепочки с простой переплавкой и организуйте отвод побочных продуктов.",
+      "x": 4.5,
+      "y": 3.0,
+      "dependencies": [
+        "ic2_wrench"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine2",
+          "meta": 5,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine2",
+      "iconMeta": 5
+    },
+    {
+      "id": "ic2_thermal",
+      "chapter": "pack_ic2",
+      "title": "Термальная центрифуга",
+      "description": "Установите термальную центрифугу. Она требует разогрева и правильного уровня питания; не выключайте её перед каждой порцией сырья.",
+      "x": 6.0,
+      "y": 3.0,
+      "dependencies": [
+        "ic2_washer"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine2",
+          "meta": 3,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine2",
+      "iconMeta": 3
+    },
+    {
+      "id": "ic2_advanced",
+      "chapter": "pack_ic2",
+      "title": "Продвинутая схема",
+      "description": "Сделайте четыре продвинутые электронные схемы. Они понадобятся в энергетике, ядерной технологии и производстве материи.",
+      "x": 7.5,
+      "y": 3.0,
+      "dependencies": [
+        "ic2_thermal"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemPartCircuitAdv",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemPartCircuitAdv",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_mfe",
+      "chapter": "pack_ic2",
+      "title": "Средний запас энергии",
+      "description": "Подключите MFE через правильно подобранные трансформаторы. Его выход опасен для низковольтных машин без понижения напряжения.",
+      "x": 7.5,
+      "y": 4.5,
+      "dependencies": [
+        "ic2_advanced"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockElectric",
+          "meta": 1,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockElectric",
+      "iconMeta": 1
+    },
+    {
+      "id": "ic2_drill",
+      "chapter": "pack_ic2",
+      "title": "Шахтёрский бур",
+      "description": "Сделайте бур и зарядите его в подходящем устройстве. Разряженный и заряженный экземпляры одинаково подходят для проверки наличия.",
+      "x": 6.0,
+      "y": 4.5,
+      "dependencies": [
+        "ic2_mfe"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemToolDrill",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemToolDrill",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_induction",
+      "chapter": "pack_ic2",
+      "title": "Индукционная печь",
+      "description": "Подготовьте индукционную печь. Она обрабатывает два слота и выигрывает от сохранения высокой температуры при непрерывной работе.",
+      "x": 4.5,
+      "y": 4.5,
+      "dependencies": [
+        "ic2_drill"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 13,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 13
+    },
+    {
+      "id": "ic2_geothermal",
+      "chapter": "pack_ic2",
+      "title": "Геотермальная генерация",
+      "description": "Используйте лаву как топливо для геотермального генератора. Обеспечьте безопасную доставку жидкости и не оставляйте открытую лаву у кабелей.",
+      "x": 3.0,
+      "y": 4.5,
+      "dependencies": [
+        "ic2_induction"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockGenerator",
+          "meta": 1,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockGenerator",
+      "iconMeta": 1
+    },
+    {
+      "id": "ic2_solar",
+      "chapter": "pack_ic2",
+      "title": "Солнечная панель",
+      "description": "Сделайте обычную солнечную панель IC2. Проверьте обзор неба и накопитель на ночь; продвинутые панели дополнений изучайте отдельно.",
+      "x": 1.5,
+      "y": 4.5,
+      "dependencies": [
+        "ic2_geothermal"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockGenerator",
+          "meta": 3,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockGenerator",
+      "iconMeta": 3
+    },
+    {
+      "id": "ic2_reactor",
+      "chapter": "pack_ic2",
+      "title": "Ядерный реактор",
+      "description": "Создайте реактор, но не устанавливайте топливо до расчёта схемы. Подготовьте теплоотвод, автоматическое отключение и безопасное расстояние от базы.",
+      "x": 0.0,
+      "y": 4.5,
+      "dependencies": [
+        "ic2_solar"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockGenerator",
+          "meta": 5,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockGenerator",
+      "iconMeta": 5,
+      "richPages": [
+        {
+          "title": "Ядерный реактор",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/ic2_reactor.png",
+              "width": 96,
+              "height": 96
+            },
+            {
+              "type": "text",
+              "text": "Урановый топливный стержень: игровой предмет\n\nСоздайте реактор, но не устанавливайте топливо до расчёта схемы. Подготовьте теплоотвод, автоматическое отключение и безопасное расстояние от базы."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ic2_reactor_safety",
+      "chapter": "pack_ic2",
+      "title": "Первый безопасный цикл",
+      "description": "Соберите проверенную схему охлаждения, запустите короткий цикл и наблюдайте за нагревом. Подтвердите только после безопасной остановки; эта задача не проверяет температуру автоматически.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 6.0,
+      "dependencies": [
+        "ic2_reactor"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "ic2_recycler",
+      "chapter": "pack_ic2",
+      "title": "Утильсырьё",
+      "description": "Создайте утилизатор и подайте дешёвое возобновляемое сырьё. Отфильтруйте выход, чтобы не переработать редкие предметы.",
+      "x": 1.5,
+      "y": 6.0,
+      "dependencies": [
+        "ic2_reactor_safety"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 11,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 11
+    },
+    {
+      "id": "ic2_matter",
+      "chapter": "pack_ic2",
+      "title": "Производство материи",
+      "description": "Подключите производитель материи к мощному источнику EU и запасу утильсырья. Держите энергоёмкую линию отдельно от малых машин.",
+      "x": 3.0,
+      "y": 6.0,
+      "dependencies": [
+        "ic2_recycler"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine",
+          "meta": 14,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine",
+      "iconMeta": 14
+    },
+    {
+      "id": "ic2_replicator",
+      "chapter": "pack_ic2",
+      "title": "Сканирование и репликация",
+      "description": "Подготовьте сканер, хранилище шаблонов и репликатор. В Experimental используется жидкая UU-материя; сначала сохраните нужный образец.",
+      "x": 4.5,
+      "y": 6.0,
+      "dependencies": [
+        "ic2_matter"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:blockMachine2",
+          "meta": 8,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:blockMachine2",
+      "iconMeta": 8
+    },
+    {
+      "id": "ic2_quantum",
+      "chapter": "pack_ic2",
+      "title": "Квантовая броня",
+      "description": "Изготовьте квантовый нагрудник через иридиевые пластины и предыдущие ступени брони. Перед испытаниями полностью зарядите комплект и изучите управление.",
+      "x": 6.0,
+      "y": 6.0,
+      "dependencies": [
+        "ic2_replicator"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "IC2:itemArmorQuantumChestplate",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "IC2:itemArmorQuantumChestplate",
+      "iconMeta": 0
+    },
+    {
+      "id": "ic2_bonus_addons",
+      "chapter": "pack_ic2",
+      "title": "Промышленность за пределами IC2",
+      "description": "По желанию изучите Advanced Solar Panels, GraviSuite и Nuclear Control из вашей сборки. Настройте аварийное отключение реактора и отдельную линию зарядки дорогого оборудования.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 6.0,
+      "dependencies": [
+        "ic2_reactor_safety"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    }
+  ]
+}

@@ -1,3 +1,29 @@
+# Version 0.26: Russian UI and external quest book
+
+The saved pixel comparisons below document 0.25. Version 0.26 deliberately fills
+missing Russian translations, including the native English Submit label, field
+values, legacy tooltips, command/status messages and desktop controls. English
+behavior is retained. Unknown registry IDs and typed text remain literal.
+
+The separate book in `../../quest-packs/ru-six-mods-1.7.10` contains six chapters
+and 180 quests (139 non-consuming item checks and 41 explicit manual checks).
+Its resource pack contains 17 unchanged original game illustrations, including
+Blood Magic altar screenshots I–V and Botania Lexica images. None of the six
+chapter documents or their illustration pack is included in the production JAR.
+
+Verification passed: 68 JUnit, 154 Forge integration and 43 Python tests (265 total).
+The combined integrated-world run passed in 2m 12s; the final build and command
+component checks also passed. See `build-verification.json`.
+
+New tests cover separate-file load/save, moving quests between documents,
+rollback after a later file fails, unsafe directories, independent flattened
+profiles, all native/port Russian keys and formatting arguments, and the complete
+book's dependency graph/network size. The illustrated Russian client preview
+passed, including resource lookup, translated nested error messages and literal
+user input. Client captures accompany the external book under `previews`.
+
+---
+
 # FTB Quests 1.12.2 standard-theme parity
 
 Reference: FTB Quests 1202.9.0.15, FTBLib 5.4.7.2, Minecraft 1.12.2 / Forge

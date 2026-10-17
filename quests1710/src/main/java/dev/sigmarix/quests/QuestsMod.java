@@ -15,6 +15,7 @@ import net.minecraft.entity.player.*;
 import net.minecraft.item.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -346,7 +347,7 @@ public final class QuestsMod {
                     for(QuestCore.Quest q:service.quests.values()) {
                         Set<String> done=data.completed(id); boolean unlocked=service.unlocked(id,q);
                         if(!editor(p) && !service.visible(id,q)) continue;
-                        QuestService.say(sender,q.id+" - "+q.title+" ["+(done.contains(q.id)?service.claimed(id,q)?"claimed":"complete":unlocked?"available":"locked")+"]");
+                        String state=done.contains(q.id)?service.claimed(id,q)?"claimed":"complete":unlocked?"available":"locked";sender.addChatMessage(new ChatComponentText(q.id+" - "+q.title+" [").appendSibling(QuestMessages.component(state)).appendText("]"));
                     }
                     QuestService.say(sender,"GUI: /questbook (client mod), "+getCommandUsage(sender)); return;
                 }
@@ -378,7 +379,7 @@ public final class QuestsMod {
                     case "show":
                         if(!editor(p) && !service.visible(id,q)) throw new IllegalArgumentException("Unknown quest");
                         QuestService.say(sender,q.title+": "+q.description); QuestService.say(sender,"Dependencies: "+q.dependencies);
-                        for(QuestCore.Task t:q.tasks) QuestService.say(sender,t.type+" "+t.target+" x"+t.count+" ["+service.counter(p,q,t)+"]");
+                        for(QuestCore.Task t:q.tasks) sender.addChatMessage(QuestMessages.component(t.type).appendText(" "+t.target+" x"+t.count+" ["+service.counter(p,q,t)+"]"));
                         for(QuestCore.Reward r:q.rewards) QuestService.say(sender,"Reward: "+r.type+" "+(r.item==null?"":r.item)+" x"+r.count); break;
                     case "start": service.start(p,q); QuestService.say(sender,"Quest started"); break;
                     case "task": if(args.length!=3) throw new IllegalArgumentException("/quests task <quest> <task>"); service.confirm(p,q,args[2]); QuestService.say(sender,"Task confirmed"); break;

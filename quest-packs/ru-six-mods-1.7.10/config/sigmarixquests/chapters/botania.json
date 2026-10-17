@@ -1,0 +1,1042 @@
+{
+  "format": 2,
+  "chapters": [
+    {
+      "id": "pack_botania",
+      "title": "Botania — Цветы и мана",
+      "description": "Путь от первых ресурсов до развитой инфраструктуры. Рецепты смотрите в NEI: дополнения сборки могут их менять. Предметные задачи ничего не расходуют. Задачи с кнопкой подтверждения проверяются вами вручную.",
+      "icon": "Botania:lexicon",
+      "defaultQuestShape": "circle",
+      "images": [
+        {
+          "resource": "sigmarixquestpack:textures/guides/botania_daisy.png",
+          "x": -4,
+          "y": 4,
+          "width": 4,
+          "height": 4.0,
+          "hover": [
+            "Чистая маргаритка: иллюстрация из Лексики"
+          ]
+        }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "botania_intro",
+      "chapter": "pack_botania",
+      "title": "Магия, которая работает",
+      "description": "Глава для официальной Botania r1.8-249. Мана передаётся через цветы, распространители и бассейны; подробные схемы и рецепты ищите в Лексике Ботании.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 0.0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "botania_book",
+      "chapter": "pack_botania",
+      "title": "Лексика Ботании",
+      "description": "Создайте Лексику и откройте раздел основ. Книга реагирует на прогресс, а после обмена с эльфами получает дополнительные знания.",
+      "x": 1.5,
+      "y": 0.0,
+      "dependencies": [
+        "botania_intro"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:lexicon",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:lexicon",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_petals",
+      "chapter": "pack_botania",
+      "title": "Лепестковый аптекарь",
+      "description": "Сделайте аптекарь, наполните водой и подготовьте лепестки с семенами. Перед завершением рецепта проверьте состав в Лексике.",
+      "x": 3.0,
+      "y": 0.0,
+      "dependencies": [
+        "botania_book"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:altar",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:altar",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Лепестковый аптекарь",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/botania_apothecary.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Аптекарь: иллюстрация из Лексики\n\nСделайте аптекарь, наполните водой и подготовьте лепестки с семенами. Перед завершением рецепта проверьте состав в Лексике."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "botania_daisy",
+      "chapter": "pack_botania",
+      "title": "Чистая маргаритка",
+      "description": "Создайте чистую маргаритку и окружите её подходящими камнем и древесиной на уровне цветка. Дождитесь превращения, не ломая заготовки заранее.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 4.5,
+      "y": 0.0,
+      "dependencies": [
+        "botania_petals"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book",
+      "richPages": [
+        {
+          "title": "Чистая маргаритка",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/botania_daisy.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Чистая маргаритка: иллюстрация из Лексики\n\nСоздайте чистую маргаритку и окружите её подходящими камнем и древесиной на уровне цветка. Дождитесь превращения, не ломая заготовки заранее.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "botania_rock",
+      "chapter": "pack_botania",
+      "title": "Живой камень",
+      "description": "Получите шестнадцать единиц живого камня у чистой маргаритки. Они понадобятся для бассейна и рунного алтаря.",
+      "x": 6.0,
+      "y": 0.0,
+      "dependencies": [
+        "botania_daisy"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:livingrock",
+          "meta": 0,
+          "count": 16,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:livingrock",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_wood",
+      "chapter": "pack_botania",
+      "title": "Живая древесина",
+      "description": "Подготовьте шестнадцать блоков живой древесины. Обычные брёвна рядом с маргариткой превращаются со временем.",
+      "x": 7.5,
+      "y": 0.0,
+      "dependencies": [
+        "botania_rock"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:livingwood",
+          "meta": 0,
+          "count": 16,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:livingwood",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_wand",
+      "chapter": "pack_botania",
+      "title": "Посох леса",
+      "description": "Создайте посох леса. Изучите режим привязки: генераторный цветок связывается с распространителем, а распространитель направляется в приёмник.",
+      "x": 7.5,
+      "y": 1.5,
+      "dependencies": [
+        "botania_wood"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:twigWand",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:twigWand",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_endoflame",
+      "chapter": "pack_botania",
+      "title": "Пламя для цветов",
+      "description": "Создайте эндопламя и подавайте ему топливо. Привяжите цветок к распространителю; не бросайте в топку резервные инструменты и ценные ресурсы.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 1.5,
+      "dependencies": [
+        "botania_wand"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "botania_spreader",
+      "chapter": "pack_botania",
+      "title": "Распространитель маны",
+      "description": "Установите распространитель и направьте его в будущий бассейн. Держите линию выстрела свободной от препятствий.",
+      "x": 4.5,
+      "y": 1.5,
+      "dependencies": [
+        "botania_endoflame"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:spreader",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:spreader",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Распространитель маны",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/botania_spreader.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Распространитель: иллюстрация из Лексики\n\nУстановите распространитель и направьте его в будущий бассейн. Держите линию выстрела свободной от препятствий."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "botania_pool",
+      "chapter": "pack_botania",
+      "title": "Первый бассейн",
+      "description": "Поставьте обычный бассейн и дождитесь поступления маны. Пустой бассейн сам по себе не производит ману.",
+      "x": 3.0,
+      "y": 1.5,
+      "dependencies": [
+        "botania_spreader"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:pool",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:pool",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_manasteel",
+      "chapter": "pack_botania",
+      "title": "Манасталь",
+      "description": "Бросьте железные слитки в достаточно наполненный бассейн. Получите восемь слитков манастали для дальнейших устройств.",
+      "x": 1.5,
+      "y": 1.5,
+      "dependencies": [
+        "botania_pool"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 0,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_pearl",
+      "chapter": "pack_botania",
+      "title": "Манажемчуг",
+      "description": "Преобразуйте жемчуг Края в бассейне. Следите, чтобы маны хватило на весь рецепт, а не только на один из следующих материалов.",
+      "x": 0.0,
+      "y": 1.5,
+      "dependencies": [
+        "botania_manasteel"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 1,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 1
+    },
+    {
+      "id": "botania_diamond",
+      "chapter": "pack_botania",
+      "title": "Манаалмаз",
+      "description": "Создайте манаалмаз из обычного алмаза. Он потребуется для террастали вместе с манасталью и манажемчугом.",
+      "x": 0.0,
+      "y": 3.0,
+      "dependencies": [
+        "botania_pearl"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 2,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 2
+    },
+    {
+      "id": "botania_runealtar",
+      "chapter": "pack_botania",
+      "title": "Рунный алтарь",
+      "description": "Установите рунный алтарь и подведите к нему распространитель. После наполнения рецепта добавьте живой камень и завершите его посохом.",
+      "x": 1.5,
+      "y": 3.0,
+      "dependencies": [
+        "botania_diamond"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:runeAltar",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:runeAltar",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_runes",
+      "chapter": "pack_botania",
+      "title": "Первая руна воды",
+      "description": "Изготовьте руну воды. Проверяйте порядок завершения на алтаре; размещённые ингредиенты не означают, что мана уже поступила.",
+      "x": 3.0,
+      "y": 3.0,
+      "dependencies": [
+        "botania_runealtar"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:rune",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:rune",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_manarune",
+      "chapter": "pack_botania",
+      "title": "Руна маны",
+      "description": "Создайте руну маны. Элементарные руны в рецептах более высоких рун часто возвращаются, поэтому проверяйте результат перед массовым изготовлением.",
+      "x": 4.5,
+      "y": 3.0,
+      "dependencies": [
+        "botania_runes"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:rune",
+          "meta": 8,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:rune",
+      "iconMeta": 8
+    },
+    {
+      "id": "botania_tablet",
+      "chapter": "pack_botania",
+      "title": "Переносная мана",
+      "description": "Создайте планшет маны и настройте направление обмена с бассейном посохом. Убедитесь, что запас действительно заряжается.",
+      "x": 6.0,
+      "y": 3.0,
+      "dependencies": [
+        "botania_manarune"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaTablet",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaTablet",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_ring",
+      "chapter": "pack_botania",
+      "title": "Кольцо маны",
+      "description": "Сделайте кольцо маны для слота Baubles. Оно хранит ману для инструментов и предметов в инвентаре, но сначала нуждается в зарядке.",
+      "x": 7.5,
+      "y": 3.0,
+      "dependencies": [
+        "botania_tablet"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaRing",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore",
+          "ignoreDamage": true
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaRing",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_generation",
+      "chapter": "pack_botania",
+      "title": "Устойчивая генерация",
+      "description": "Выберите более производительный цветок, например гурмарилис, и организуйте подходящее питание. Для гурмарилиса чередуйте еду и учитывайте насыщение.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 4.5,
+      "dependencies": [
+        "botania_ring"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "botania_sparks",
+      "chapter": "pack_botania",
+      "title": "Искры",
+      "description": "Подготовьте две искры для обмена между бассейном и плитой террастали. Размещайте искры непосредственно над совместимыми блоками.",
+      "x": 6.0,
+      "y": 4.5,
+      "dependencies": [
+        "botania_generation"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:spark",
+          "meta": 0,
+          "count": 2,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:spark",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_terraplate",
+      "chapter": "pack_botania",
+      "title": "Плита террастали",
+      "description": "Установите плиту на правильное основание, разместите искру и обеспечьте запас маны в соседних бассейнах. Схема приведена в Лексике.",
+      "x": 4.5,
+      "y": 4.5,
+      "dependencies": [
+        "botania_sparks"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:terraPlate",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:terraPlate",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_terrasteel",
+      "chapter": "pack_botania",
+      "title": "Первый слиток террастали",
+      "description": "Одновременно положите на плиту манасталь, манажемчуг и манаалмаз. Не начинайте без достаточного запаса маны: предметы могут исчезнуть раньше завершения.",
+      "x": 3.0,
+      "y": 4.5,
+      "dependencies": [
+        "botania_terraplate"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 4,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 4
+    },
+    {
+      "id": "botania_portal",
+      "chapter": "pack_botania",
+      "title": "Врата в Альвхейм",
+      "description": "Подготовьте ядро эльфийских врат, живую древесину и пилоны природы с бассейнами. Для открытия и работы нужен запас маны.",
+      "x": 1.5,
+      "y": 4.5,
+      "dependencies": [
+        "botania_terrasteel"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:alfheimPortal",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:alfheimPortal",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_elves",
+      "chapter": "pack_botania",
+      "title": "Обмен с эльфами",
+      "description": "Откройте врата и обменяйте манасталь на восемь слитков элементия. Передайте также Лексику, чтобы открыть эльфийские знания.",
+      "x": 0.0,
+      "y": 4.5,
+      "dependencies": [
+        "botania_portal"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 7,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 7
+    },
+    {
+      "id": "botania_gaia_pylons",
+      "chapter": "pack_botania",
+      "title": "Пилоны Гайи",
+      "description": "Создайте четыре пилона Гайи и подготовьте площадку вокруг маяка. Размеры и свободное пространство сверяйте с Лексикой.",
+      "x": 0.0,
+      "y": 6.0,
+      "dependencies": [
+        "botania_elves"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:pylon",
+          "meta": 2,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:pylon",
+      "iconMeta": 2
+    },
+    {
+      "id": "botania_gaia",
+      "chapter": "pack_botania",
+      "title": "Дух Гайи",
+      "description": "Победите Стража Гайи первого уровня и получите дух. Подготовьте броню, еду и безопасную арену; чужие блоки могут помешать ритуалу.",
+      "x": 1.5,
+      "y": 6.0,
+      "dependencies": [
+        "botania_gaia_pylons"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 5,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 5
+    },
+    {
+      "id": "botania_ingaia",
+      "chapter": "pack_botania",
+      "title": "Слиток духа Гайи",
+      "description": "Создайте слиток духа Гайи для второго уровня ритуала. Подготовьтесь к заметно более сложному бою.",
+      "x": 3.0,
+      "y": 6.0,
+      "dependencies": [
+        "botania_gaia"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:manaResource",
+          "meta": 14,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:manaResource",
+      "iconMeta": 14
+    },
+    {
+      "id": "botania_gaia2",
+      "chapter": "pack_botania",
+      "title": "Второе испытание",
+      "description": "Победите Стража Гайи второго уровня, активировав подготовленный ритуал соответствующим слитком. Получение слитка в прошлом квесте само по себе не засчитывает победу.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 4.5,
+      "y": 6.0,
+      "dependencies": [
+        "botania_ingaia"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "botania_brewery",
+      "chapter": "pack_botania",
+      "title": "Ботаническая пивоварня",
+      "description": "Установите пивоварню, обеспечьте ману и приготовьте полезный настой по Лексике. Это отдельная система от обычной стойки зелий.",
+      "x": 6.0,
+      "y": 6.0,
+      "dependencies": [
+        "botania_gaia2"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "Botania:brewery",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "Botania:brewery",
+      "iconMeta": 0
+    },
+    {
+      "id": "botania_bonus_floral",
+      "chapter": "pack_botania",
+      "title": "Мана и Applied Energistics",
+      "description": "По желанию подключите Flora Energistics из вашей сборки. Начните с одного устройства и проверьте расход маны и каналы сети до масштабирования.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 6.0,
+      "dependencies": [
+        "botania_elves"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    }
+  ]
+}

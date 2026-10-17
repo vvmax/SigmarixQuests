@@ -27,7 +27,7 @@ public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesN
     }
     @Override public void initGui() {
         if(positioned) { panX+=(width-viewportWidth)/2D; panY+=(height-viewportHeight)/2D; } viewportWidth=width; viewportHeight=height;
-        String filter=search==null?"":search.getText(); search=new GuiTextField(fontRendererObj,24,4,Math.min(160,width-50),14); search.setMaxStringLength(128); search.setText(filter);
+        String filter=search==null?"":search.getText(); search=new GuiTextField(QuestLibraryScreen.inputFont(fontRendererObj),24,4,Math.min(160,width-50),14); search.setMaxStringLength(128); search.setText(filter);
         if(!positioned) { positioned=true; if(!book().chapters.isEmpty()) chapter=book().chapters.get(0).id; centerMap(); }
         refresh();
     }
@@ -299,8 +299,8 @@ public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesN
             if(spreadsheet){List<QuestCore.Chapter> chapters=book().chapters;int max=0;for(QuestCore.Chapter c:chapters){int n=0;for(QuestCore.Quest q:book().quests)if(q.chapter.equals(c.id))n++;max=Math.max(max,n);}for(int row=0;row<=max;row++){for(int column=0;column<chapters.size();column++){if(column>0)content.append(",,");QuestCore.Chapter c=chapters.get(column);String value=row==0?c.title:"";if(row>0){int n=0;for(QuestCore.Quest q:book().quests)if(q.chapter.equals(c.id) && ++n==row){value=QuestTaskLabels.quest(q);break;}}content.append('"').append(value.replace("\"","\"\"")).append("\",\"\"");}content.append('\n');}}
             else content.append(QuestService.JSON.toJson(book()));
             java.nio.file.Files.write(destination.toPath(),content.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(nativeText("gui.saved_as_file")+" "+destination.getPath()));
-        }catch(java.io.IOException failure){mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(failure.getMessage()));}
+            mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(net.minecraft.util.StatCollector.translateToLocalFormatted("ftbquests.gui.saved_as_file",destination.getPath())));
+        }catch(java.io.IOException failure){mc.thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component(failure.getMessage()));}
     }
     private void chooseChapter(String id) { placingSelection=false;hideCard=false;selectedObjects.clear();chapter=id; selected=""; hoverChapter=""; detailsScroll=0; centerMap(); refresh(); }
     private List<QuestCore.Quest> dependants(QuestCore.Quest q) { List<QuestCore.Quest> result=new ArrayList<QuestCore.Quest>(); Map<String,QuestCore.Quest> all=new LinkedHashMap<String,QuestCore.Quest>(); for(QuestCore.Quest other:book().quests) all.put(other.id,other); for(QuestCore.Quest other:book().quests) for(String ref:other.dependencies) try { if(QuestDependencies.owners(book(),all,ref,other.dependencyState.equals("started")).contains(q.id)) { result.add(other); break; } } catch(IllegalArgumentException ignored) {} return result; }

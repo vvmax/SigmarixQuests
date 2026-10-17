@@ -1,0 +1,1071 @@
+{
+  "format": 2,
+  "chapters": [
+    {
+      "id": "pack_bloodmagic",
+      "title": "Blood Magic — Алхимия крови",
+      "description": "Путь от первых ресурсов до развитой инфраструктуры. Рецепты смотрите в NEI: дополнения сборки могут их менять. Предметные задачи ничего не расходуют. Задачи с кнопкой подтверждения проверяются вами вручную.",
+      "icon": "AWWayofTime:Altar",
+      "defaultQuestShape": "circle",
+      "images": [
+        {
+          "resource": "sigmarixquestpack:textures/guides/bloodmagic_altar1.png",
+          "x": -4,
+          "y": 4,
+          "width": 4,
+          "height": 3.9837728194726165,
+          "hover": [
+            "Алтарь 1-го уровня: игровой снимок из руководства Blood Magic"
+          ]
+        }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "bloodmagic_intro",
+      "chapter": "pack_bloodmagic",
+      "title": "Цена силы",
+      "description": "Blood Magic 1.3.3-17 использует жизненную эссенцию LP. Подготовьте еду, безопасную комнату и восстановление здоровья; не совершайте жертвоприношения на последних сердцах.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 0.0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "bloodmagic_altar",
+      "chapter": "pack_bloodmagic",
+      "title": "Первый кровавый алтарь",
+      "description": "Создайте кровавый алтарь и поставьте его в месте, где останется пространство для следующих уровней. Источник жидкости в алтаре и личная сеть души — разные запасы LP.",
+      "x": 1.5,
+      "y": 0.0,
+      "dependencies": [
+        "bloodmagic_intro"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:Altar",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:Altar",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Первый кровавый алтарь",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/bloodmagic_altar1.png",
+              "width": 240,
+              "height": 239
+            },
+            {
+              "type": "text",
+              "text": "Алтарь 1-го уровня: игровой снимок из руководства Blood Magic\n\nСоздайте кровавый алтарь и поставьте его в месте, где останется пространство для следующих уровней. Источник жидкости в алтаре и личная сеть души — разные запасы LP."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bloodmagic_knife",
+      "chapter": "pack_bloodmagic",
+      "title": "Жертвенный нож",
+      "description": "Возьмите нож и используйте рядом с алтарём. Он расходует ваше здоровье; следите за сердцами и пополняйте питание.",
+      "x": 3.0,
+      "y": 0.0,
+      "dependencies": [
+        "bloodmagic_altar"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:sacrificialKnife",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:sacrificialKnife",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_orb1",
+      "chapter": "pack_bloodmagic",
+      "title": "Слабая кровавая сфера",
+      "description": "Преобразуйте алмаз в алтаре первого уровня в слабую сферу. Привяжите её к себе и используйте для наполнения личной сети души.",
+      "x": 4.5,
+      "y": 0.0,
+      "dependencies": [
+        "bloodmagic_knife"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:weakBloodOrb",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:weakBloodOrb",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_divination",
+      "chapter": "pack_bloodmagic",
+      "title": "Сигил прорицания",
+      "description": "Создайте сигил прорицания. Проверяйте им количество LP и уровень алтаря, прежде чем запускать дорогой рецепт.",
+      "x": 6.0,
+      "y": 0.0,
+      "dependencies": [
+        "bloodmagic_orb1"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:divinationSigil",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:divinationSigil",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_slate1",
+      "chapter": "pack_bloodmagic",
+      "title": "Чистая пластина",
+      "description": "Преобразуйте камень в чистые пластины. Подготовьте восемь штук для развития алтаря и первых сигилов.",
+      "x": 7.5,
+      "y": 0.0,
+      "dependencies": [
+        "bloodmagic_divination"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:blankSlate",
+          "meta": 0,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:blankSlate",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_runes",
+      "chapter": "pack_bloodmagic",
+      "title": "Основа рун",
+      "description": "Сделайте восемь кровавых рун и окружите ими алтарь по схеме второго уровня. Уровень проверяйте сигилом прорицания, а не только внешним видом.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 1.5,
+      "dependencies": [
+        "bloodmagic_slate1"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book",
+      "richPages": [
+        {
+          "title": "Основа рун",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/bloodmagic_altar2.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Алтарь 2-го уровня: игровой снимок из руководства Blood Magic\n\nСделайте восемь кровавых рун и окружите ими алтарь по схеме второго уровня. Уровень проверяйте сигилом прорицания, а не только внешним видом.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bloodmagic_orb2",
+      "chapter": "pack_bloodmagic",
+      "title": "Сфера ученика",
+      "description": "В алтаре второго уровня создайте сферу ученика из изумруда. Перед началом убедитесь, что в алтаре достаточно LP.",
+      "x": 6.0,
+      "y": 1.5,
+      "dependencies": [
+        "bloodmagic_runes"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:apprenticeBloodOrb",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:apprenticeBloodOrb",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_slate2",
+      "chapter": "pack_bloodmagic",
+      "title": "Укреплённая пластина",
+      "description": "Продолжите обработку чистой пластины до укреплённой в алтаре второго уровня. Отключайте извлечение, чтобы не забрать промежуточный результат.",
+      "x": 4.5,
+      "y": 1.5,
+      "dependencies": [
+        "bloodmagic_orb2"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:reinforcedSlate",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:reinforcedSlate",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_speed",
+      "chapter": "pack_bloodmagic",
+      "title": "Руны скорости",
+      "description": "Сделайте четыре руны скорости и замените обычные руны в конструкции алтаря. Ускорение повышает требования к стабильной подаче LP.",
+      "x": 3.0,
+      "y": 1.5,
+      "dependencies": [
+        "bloodmagic_slate2"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:speedRune",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:speedRune",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_water",
+      "chapter": "pack_bloodmagic",
+      "title": "Источник воды",
+      "description": "Создайте и привяжите сигил воды. Его использование расходует LP из личной сети души, поэтому заранее пополните сферу.",
+      "x": 1.5,
+      "y": 1.5,
+      "dependencies": [
+        "bloodmagic_speed"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:waterSigil",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:waterSigil",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_sacrifice",
+      "chapter": "pack_bloodmagic",
+      "title": "Кинжал жертвоприношения",
+      "description": "Создайте кинжал жертвоприношения для существ рядом с алтарём. Это другой инструмент, не жертвенный нож игрока.",
+      "x": 0.0,
+      "y": 1.5,
+      "dependencies": [
+        "bloodmagic_water"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:daggerOfSacrifice",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:daggerOfSacrifice",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_altar3",
+      "chapter": "pack_bloodmagic",
+      "title": "Алтарь третьего уровня",
+      "description": "Постройте третий уровень с колоннами и нужными завершающими блоками. Сверьте схему вашей версии и подтвердите уровень сигилом прорицания.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 3.0,
+      "dependencies": [
+        "bloodmagic_sacrifice"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book",
+      "richPages": [
+        {
+          "title": "Алтарь третьего уровня",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/bloodmagic_altar3.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Алтарь 3-го уровня: игровой снимок из руководства Blood Magic\n\nПостройте третий уровень с колоннами и нужными завершающими блоками. Сверьте схему вашей версии и подтвердите уровень сигилом прорицания.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bloodmagic_orb3",
+      "chapter": "pack_bloodmagic",
+      "title": "Сфера мага",
+      "description": "Получите сферу мага в алтаре третьего уровня. Не запускайте рецепт без достаточного запаса и производительности LP.",
+      "x": 1.5,
+      "y": 3.0,
+      "dependencies": [
+        "bloodmagic_altar3"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:magicianBloodOrb",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:magicianBloodOrb",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_slate3",
+      "chapter": "pack_bloodmagic",
+      "title": "Наполненная пластина",
+      "description": "Доведите укреплённые пластины до наполненных. Сигилы и ритуальные предметы потребуют эти заготовки.",
+      "x": 3.0,
+      "y": 3.0,
+      "dependencies": [
+        "bloodmagic_orb3"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:imbuedSlate",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:imbuedSlate",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_air",
+      "chapter": "pack_bloodmagic",
+      "title": "Сигил воздуха",
+      "description": "Изготовьте сигил воздуха. Испытайте перемещение над безопасной площадкой: управление инерцией важнее высоты первого полёта.",
+      "x": 4.5,
+      "y": 3.0,
+      "dependencies": [
+        "bloodmagic_slate3"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:airSigil",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:airSigil",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_ritual",
+      "chapter": "pack_bloodmagic",
+      "title": "Ритуальные камни",
+      "description": "Подготовьте шестнадцать ритуальных камней. Схема ритуала включает также главный ритуальный камень и правильные стихии камней.",
+      "x": 6.0,
+      "y": 3.0,
+      "dependencies": [
+        "bloodmagic_air"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:ritualStone",
+          "meta": 0,
+          "count": 16,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:ritualStone",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_masterstone",
+      "chapter": "pack_bloodmagic",
+      "title": "Сердце ритуала",
+      "description": "Создайте главный ритуальный камень. Выберите простой ритуал и сначала проверьте требования к личной сети LP.",
+      "x": 7.5,
+      "y": 3.0,
+      "dependencies": [
+        "bloodmagic_ritual"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:masterStone",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:masterStone",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_activation",
+      "chapter": "pack_bloodmagic",
+      "title": "Кристалл активации",
+      "description": "Создайте и привяжите кристалл активации. Нажимайте им главный камень только после правильной установки всех ритуальных камней.",
+      "x": 7.5,
+      "y": 4.5,
+      "dependencies": [
+        "bloodmagic_masterstone"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:activationCrystal",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:activationCrystal",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_binding",
+      "chapter": "pack_bloodmagic",
+      "title": "Связывающий ритуал",
+      "description": "Подготовьте безопасную площадку и выполните ритуал связывания для получения связанного инструмента. Проверьте, что ритуал запитан личной сетью.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 4.5,
+      "dependencies": [
+        "bloodmagic_activation"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "bloodmagic_boundpick",
+      "chapter": "pack_bloodmagic",
+      "title": "Связанная кирка",
+      "description": "Получите связанную кирку. Разберитесь с включением и массовым режимом до использования рядом с постройками.",
+      "x": 4.5,
+      "y": 4.5,
+      "dependencies": [
+        "bloodmagic_binding"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:boundPickaxe",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:boundPickaxe",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_shard",
+      "chapter": "pack_bloodmagic",
+      "title": "Слабый осколок крови",
+      "description": "Получите слабый осколок крови подходящим связанным оружием по механике мода. Он нужен для следующего уровня алтаря.",
+      "x": 3.0,
+      "y": 4.5,
+      "dependencies": [
+        "bloodmagic_boundpick"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:weakBloodShard",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:weakBloodShard",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_altar4",
+      "chapter": "pack_bloodmagic",
+      "title": "Алтарь четвёртого уровня",
+      "description": "Постройте четвёртый уровень с крупными кровавыми кирпичами на вершинах колонн. Проверьте уровень и непрерывную подачу LP.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 1.5,
+      "y": 4.5,
+      "dependencies": [
+        "bloodmagic_shard"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book",
+      "richPages": [
+        {
+          "title": "Алтарь четвёртого уровня",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/bloodmagic_altar4.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Алтарь 4-го уровня: игровой снимок из руководства Blood Magic\n\nПостройте четвёртый уровень с крупными кровавыми кирпичами на вершинах колонн. Проверьте уровень и непрерывную подачу LP.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bloodmagic_orb4",
+      "chapter": "pack_bloodmagic",
+      "title": "Сфера мастера",
+      "description": "Получите сферу мастера в алтаре четвёртого уровня. Эта ступень открывает развитую алхимию и демонические пластины.",
+      "x": 0.0,
+      "y": 4.5,
+      "dependencies": [
+        "bloodmagic_altar4"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:masterBloodOrb",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:masterBloodOrb",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_slate4",
+      "chapter": "pack_bloodmagic",
+      "title": "Демоническая пластина",
+      "description": "Обработайте наполненные пластины до демонических. Настройте выдачу камня по одному, чтобы поток не истощал алтарь.",
+      "x": 0.0,
+      "y": 6.0,
+      "dependencies": [
+        "bloodmagic_orb4"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:demonicSlate",
+          "meta": 0,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:demonicSlate",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_armour",
+      "chapter": "pack_bloodmagic",
+      "title": "Связанная броня",
+      "description": "Соберите связанную кирасу через наполненные сокеты и кузницу душ. Подготовьте запас LP и изучите последствия истощения сети при получении урона.",
+      "x": 1.5,
+      "y": 6.0,
+      "dependencies": [
+        "bloodmagic_slate4"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:boundPlate",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:boundPlate",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_altar5",
+      "chapter": "pack_bloodmagic",
+      "title": "Алтарь пятого уровня",
+      "description": "Подготовьте маяки и постройте пятый уровень по схеме Blood Magic 1.3.3. Проверьте его сигилом прорицания до запуска следующей сферы.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 3.0,
+      "y": 6.0,
+      "dependencies": [
+        "bloodmagic_armour"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book",
+      "richPages": [
+        {
+          "title": "Алтарь пятого уровня",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/bloodmagic_altar5.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Алтарь 5-го уровня: игровой снимок из руководства Blood Magic\n\nПодготовьте маяки и постройте пятый уровень по схеме Blood Magic 1.3.3. Проверьте его сигилом прорицания до запуска следующей сферы.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bloodmagic_orb5",
+      "chapter": "pack_bloodmagic",
+      "title": "Сфера архимага",
+      "description": "Создайте сферу архимага на пятом уровне. Обеспечьте достаточную вместимость и восстановление эссенции перед длинной операцией.",
+      "x": 4.5,
+      "y": 6.0,
+      "dependencies": [
+        "bloodmagic_altar5"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:archmageBloodOrb",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:archmageBloodOrb",
+      "iconMeta": 0
+    },
+    {
+      "id": "bloodmagic_slate5",
+      "chapter": "pack_bloodmagic",
+      "title": "Эфирная пластина",
+      "description": "Доведите демоническую пластину до эфирной в алтаре пятого уровня. Это важная поздняя заготовка для магической инфраструктуры.",
+      "x": 6.0,
+      "y": 6.0,
+      "dependencies": [
+        "bloodmagic_orb5"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "AWWayofTime:bloodMagicBaseItems",
+          "meta": 27,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "AWWayofTime:bloodMagicBaseItems",
+      "iconMeta": 27
+    },
+    {
+      "id": "bloodmagic_bonus_network",
+      "chapter": "pack_bloodmagic",
+      "title": "Автоматизированная кровь",
+      "description": "По желанию свяжите производство LP, подачу камня и извлечение пластин с AE2 или трубами. Проверьте остановку при нехватке эссенции и отсутствие преждевременного извлечения.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 6.0,
+      "dependencies": [
+        "bloodmagic_slate5"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    }
+  ]
+}

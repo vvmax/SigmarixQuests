@@ -1,0 +1,857 @@
+{
+  "scope": "Referenced quest targets. Botania/IC2 checked against actual loaded registries; other mod IDs checked against original JAR bytecode or BloodMagic source. This is not a combined full-modpack gameplay test.",
+  "targets": [
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 1,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockGrinder",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockCharger",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 7,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockInscriber",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 5,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 22,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 23,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 24,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockEnergyAcceptor",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockController",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockDrive",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 35,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockEnergyCell",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockInterface",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 52,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockMolecularAssembler",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockCraftingStorage",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:item.ItemMultiMaterial",
+      "meta": 38,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockWireless",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockSecurity",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "appliedenergistics2:tile.BlockQuantumRing",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "AE2 rv3-beta-6 feature-handler registry prefixes, class definitions and MaterialType metadata"
+    },
+    {
+      "id": "AWWayofTime:Altar",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:sacrificialKnife",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:weakBloodOrb",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:divinationSigil",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:blankSlate",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:apprenticeBloodOrb",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:reinforcedSlate",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:speedRune",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:waterSigil",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:daggerOfSacrifice",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:magicianBloodOrb",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:imbuedSlate",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:airSigil",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:ritualStone",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:masterStone",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:activationCrystal",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:boundPickaxe",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:weakBloodShard",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:masterBloodOrb",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:demonicSlate",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:boundPlate",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:archmageBloodOrb",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "AWWayofTime:bloodMagicBaseItems",
+      "meta": 27,
+      "ignore_damage": false,
+      "evidence": "Original BloodMagic 1.7.10 ModItems/ModBlocks registrations; ItemComponents metadata"
+    },
+    {
+      "id": "Botania:lexicon",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:altar",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:livingrock",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:livingwood",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:twigWand",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:spreader",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:pool",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 1,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 2,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:runeAltar",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:rune",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:rune",
+      "meta": 8,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaTablet",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaRing",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:spark",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:terraPlate",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 4,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:alfheimPortal",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 7,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:pylon",
+      "meta": 2,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 5,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:manaResource",
+      "meta": 14,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Botania:brewery",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "Thaumcraft:WandCasting",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemThaumonomicon",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemThaumometer",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemInkwell",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemResource",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemResource",
+      "meta": 1,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemResource",
+      "meta": 2,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemGoggles",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemChestplateRobe",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:blockAlchemyFurnace",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:blockJar",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:blockTube",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:BootsTraveller",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:GolemBell",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemGolemPlacer",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:FocusExcavation",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemResonator",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemRingRunic",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemSanityChecker",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemSanitySoap",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemResource",
+      "meta": 16,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "Thaumcraft:ItemPrimalCrusher",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Thaumcraft 4.2.3.5 ConfigItems/ConfigBlocks registration bytecode; en_US variant names"
+    },
+    {
+      "id": "IC2:itemRubber",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemToolForgeHammer",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemToolCutter",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemPartCircuit",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockGenerator",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemCable",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockElectric",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 2,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 3,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 4,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 5,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine2",
+      "meta": 4,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemToolWrench",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine2",
+      "meta": 5,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine2",
+      "meta": 3,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemPartCircuitAdv",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockElectric",
+      "meta": 1,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemToolDrill",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 13,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockGenerator",
+      "meta": 1,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockGenerator",
+      "meta": 3,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockGenerator",
+      "meta": 5,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 11,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine",
+      "meta": 14,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:blockMachine2",
+      "meta": 8,
+      "ignore_damage": false,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "IC2:itemArmorQuantumChestplate",
+      "meta": 0,
+      "ignore_damage": true,
+      "evidence": "Native 1.7.10 Forge registry and creative variants (official target mod)"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 27,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:witchesovenidle",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 28,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 14,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 31,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 32,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 34,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:altar",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 1,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 10,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:distilleryidle",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:kettle",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:spinningwheel",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 15,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 39,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:poppetshelf",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 8,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:ingredient",
+      "meta": 9,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    },
+    {
+      "id": "witchery:cauldron",
+      "meta": 0,
+      "ignore_damage": false,
+      "evidence": "Witchery 0.24.1 WitcheryBlocks/BlockUtil and ItemGeneral constructor bytecode"
+    }
+  ],
+  "source_artifacts": [
+    {
+      "file": "ae2.jar",
+      "sha256": "0ec8cd1ede7f7bbbf73030eba8b06ebcc0583045ff4cc9aec080b1736581da71"
+    },
+    {
+      "file": "thaumcraft.jar",
+      "sha256": "3dba9786966974701578a658d1bb369bf35bdf5f363079f5ac9c4910a39113be"
+    },
+    {
+      "file": "witchery.jar",
+      "sha256": "68c331f624cea6c0827a31e96a6dce2e75461227c42da70f11ba765a8c6a8cec"
+    },
+    {
+      "file": "bloodmagic-src.zip",
+      "sha256": "e40b529b3d96225b1f3b2214d3c9cd482f2074eb50df8bc68a0ecbb15f419113"
+    }
+  ]
+}

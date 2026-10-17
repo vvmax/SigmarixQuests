@@ -21,7 +21,7 @@ public final class QuestGuides {
             Consumer<GuiScreen> handler=pages.get(path); if(handler!=null) { handler.accept(parent); return true; }
             QuestGuideEvent.Open event=new QuestGuideEvent.Open(path,parent); MinecraftForge.EVENT_BUS.post(event); if(event.opened) return true;
             Minecraft.getMinecraft().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(QuestText.tr("Guide is not available")+": "+path));
-        } catch(RuntimeException ex) { Minecraft.getMinecraft().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText("Guide: "+ex.getMessage())); }
+        } catch(RuntimeException ex) { Minecraft.getMinecraft().thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component("Guide: "+ex.getMessage())); }
         return false;
     }
     private QuestGuides() {}

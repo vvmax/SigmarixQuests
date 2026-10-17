@@ -1,44 +1,51 @@
 {
-  "version": "0.25.0-SNAPSHOT",
+  "version": "0.26.0-SNAPSHOT",
   "minecraft": "1.7.10",
   "forge": "10.13.4.1614",
   "java": 8,
-  "reference": "FTBQuests 1202.9.0.15 / FTBLib 5.4.7.2, Minecraft 1.12.2 standard theme",
-  "verified_utc": "2026-10-17T13:47:35.422403+00:00",
-  "artifact": "quests1710-0.25.0-SNAPSHOT.jar",
-  "artifact_sha256": "ba4f2636dc984983ef3b8249718c4eb2a937b405a69a9a1d1cd9fbc7a510f04c",
-  "artifact_bytes": 1252995,
+  "verified_at": "2026-10-17T18:06:35.815325+03:00",
+  "artifact": "quests1710-0.26.0-SNAPSHOT.jar",
+  "artifact_bytes": 1308426,
+  "artifact_sha256": "c71325755ffb4919d2e693abb4a707d0eea01dd8f0676c0c207f4bb803020f49",
   "tests": {
-    "junit": 62,
-    "forge_integration": 153,
+    "junit": 68,
+    "forge_integration": 154,
     "python_migration": 43,
     "failures": 0
   },
-  "pixel_reports": {
-    "direct_records": 114,
-    "full_854x480_records": 108,
-    "different_pixels": 0,
-    "records_overlap": true,
-    "conditions": "See PARITY_WORKLOG.md and individual report masks; desktop editor is 835x761."
+  "quest_pack": {
+    "chapters": 6,
+    "quests": 180,
+    "non_consuming_item_checks": 139,
+    "explicit_manual_checks": 41,
+    "original_game_illustrations": 17,
+    "files_external_to_jar": true,
+    "image_and_graph_verifier": "PASS",
+    "registry_evidence": "quest-packs/ru-six-mods-1.7.10/registry-evidence.json"
   },
-  "combined_integrated_world": {
-    "result": "PASS",
-    "duration": "2m 17s",
-    "botania": "official r1.8-249 / Baubles 1.0.1.10",
+  "localization": {
+    "all_port_and_included_native_english_keys_have_russian_entries": true,
+    "formatting_arguments_checked": true,
+    "dynamic_russian_messages_and_literal_input_client_preview": "PASS",
+    "other_mods_and_operating_system_diagnostics_not_translated": true
+  },
+  "client_validation": {
+    "illustrated_russian_book_preview": "PASS",
+    "combined_integrated_world": "PASS (2m 12s)",
     "integrations": [
+      "official Botania r1.8-249",
       "IC2 EnergyNet",
-      "Botania mana bursts",
       "ProjectE",
       "CustomNPCs",
       "BuildCraft 7.1.23",
       "NEI"
     ],
-    "details": "PASS: real client/server handshake, completion, one-time claim, inventory sync, editing, stale revision rejection, world restart persistence, manual task confirmation, start action, task dependency sync, graphical toast, guide rendering, external guide events and registry, pinned HUD and restart persistence, notification history, custom click callback, confirmed file action, permission-checked network command, object form save, native desktop text editor save, native device container, checked device binding, linked 2x2 world screen and synchronized progress, world chapter map, fullscreen/hideIcons, input-only held icon, configured public detectors, scripted task button, conditional shop hook, offline collectors and persistent crate-opener roll, custom icon editor, asynchronous HTTP textures and synchronized texture/name/tint, real IC2 EnergyNet transfer, real Botania mana burst, team GUI, leaderboard and server-checked disband, real BuildCraft engine and RF/MJ conversion, nested chapter groups, inherited shapes, map illustration link, empty quest and chapter-bound screen, real NEI recipes, uses, loot and GUI, native JavaScript, stages, skills, pack mode isolation and restart, real CustomNPCs tasks/rewards and restart persistence, real ProjectE wallet submission, sync and persistence"
+    "coverage": "Desktop/native form saves, resource transfers, stale edits, automation, save/restart. Final command-output label changes additionally checked by component tests and final build. The entire user modpack was not run together."
   },
   "jar_audit": {
-    "test_fixture_classes": 0,
-    "bundled_external_api_classes": 0,
-    "gtnh_runtime_dependencies": 0
+    "test_fixtures": 0,
+    "external_api_classes": 0,
+    "bundled_six_mod_chapters": 0
   },
-  "boundaries": "Independent book format/API; see COMPATIBILITY.md. Recorded comparisons do not cover every resolution or interaction."
+  "visual_reference": "Earlier 0.25 pixel reports retain their recorded scope. New Russian text deliberately completes untranslated native labels."
 }

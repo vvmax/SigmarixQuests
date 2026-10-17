@@ -1,0 +1,1008 @@
+{
+  "format": 2,
+  "chapters": [
+    {
+      "id": "pack_witchery",
+      "title": "Witchery — Травы, круги и духи",
+      "description": "Путь от первых ресурсов до развитой инфраструктуры. Рецепты смотрите в NEI: дополнения сборки могут их менять. Предметные задачи ничего не расходуют. Задачи с кнопкой подтверждения проверяются вами вручную.",
+      "icon": "witchery:altar",
+      "defaultQuestShape": "circle",
+      "images": [
+        {
+          "resource": "sigmarixquestpack:textures/guides/witchery_oven.png",
+          "x": -4,
+          "y": 4,
+          "width": 4,
+          "height": 4.0,
+          "hover": [
+            "Ведьмина печь: игровая панель"
+          ]
+        }
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "witchery_intro",
+      "chapter": "pack_witchery",
+      "title": "Ведьмин сад",
+      "description": "Эта глава рассчитана на Witchery 0.24.1. Мод опирается на книги, растения, природную силу алтаря и ритуалы. Некоторые пути меняют персонажа: изучайте последствия до активации.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 0.0,
+      "dependencies": [],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_plants",
+      "chapter": "pack_witchery",
+      "title": "Первые культуры",
+      "description": "Соберите и вырастите мандрагору, белладонну, водяной артишок и подснежник. Мандрагору собирайте осторожно; для ночного сбора подготовьте безопасную грядку.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 1.5,
+      "y": 0.0,
+      "dependencies": [
+        "witchery_intro"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_jars",
+      "chapter": "pack_witchery",
+      "title": "Обожжённые глиняные сосуды",
+      "description": "Подготовьте восемь обожжённых сосудов для сбора паров печи. Без пустых сосудов полезные побочные продукты не будут нормально накапливаться.",
+      "x": 3.0,
+      "y": 0.0,
+      "dependencies": [
+        "witchery_plants"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 27,
+          "count": 8,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 27
+    },
+    {
+      "id": "witchery_oven",
+      "chapter": "pack_witchery",
+      "title": "Ведьмина печь",
+      "description": "Установите ведьмину печь, топливо и сосуды. Проверяйте соответствие древесины и побочного продукта в книге и NEI.",
+      "x": 4.5,
+      "y": 0.0,
+      "dependencies": [
+        "witchery_jars"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:witchesovenidle",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:witchesovenidle",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Ведьмина печь",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/witchery_oven.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Ведьмина печь: игровая панель\n\nУстановите ведьмину печь, топливо и сосуды. Проверяйте соответствие древесины и побочного продукта в книге и NEI."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "witchery_fumes",
+      "chapter": "pack_witchery",
+      "title": "Зловонные испарения",
+      "description": "Получите зловонные испарения в печи. Побочные продукты зависят от сырья и вероятности: запасите больше одной заготовки.",
+      "x": 6.0,
+      "y": 0.0,
+      "dependencies": [
+        "witchery_oven"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 28,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 28
+    },
+    {
+      "id": "witchery_exhale",
+      "chapter": "pack_witchery",
+      "title": "Выдох Рогатого",
+      "description": "Получите выдох Рогатого в ведьминой печи. Используйте указанную в рецепте древесину и держите свободные сосуды.",
+      "x": 7.5,
+      "y": 0.0,
+      "dependencies": [
+        "witchery_fumes"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 31,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 31
+    },
+    {
+      "id": "witchery_breath",
+      "chapter": "pack_witchery",
+      "title": "Дыхание Богини",
+      "description": "Добудьте дыхание Богини. Не заменяйте подходящую породу дерева другой только потому, что обычный уголь получается из обеих.",
+      "x": 7.5,
+      "y": 1.5,
+      "dependencies": [
+        "witchery_exhale"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 32,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 32
+    },
+    {
+      "id": "witchery_cauldron",
+      "chapter": "pack_witchery",
+      "title": "Ведьмин чан",
+      "description": "Установите ведьмин чан с нагревом и подготовьте ингредиенты начальных варев. Рецепты без требования силы можно выполнять до постройки алтаря; остальные требования смотрите в NEI. Соблюдайте порядок ингредиентов. Не путайте чан с отдельным ведьминым котлом.",
+      "x": 6.0,
+      "y": 1.5,
+      "dependencies": [
+        "witchery_breath"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:cauldron",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:cauldron",
+      "iconMeta": 0
+    },
+    {
+      "id": "witchery_mutandis",
+      "chapter": "pack_witchery",
+      "title": "Мутандис",
+      "description": "Создайте мутандис и применяйте к подходящим растениям. Он помогает получить редкие растения, но результат не гарантирован с первого применения.",
+      "x": 4.5,
+      "y": 1.5,
+      "dependencies": [
+        "witchery_cauldron"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 14,
+          "count": 4,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 14
+    },
+    {
+      "id": "witchery_woods",
+      "chapter": "pack_witchery",
+      "title": "Рябина, ольха и боярышник",
+      "description": "Получите ведьмины саженцы и выращивайте их раздельно. Соберите древесину и листья: разные породы дают разные пары и участвуют в ритуалах.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 3.0,
+      "y": 1.5,
+      "dependencies": [
+        "witchery_mutandis"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_magic",
+      "chapter": "pack_witchery",
+      "title": "Запах магии",
+      "description": "Получите запах магии и сохраните для последующих рецептов. Организуйте отдельное хранилище паров, чтобы не перепутать похожие сосуды.",
+      "x": 1.5,
+      "y": 1.5,
+      "dependencies": [
+        "witchery_woods"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 34,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 34
+    },
+    {
+      "id": "witchery_altar",
+      "chapter": "pack_witchery",
+      "title": "Алтарь природы",
+      "description": "Изготовьте шесть блоков алтаря и соберите конструкцию 2×3. Взаимодействуйте с ней и убедитесь, что появилась общая шкала силы.",
+      "x": 0.0,
+      "y": 1.5,
+      "dependencies": [
+        "witchery_magic"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:altar",
+          "meta": 0,
+          "count": 6,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:altar",
+      "iconMeta": 0,
+      "richPages": [
+        {
+          "title": "Алтарь природы",
+          "elements": [
+            {
+              "type": "image",
+              "resource": "sigmarixquestpack:textures/guides/witchery_altar.png",
+              "width": 240,
+              "height": 240
+            },
+            {
+              "type": "text",
+              "text": "Алтарь Witchery: игровая панель\n\nИзготовьте шесть блоков алтаря и соберите конструкцию 2×3. Взаимодействуйте с ней и убедитесь, что появилась общая шкала силы."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "witchery_nature",
+      "chapter": "pack_witchery",
+      "title": "Сад вокруг алтаря",
+      "description": "Посадите вокруг алтаря разнообразные деревья, цветы и культуры. Сравните запас силы и восстановление до и после посадок: один вид растения не даёт бесконечного прироста.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 0.0,
+      "y": 3.0,
+      "dependencies": [
+        "witchery_altar"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_chalice",
+      "chapter": "pack_witchery",
+      "title": "Чаша",
+      "description": "Создайте чашу и разместите на алтаре. Другие усилители тоже полезны, но сначала проверьте, что каждый установленный предмет действительно учитывается.",
+      "x": 1.5,
+      "y": 3.0,
+      "dependencies": [
+        "witchery_nature"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 1,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 1
+    },
+    {
+      "id": "witchery_candelabra",
+      "chapter": "pack_witchery",
+      "title": "Канделябр",
+      "description": "Сделайте канделябр для алтаря. После украшения снова проверьте доступную силу и скорость её восстановления.",
+      "x": 3.0,
+      "y": 3.0,
+      "dependencies": [
+        "witchery_chalice"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 0
+    },
+    {
+      "id": "witchery_attuned",
+      "chapter": "pack_witchery",
+      "title": "Настроенный камень",
+      "description": "Подготовьте настроенный камень. Для некоторых действий нужен уже заряженный вариант; обычный настроенный камень не всегда подходит.",
+      "x": 4.5,
+      "y": 3.0,
+      "dependencies": [
+        "witchery_candelabra"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 10,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 10
+    },
+    {
+      "id": "witchery_distillery",
+      "chapter": "pack_witchery",
+      "title": "Перегонный куб",
+      "description": "Установите перегонный куб в пределах действия алтаря. Добавьте правильные ингредиенты и сосуды; ему нужна природная сила.",
+      "x": 6.0,
+      "y": 3.0,
+      "dependencies": [
+        "witchery_attuned"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:distilleryidle",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:distilleryidle",
+      "iconMeta": 0
+    },
+    {
+      "id": "witchery_kettle",
+      "chapter": "pack_witchery",
+      "title": "Ведьмин котёл",
+      "description": "Установите котёл для варки рецептов соответствующей ветви. Не путайте его с более поздним ведьминым чаном: у устройств разные механики.",
+      "x": 7.5,
+      "y": 3.0,
+      "dependencies": [
+        "witchery_distillery"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:kettle",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:kettle",
+      "iconMeta": 0
+    },
+    {
+      "id": "witchery_spinning",
+      "chapter": "pack_witchery",
+      "title": "Прялка",
+      "description": "Поставьте прялку рядом с источником силы алтаря. Проверьте рецепт нити с правильными дополнительными ингредиентами.",
+      "x": 7.5,
+      "y": 4.5,
+      "dependencies": [
+        "witchery_kettle"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:spinningwheel",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:spinningwheel",
+      "iconMeta": 0
+    },
+    {
+      "id": "witchery_mutandis2",
+      "chapter": "pack_witchery",
+      "title": "Мутандис экстремис",
+      "description": "Изготовьте усиленный мутандис. Используйте его по рецепту и не тратьте весь запас на случайные превращения.",
+      "x": 6.0,
+      "y": 4.5,
+      "dependencies": [
+        "witchery_spinning"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 15,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 15
+    },
+    {
+      "id": "witchery_luck",
+      "chapter": "pack_witchery",
+      "title": "Капля удачи",
+      "description": "Получите каплю удачи через развитую алхимию Witchery. Сначала подготовьте промежуточные пары и достаточный запас силы алтаря.",
+      "x": 4.5,
+      "y": 4.5,
+      "dependencies": [
+        "witchery_mutandis2"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 39,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 8
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 39
+    },
+    {
+      "id": "witchery_circles",
+      "chapter": "pack_witchery",
+      "title": "Первый круговой ритуал",
+      "description": "Изготовьте ритуальный мел, нарисуйте круг нужного размера и проведите простой ритуал из книги. Соблюдайте положение центрального глифа и требования к силе.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 3.0,
+      "y": 4.5,
+      "dependencies": [
+        "witchery_luck"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_poppets",
+      "chapter": "pack_witchery",
+      "title": "Защитные куклы",
+      "description": "Создайте полезную защитную куклу и привяжите её к своему персонажу. Проверьте условия действия, хранение и расход заряда либо самого предмета.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 1.5,
+      "y": 4.5,
+      "dependencies": [
+        "witchery_circles"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_shelf",
+      "chapter": "pack_witchery",
+      "title": "Полка для кукол",
+      "description": "Создайте полку для кукол и поместите на неё настроенную защиту. Убедитесь, что зона с полкой остаётся загруженной, когда она вам нужна.",
+      "x": 0.0,
+      "y": 4.5,
+      "dependencies": [
+        "witchery_poppets"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:poppetshelf",
+          "meta": 0,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:poppetshelf",
+      "iconMeta": 0
+    },
+    {
+      "id": "witchery_broom",
+      "chapter": "pack_witchery",
+      "title": "Метла",
+      "description": "Изготовьте метлу и подготовьте её зачарование по книге. Обычная метла ещё не является полноценным летающим транспортом.",
+      "x": 0.0,
+      "y": 6.0,
+      "dependencies": [
+        "witchery_shelf"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 8,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 8
+    },
+    {
+      "id": "witchery_enchanted",
+      "chapter": "pack_witchery",
+      "title": "Зачарованная метла",
+      "description": "Завершите ритуал зачарования и испытайте полёт над безопасной площадкой. Подготовьте место для посадки до дальней поездки.",
+      "x": 1.5,
+      "y": 6.0,
+      "dependencies": [
+        "witchery_broom"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "item",
+          "target": "witchery:ingredient",
+          "meta": 9,
+          "count": 1,
+          "consume": false,
+          "nbtMode": "ignore"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "witchery:ingredient",
+      "iconMeta": 9
+    },
+    {
+      "id": "witchery_spirit",
+      "chapter": "pack_witchery",
+      "title": "Мир духов",
+      "description": "Подготовьте настой сна и посетите мир духов по механике Witchery. Заранее изучите кошмары, способы возвращения и доступное там снаряжение.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 3.0,
+      "y": 6.0,
+      "dependencies": [
+        "witchery_enchanted"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_infusion",
+      "chapter": "pack_witchery",
+      "title": "Первое насыщение",
+      "description": "Выберите доступное насыщение и проведите соответствующий ритуал. Подготовьте ингредиенты и изучите ограничения сочетания способностей до использования.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 4.5,
+      "y": 6.0,
+      "dependencies": [
+        "witchery_spirit"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": false,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_bonus_vampire",
+      "chapter": "pack_witchery",
+      "title": "Путь вампира — по желанию",
+      "description": "По желанию начните путь вампира и выполните первое обучение согласно книгам Witchery. Это отдельная ветвь с ограничениями; превращение не требуется для основной главы.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 6.0,
+      "y": 6.0,
+      "dependencies": [
+        "witchery_cauldron"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    },
+    {
+      "id": "witchery_bonus_werewolf",
+      "chapter": "pack_witchery",
+      "title": "Путь оборотня — по желанию",
+      "description": "По желанию начните путь оборотня и выполните первое задание этой ветви. Не пытайтесь обязательно совместить его с вампиризмом: выбирайте подходящий своему персонажу путь.\n\nРучная проверка: выполните описанное и нажмите кнопку подтверждения задачи. Состояние мира или исследования этот квест автоматически не проверяет.",
+      "x": 7.5,
+      "y": 6.0,
+      "dependencies": [
+        "witchery_cauldron"
+      ],
+      "tasks": [
+        {
+          "id": "goal",
+          "type": "check",
+          "manual": true,
+          "title": "Подтвердить выполнение описанных действий"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "experience",
+          "type": "xp",
+          "count": 16
+        },
+        {
+          "id": "supplies",
+          "type": "item",
+          "item": "minecraft:bread",
+          "count": 3
+        }
+      ],
+      "optional": true,
+      "icon": "minecraft:book"
+    }
+  ]
+}

@@ -37,6 +37,7 @@ public final class QuestToasts extends Gui {
                 mc.getTextureManager().bindTexture(new ResourceLocation("sigmarixquests:textures/reference/toasts.png"));GL11.glColor4f(1,1,1,1);new Gui().drawTexturedModalRect(x,y,0,0,160,32);
                 int titleColor="chapter".equals(t.completion)?0xFF88FF:0xFFFF00;String title=t.completion!=null && !t.completion.isEmpty()?StatCollector.translateToLocal("ftbquests."+t.completion+".completed"):t.reward!=null?StatCollector.translateToLocal("ftbquests.reward.collected"):t.task!=null?StatCollector.translateToLocal("ftbquests.task.completed"):t.text.equals("Quest complete")?StatCollector.translateToLocal("ftbquests.quest.completed"):t.title;
                 String subtitle=t.quest!=null?QuestTaskLabels.quest(t.quest):t.completion!=null && !t.completion.isEmpty()?(t.completion.equals("file") && t.title.isEmpty()?"FTB Quests":t.title):t.reward!=null?QuestTaskLabels.reward(t.reward):t.task!=null?QuestTaskLabels.title(t.task):t.text.equals("Quest complete")?t.title:t.text;
+                title=QuestText.tr(title);subtitle=QuestText.tr(subtitle);
                 List<String> lines=mc.fontRenderer.listFormattedStringToWidth(subtitle,125);
                 if(lines.size()==1){mc.fontRenderer.drawString(title,x+30,y+7,0xFF000000|titleColor);mc.fontRenderer.drawString(lines.get(0),x+30,y+18,0xFFFFFFFF);}
                 else if(delta<1500){int alpha=((int)(Math.max(0,Math.min(1,(1500-delta)/300F))*255)<<24)|0x04000000;mc.fontRenderer.drawString(title,x+30,y+11,alpha|titleColor);}

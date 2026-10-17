@@ -22,11 +22,13 @@ public final class QuestCore {
         public QuestPresentation.Theme theme=new QuestPresentation.Theme();
         public List<QuestPresentation.Style> styles=new ArrayList<QuestPresentation.Style>();
         public String title = "";
+        public String chapterDirectory="";
         public List<Chapter> chapters = new ArrayList<Chapter>();
         public List<Quest> quests = new ArrayList<Quest>();
         public Map<String, LootSettings> lootSettings = new LinkedHashMap<String, LootSettings>();
         public Map<String, List<Reward>> lootTables = new LinkedHashMap<String, List<Reward>>();
         public Map<String, Quest> validate() {
+            if(chapterDirectory==null)throw new IllegalArgumentException("Invalid chapter directory");if(!chapterDirectory.isEmpty())QuestBookFiles.directory(chapterDirectory);
             QuestPresentation.metadata(title,"",icon,iconMeta,iconNbt);QuestPresentation.tags(tags);
             if(defaultAutoClaim==null || !Arrays.asList("disabled","enabled","no_toast","invisible").contains(defaultAutoClaim))throw new IllegalArgumentException("Invalid default auto claim");
             if (format < 1 || format > 2 || title == null || title.length() > 256 || quests == null || chapters == null || lootTables == null || lootSettings == null || quests.size() > 4096)

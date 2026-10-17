@@ -73,11 +73,11 @@ public final class ClientProxy extends CommonProxy {
                     try { Class.forName("dev.sigmarix.quests.client.QuestNEI").getMethod("refresh").invoke(null); neiRevision=received.revision; }
                     catch(ReflectiveOperationException ex) { throw new IllegalStateException("NEI quest variants refresh failed",ex); }
                 }
-                if(opening) { opening=false; if(received.book.disableGui && !received.canEdit) mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText("Quest GUI is disabled by this book")); else mc.displayGuiScreen(new QuestBookScreen()); }
+                if(opening) { opening=false; if(received.book.disableGui && !received.canEdit) mc.thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component("Quest GUI is disabled by this book")); else mc.displayGuiScreen(new QuestBookScreen()); }
                 else if(mc.currentScreen instanceof QuestBookScreen) ((QuestBookScreen)mc.currentScreen).refresh();
                 else if(mc.currentScreen instanceof QuestEditorScreen) ((QuestEditorScreen)mc.currentScreen).saved(snapshot);
                 else if(mc.currentScreen instanceof QuestObjectScreen) ((QuestObjectScreen)mc.currentScreen).saved(snapshot);
-            } catch(RuntimeException ex) { mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText("Quest sync failed: "+ex.getMessage())); }
+            } catch(RuntimeException ex) { mc.thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component("Quest sync failed: "+ex.getMessage())); }
         }
     }
 }

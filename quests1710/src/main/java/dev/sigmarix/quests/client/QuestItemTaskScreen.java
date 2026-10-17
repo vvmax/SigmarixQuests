@@ -25,7 +25,7 @@ public final class QuestItemTaskScreen extends QuestLibraryScreen {
     @Override public void initGui() {
         grid=new QuestCompactGrid(examples.size(),36); String title=net.minecraft.util.StatCollector.translateToLocalFormatted("ftbquests.task.ftbquests.item.valid_for",QuestTaskLabels.title(task)); w=Math.max(156,Math.min(width-8,fontRendererObj.getStringWidth(title)+12)); gridHeight=Math.min(160,Math.max(1,grid.height)); h=gridHeight+53; x=(width-w)/2; y=(height-h)/2; gridX=x+(w-144)/2;
         buttonList.clear(); buttonList.add(new QuestFlatButton(0,gridX-1,y+gridHeight+28,70,20,QuestText.tr("Back")));
-        GuiButton submit=new QuestFlatButton(1,gridX+75,y+gridHeight+28,70,20,"Submit");
+        GuiButton submit=new QuestFlatButton(1,gridX+75,y+gridHeight+28,70,20,QuestText.tr("Submit"));
         submit.enabled=task.consume && !task.craftingOnly && !Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(questId+":"+taskId)) && "available".equals(ClientProxy.snapshot.states.get(questId)); buttonList.add(submit);
     }
     @Override protected void actionPerformed(GuiButton button) { if(button.id==1 && ClientProxy.snapshot.revision==revision) { QuestNetwork.Action action=new QuestNetwork.Action(); action.action="click_task"; action.id=questId; action.text=taskId; ClientProxy.send(action); } mc.displayGuiScreen(parent); }
