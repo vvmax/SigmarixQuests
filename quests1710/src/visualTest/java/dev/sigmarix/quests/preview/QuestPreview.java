@@ -20,7 +20,8 @@ public final class QuestPreview {
     private String worldName="QuestSmoke-"+System.currentTimeMillis();
     private QuestCore.Book original;
     private String remoteImage;
-    private long oldRevision;
+    private long oldRevision,lastSmokeStep,lastBookAttempt;
+    private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
     private volatile boolean nativeRequested,nativePassed,nativeVerify,nativeVerified;
@@ -179,6 +180,7 @@ public final class QuestPreview {
         if(++waiting%100==0) System.out.println("Quest smoke stage="+stage+" ticks="+waiting+" snapshot="+(ClientProxy.snapshot==null?"none":ClientProxy.snapshot.message)+" gui="+(mc.currentScreen==null?"none":mc.currentScreen.getClass().getSimpleName())+" player="+(mc.thePlayer!=null));
         if(waiting>2400) throw new IllegalStateException("Quest smoke timeout at stage "+stage);
         if(mc.thePlayer==null || mc.theWorld==null || waiting%5!=0) return;
+        long realNow=System.nanoTime(); if(realNow-lastSmokeStep<java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(200)) return; lastSmokeStep=realNow;
         QuestNetwork.Snapshot snap=ClientProxy.snapshot;
         switch(stage) {
             case 0: if(waiting<20 || snap==null || snap.book==null) return;
@@ -282,9 +284,10 @@ public final class QuestPreview {
                 QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:"+QuestService.JSON.toJson(remoteImage)+",color:16763972}"; manual.tasks.add(check); edit.book.quests.add(manual);
                 QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
                 QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
-                ClientProxy.send(edit); stage=5; break;
+                pendingBookEdit=edit; lastBookAttempt=System.nanoTime(); ClientProxy.send(edit); stage=5; break;
             case 5:
-                if(snap==null || snap.revision==oldRevision) return;
+                if(snap==null) return;
+                if(snap.revision==oldRevision) { if(pendingBookEdit!=null && realNow-lastBookAttempt>java.util.concurrent.TimeUnit.SECONDS.toNanos(1)) { ClientProxy.send(pendingBookEdit); lastBookAttempt=realNow; } return; }
                 if(!snap.book.title.equals("Network edit smoke")) throw new IllegalStateException("Editor did not save");
                 QuestNetwork.Action stale=new QuestNetwork.Action(); stale.action="save"; stale.revision=oldRevision; stale.book=original;
                 ClientProxy.send(stale); stage=6; break;
@@ -457,7 +460,10 @@ public final class QuestPreview {
             case 19:
                 if(snap==null || !snap.message.equals("Device binding updated")) return;
                 QuestDeviceContainer progressContainer=(QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots;
-                if(!progressContainer.tile.quest.equals("chapter:start") || progressContainer.percent!=50) return;
+                int requiredQuests=0,completedQuests=0;
+                for(QuestCore.Quest entry:snap.book.quests) if(QuestCore.required(entry) && QuestPresentation.within(snap.book,entry.chapter,"start")) { requiredQuests++; if("complete".equals(snap.states.get(entry.id)) || "claimed".equals(snap.states.get(entry.id))) completedQuests++; }
+                int expectedProgress=requiredQuests==0?100:(int)Math.round(completedQuests*100D/requiredQuests);
+                if(!progressContainer.tile.quest.equals("chapter:start") || progressContainer.percent!=expectedProgress) return;
                 mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=8; waiting=0; break;
             case 8:
                 if(waiting<30) return;
