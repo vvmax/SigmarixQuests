@@ -6,11 +6,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 /** Real BC 7.1.23 engine tick/output path; no direct calls to the quest receiver. */
 public final class BuildCraftQuestSmoke {
     private static EntityPlayerMP player;
+    private static java.util.UUID recipient;
     private static World world;
     private static int x,y,z,ticks;
     public static void start(EntityPlayerMP owner) {
-        player=owner; world=owner.worldObj; x=(int)Math.floor(owner.posX)+4; y=(int)Math.floor(owner.posY); z=(int)Math.floor(owner.posZ)+5; ticks=0;
-        world.setBlock(x,y,z,QuestBlocks.devices[0]); QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); tile.owner=owner.getUniqueID(); tile.quest="smoke-mj"; tile.task="charge"; tile.bindingChanged();
+        player=owner; recipient=java.util.UUID.randomUUID(); world=owner.worldObj; x=(int)Math.floor(owner.posX)+4; y=(int)Math.floor(owner.posY); z=(int)Math.floor(owner.posZ)+5; ticks=0;
+        world.setBlock(x,y,z,QuestBlocks.devices[0]); QuestDevice tile=(QuestDevice)world.getTileEntity(x,y,z); tile.owner=recipient; tile.quest="smoke-mj"; tile.task="charge"; tile.bindingChanged();
         world.setBlock(x-1,y,z,buildcraft.BuildCraftCore.engineBlock,3,3);
         buildcraft.core.lib.engines.TileEngineBase engine=(buildcraft.core.lib.engines.TileEngineBase)world.getTileEntity(x-1,y,z);
         engine.orientation=ForgeDirection.EAST; engine.energy=500; engine.isRedstonePowered=true;
@@ -18,8 +19,9 @@ public final class BuildCraftQuestSmoke {
     }
     public static boolean tick() {
         if(player==null) return false; ticks++;
-        if(QuestsMod.service.progress().value(player.getUniqueID(),"smoke-mj","charge")>=1600000) {
-            System.out.println("Quest BuildCraft PASS: real 7.1.23 engine delivered RF, credited 1600000 micro-MJ");
+        if(QuestsMod.service.progress().value(recipient,"smoke-mj","charge")>=1600000) {
+            if(QuestsMod.service.progress().value(player.getUniqueID(),"smoke-mj","charge")!=0) throw new IllegalStateException("Resource progress went to the online bystander instead of the offline owner");
+            System.out.println("Quest BuildCraft PASS: real 7.1.23 engine delivered RF to offline owner, credited 1600000 micro-MJ");
             world.setBlockToAir(x-1,y,z); world.setBlockToAir(x,y,z); world.setBlockToAir(x-1,y-1,z); player=null; return true;
         }
         if(ticks>400) throw new IllegalStateException("BuildCraft engine did not power the quest terminal");

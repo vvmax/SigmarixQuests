@@ -6,7 +6,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 /** Real server checks for native stages, skills, JavaScript callbacks and pack modes. */
 public final class NativeQuestSmoke {
     private static String profile,original;
-    private static int storageX,storageY,storageZ;
+    private static int storageX,storageY,storageZ,offlineX,offlineY,offlineZ;
+    private static UUID offlineOwner;
     public static int[] storagePosition() { return new int[]{storageX,storageY,storageZ}; }
     public static void run(EntityPlayerMP player) throws Exception {
         QuestService main=QuestsMod.service; UUID id=player.getUniqueID();
@@ -40,11 +41,25 @@ public final class NativeQuestSmoke {
         QuestCore.Quest chestQuest=new QuestCore.Quest(); chestQuest.id="storage-marker"; chestQuest.title="Chest smoke";
         QuestCore.Task input=new QuestCore.Task(); input.id="input"; input.type="item"; input.target="minecraft:iron_ingot"; input.count=2; input.consume=true; chestQuest.tasks.add(input); utilities.quests.add(chestQuest);
         QuestCore.Quest meter=new QuestCore.Quest(); meter.id="storage-meter"; meter.title="Progress detector"; QuestCore.Task power=new QuestCore.Task(); power.id="power"; power.type="energy"; power.count=100; meter.tasks.add(power); utilities.quests.add(meter);
-        Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); main.quests=utilityQuests;
+        QuestCore.Quest offline=new QuestCore.Quest(); offline.id="offline-machine"; offline.title="Offline resource machine"; offline.optional=true; offline.autoClaim=true;
+        QuestCore.Task offlineRf=new QuestCore.Task(); offlineRf.id="rf"; offlineRf.type="energy"; offlineRf.count=100; offline.tasks.add(offlineRf);
+        QuestCore.Task offlineFluid=new QuestCore.Task(); offlineFluid.id="water"; offlineFluid.type="fluid"; offlineFluid.target="water"; offlineFluid.count=250; offline.tasks.add(offlineFluid);
+        QuestCore.Task offlineItems=new QuestCore.Task(); offlineItems.id="items"; offlineItems.type="item"; offlineItems.target="minecraft:iron_ingot"; offlineItems.count=2; offlineItems.consume=true; offline.tasks.add(offlineItems);
+        QuestCore.Reward offlineReward=new QuestCore.Reward(); offlineReward.id="reward"; offlineReward.item="minecraft:diamond"; offline.rewards.add(offlineReward); utilities.quests.add(offline);
+        Map<String,QuestCore.Quest> previousQuests=main.quests; Map<String,QuestCore.Quest> utilityQuests=new LinkedHashMap<String,QuestCore.Quest>(); utilityQuests.put(chestQuest.id,chestQuest); utilityQuests.put(meter.id,meter); utilityQuests.put(offline.id,offline); main.quests=utilityQuests;
         DropObserver observer=new DropObserver(); net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(observer); main.book=utilities;
         try {
             storageX=(int)Math.floor(player.posX)+4; storageY=(int)Math.floor(player.posY); storageZ=(int)Math.floor(player.posZ)+4;
             net.minecraft.world.World world=player.worldObj;
+            offlineOwner=UUID.randomUUID(); offlineX=(int)Math.floor(player.posX)+8; offlineY=(int)Math.floor(player.posY); offlineZ=(int)Math.floor(player.posZ)+2;
+            world.setBlock(offlineX,offlineY,offlineZ,QuestBlocks.devices[0]); QuestDevice offlineMachine=(QuestDevice)world.getTileEntity(offlineX,offlineY,offlineZ); offlineMachine.owner=offlineOwner; offlineMachine.quest=offline.id; offlineMachine.task=offlineRf.id; offlineMachine.bindingChanged();
+            if(offlineMachine.player()!=null || offlineMachine.receiveEnergy(net.minecraftforge.common.util.ForgeDirection.UP,100,false)!=100) throw new IllegalStateException("Offline RF terminal did not accept energy without an online owner");
+            offlineMachine.task=offlineFluid.id; offlineMachine.bindingChanged(); if(offlineMachine.fill(net.minecraftforge.common.util.ForgeDirection.UP,new net.minecraftforge.fluids.FluidStack(net.minecraftforge.fluids.FluidRegistry.WATER,250),true)!=250) throw new IllegalStateException("Offline fluid terminal did not accept its fluid");
+            offlineMachine.task=offlineItems.id; offlineMachine.bindingChanged(); world.setBlock(offlineX,offlineY+1,offlineZ,net.minecraft.init.Blocks.hopper,0,3);
+            net.minecraft.tileentity.TileEntityHopper feeder=(net.minecraft.tileentity.TileEntityHopper)world.getTileEntity(offlineX,offlineY+1,offlineZ); feeder.setInventorySlotContents(0,new net.minecraft.item.ItemStack(net.minecraft.init.Items.iron_ingot,2));
+            for(int i=0;i<40;i++) { feeder.updateEntity(); offlineMachine.updateEntity(); }
+            if(!main.progress().completed(offlineOwner).contains(offline.id) || main.progress().value(offlineOwner,offline.id,offlineItems.id)!=2 || offlineMachine.getStackInSlot(0)!=null || main.claimed(offlineOwner,offline)) throw new IllegalStateException("Offline hopper submission did not finish stored requirements or claimed player rewards early");
+            if(main.progress().value(id,offline.id,offlineRf.id)!=0) throw new IllegalStateException("Offline machine changed the bystander's progress"); world.setBlockToAir(offlineX,offlineY+1,offlineZ);
             world.setBlock(storageX,storageY,storageZ,QuestBlocks.devices[7]); QuestStorage chest=(QuestStorage)world.getTileEntity(storageX,storageY,storageZ); chest.owner=id; chest.bindingChanged(); chest.setInventorySlotContents(26,new net.minecraft.item.ItemStack(net.minecraft.init.Items.iron_ingot,2));
             for(int i=0;i<20;i++) chest.updateEntity();
             if(chest.getStackInSlot(26)!=null || !main.progress().completed(id).contains(chestQuest.id)) throw new IllegalStateException("Quest chest did not submit items and finish its quest");
@@ -84,7 +99,7 @@ public final class NativeQuestSmoke {
         };
         net.minecraft.server.MinecraftServer.getServer().getCommandManager().executeCommand(unprivileged,"/quests stage "+player.getCommandSenderName()+" native-click add");
         if(denied.isEmpty() || main.progress().stage(id,"native-click")) throw new IllegalStateException("Player command permissions were bypassed");
-        System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, virtual crate storage beyond 32-bit counts, actual hopper extraction, sealed break drops and analog detector");
+        System.out.println("Quest native PASS: real JavaScript task/reward, personal stages/skills, independent pack modes and claims, emergency cooldown, real creature crate drop, automatic quest chest, offline RF/fluid/hopper submission and restart, virtual crate storage beyond 32-bit counts, actual hopper extraction, sealed break drops and analog detector");
     }
     public static final class DropObserver {
         boolean seen;
@@ -94,6 +109,8 @@ public final class NativeQuestSmoke {
     }
     public static void verify(EntityPlayerMP player) throws Exception {
         QuestService main=QuestsMod.service; UUID id=player.getUniqueID();
+        net.minecraft.tileentity.TileEntity offlineRaw=player.worldObj.getTileEntity(offlineX,offlineY,offlineZ);
+        if(!(offlineRaw instanceof QuestDevice) || !offlineOwner.equals(((QuestDevice)offlineRaw).owner) || !main.progress().completed(offlineOwner).contains("offline-machine") || main.progress().value(offlineOwner,"offline-machine","rf")!=100 || main.progress().value(offlineOwner,"offline-machine","water")!=250 || main.progress().value(offlineOwner,"offline-machine","items")!=2) throw new IllegalStateException("Offline machine progress or binding did not survive world restart");
         net.minecraft.tileentity.TileEntity raw=player.worldObj.getTileEntity(storageX,storageY,storageZ);
         if(!(raw instanceof QuestStorage) || ((QuestStorage)raw).getSizeInventory()!=54 || ((QuestStorage)raw).reserved()!=4999999937L || ((QuestStorage)raw).getStackInSlot(0)==null || !((QuestStorage)raw).getStackInSlot(0).getTagCompound().getString("table").equals("preview-drop")) throw new IllegalStateException("Crate storage did not survive world restart");
         if(!main.progress().profile().equals(original) || !main.progress().stage(id,"preview:stage") || main.progress().skill(id,"preview:skill")!=12) throw new IllegalStateException("Native markers or selected pack mode did not survive restart");

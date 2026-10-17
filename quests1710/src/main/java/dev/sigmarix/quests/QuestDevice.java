@@ -31,7 +31,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     public EntityPlayerMP player() {
         if(!QuestScreens.synchronize(this)) return null;
         if(worldObj==null || worldObj.isRemote || owner==null || QuestsMod.service==null || !bindingProfile.equals(QuestsMod.service.progress().profile())) return null;
-        return onlineOwner(MinecraftServer.getServer().getConfigurationManager().playerEntityList);
+        return MinecraftServer.getServer()==null?null:onlineOwner(MinecraftServer.getServer().getConfigurationManager().playerEntityList);
     }
     public EntityPlayerMP onlineOwner(Iterable<?> online) {
         for(Object raw:online) if(((EntityPlayerMP)raw).getUniqueID().equals(owner)) return (EntityPlayerMP)raw;
@@ -49,9 +49,15 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         return null;
     }
     private long remaining(String type) {
-        EntityPlayerMP p=player(); QuestCore.Task t=definition(type); QuestService s=QuestsMod.service;
-        if(p==null || t==null || !s.active(p,s.quests.get(quest))) return 0;
+        QuestCore.Task t=definition(type); QuestService s=QuestsMod.service;
+        if(worldObj==null || worldObj.isRemote || owner==null || t==null || !s.active(owner,s.quests.get(quest))) return 0;
+        if(t.sticky && s.progress().taskDone(owner,quest,task)) return 0;
         return Math.max(0,t.count-s.progress().value(owner,quest,task));
+    }
+    private void credit(long amount) {
+        QuestService service=QuestsMod.service; EntityPlayerMP actor=player();
+        if(actor!=null) service.creditTask(actor,quest,task,amount);
+        else if(owner!=null) { service.creditTask(owner,quest,task,amount); if(bindingProfile.equals(service.progress().profile())) service.finishStored(owner,service.quests.get(quest),worldObj.getTotalWorldTime()); }
     }
     public int percent() {
         QuestService service=QuestsMod.service; if(service==null || owner==null || !bindingProfile.equals(service.progress().profile())) return 0;
@@ -82,9 +88,11 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
             if(player!=null && mode==6 && input!=null) {
                 if(QuestBlocks.LootCrateItem.open(player,input)) { if(input.stackSize<=0) input=null; markDirty(); }
             }
+            if(mode==0 && q!=null && owner!=null) {
+                if(input!=null) { s.acceptItems(owner,quest,task,input,false); if(input.stackSize<=0) input=null; markDirty(); }
+                if(player!=null) { if(s.active(player,q)) s.finish(player,q); } else s.finishStored(owner,q,worldObj.getTotalWorldTime());
+            }
             if(player!=null && q!=null) {
-                if(mode==0 && input!=null) { s.acceptItems(player,quest,task,input,false); if(input.stackSize<=0) input=null; markDirty(); }
-                if(mode==0 && s.active(player,q)) s.finish(player,q);
                 if(mode==3 && s.progress().completed(owner).contains(quest) && !s.claimed(owner,q)) s.claim(player,q,java.util.Collections.<Integer>emptyList(),this::output);
                 if((mode==4 || mode==5) && next && definition("custom")!=null) s.creditTask(player,quest,task,1);
             }
@@ -139,7 +147,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         double accepted=Math.min(amount,getDemandedEnergy()); if(accepted<=0) return amount;
         if(!euBinding.equals(euKey())) { euFraction=0; euBinding=euKey(); }
         double total=euFraction+accepted; long whole=(long)Math.floor(total);
-        if(whole>0) QuestsMod.service.creditTask(player(),quest,task,whole);
+        if(whole>0) credit(whole);
         euFraction=total-whole; markDirty(); return amount-accepted;
     }
     // Mana is consumed by the task, rather than kept as extractable storage.
@@ -149,13 +157,13 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
     @Override public void recieveMana(int mana) {
         if(mana<=0 || isFull()) return;
         long accepted=Math.min(mana,remaining("botania_mana"));
-        if(accepted>0) QuestsMod.service.creditTask(player(),quest,task,accepted);
+        if(accepted>0) credit(accepted);
     }
     @Override public int fill(ForgeDirection from,FluidStack resource,boolean commit) {
         if(worldObj==null || worldObj.isRemote || resource==null || resource.amount<=0) return 0;
         QuestCore.Task t=definition("fluid"); if(t==null || !QuestFluids.matches(t,resource)) return 0;
         int accepted=(int)Math.min(resource.amount,remaining("fluid"));
-        if(commit && accepted>0) QuestsMod.service.creditTask(player(),quest,task,accepted);
+        if(commit && accepted>0) credit(accepted);
         return accepted;
     }
     @Override public FluidStack drain(ForgeDirection from,FluidStack resource,boolean commit) { return null; }
@@ -169,7 +177,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         boolean mj=definition("buildcraft_mj")!=null; long remaining=remaining(mj?"buildcraft_mj":"energy");
         long units=mj?remaining/100000+(remaining%100000==0?0:1):remaining;
         int accepted=(int)Math.min(amount,units);
-        if(!simulate && accepted>0) QuestsMod.service.creditTask(player(),quest,task,mj?Math.min(remaining,accepted*100000L):accepted);
+        if(!simulate && accepted>0) credit(mj?Math.min(remaining,accepted*100000L):accepted);
         return accepted;
     }
     @Override public int getEnergyStored(ForgeDirection from) { return 0; }
@@ -196,7 +204,7 @@ public class QuestDevice extends TileEntity implements IFluidHandler,cofh.api.en
         if(slot!=0 || stack==null) return false;
         if(getBlockType() instanceof QuestBlocks.DeviceBlock && ((QuestBlocks.DeviceBlock)getBlockType()).mode==6) return stack.getItem() instanceof QuestBlocks.LootCrateItem;
         if(!(getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)getBlockType()).mode!=0) return false;
-        EntityPlayerMP p=player(); return p!=null && QuestsMod.service.acceptItems(p,quest,task,stack,true)>0;
+        return worldObj!=null && !worldObj.isRemote && owner!=null && definition("item")!=null && QuestsMod.service.acceptItems(owner,quest,task,stack,true)>0;
     }
     @Override public int[] getAccessibleSlotsFromSide(int side) { return new int[]{0}; }
     @Override public boolean canInsertItem(int slot,net.minecraft.item.ItemStack stack,int side) { return isItemValidForSlot(slot,stack); }

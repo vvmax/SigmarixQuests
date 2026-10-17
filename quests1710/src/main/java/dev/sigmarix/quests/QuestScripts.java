@@ -72,6 +72,7 @@ public final class QuestScripts {
         public int skill(EntityPlayerMP player,String key) { return service().progress().skill(player.getUniqueID(),key); }
         public void setSkill(EntityPlayerMP player,String key,int level) { service().progress().skill(player.getUniqueID(),key,level); }
         public void credit(EntityPlayerMP player,String quest,String task,long amount) { service().creditTask(player,quest,task,amount); }
+        public void creditId(String playerUUID,String quest,String task,long amount) { service().creditTask(UUID.fromString(playerUUID),quest,task,amount); }
         public EntityPlayerMP player(UUID id) {
             for(Object raw:net.minecraft.server.MinecraftServer.getServer().getConfigurationManager().playerEntityList) {
                 EntityPlayerMP player=(EntityPlayerMP)raw; if(player.getUniqueID().equals(id)) return player;

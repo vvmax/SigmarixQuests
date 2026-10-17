@@ -9,6 +9,7 @@ public final class ForgeTestBootstrap {
         java.lang.reflect.Field side=cpw.mods.fml.relauncher.FMLRelaunchLog.class.getDeclaredField("side");
         side.setAccessible(true); side.set(null,cpw.mods.fml.relauncher.Side.SERVER);
         Loader.injectData("7","99","40","1614","1.7.10","9.05",new File("."),new ArrayList<String>());
+        java.lang.reflect.Field mods=Loader.class.getDeclaredField("namedMods"); mods.setAccessible(true); mods.set(Loader.instance(),new java.util.HashMap<String,cpw.mods.fml.common.ModContainer>());
         JUnitCore runner=new JUnitCore(); runner.addListener(new TextListener(System.out));
         Result result=runner.run(QuestSystemsTest.class);
         return result.getFailureCount();

@@ -442,11 +442,11 @@ public class QuestSystemsTest {
             QuestCore.Task another=task("ic2_energy",null,4,false); restored.task=another.id; assertEquals(4,restored.getDemandedEnergy(),0);
         } finally { QuestsMod.service=null; }
     }
-    @Test public void euIsRejectedForOfflineOwnersWrongTasksAndImpossibleAmounts() {
+    @Test public void euRejectsWrongTasksMissingOwnersAndImpossibleAmounts() {
         task("energy",null,4,false); QuestDevice tile=terminalTile();
         try {
             assertEquals(0,tile.getDemandedEnergy(),0); assertTrue(tile.acceptsEnergyFrom(null,ForgeDirection.UP)); assertEquals(5,tile.injectEnergy(ForgeDirection.UP,5,32),0);
-            quest.tasks.get(0).type="ic2_energy"; doReturn(null).when(tile).player(); assertEquals(0,tile.getDemandedEnergy(),0);
+            quest.tasks.get(0).type="ic2_energy"; doReturn(null).when(tile).player(); assertEquals(4,tile.getDemandedEnergy(),0); tile.owner=null; assertEquals(0,tile.getDemandedEnergy(),0); tile.owner=player.getUniqueID();
             doReturn(player).when(tile).player(); tile.injectEnergy(ForgeDirection.UP,Double.MAX_VALUE,32); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
         } finally { QuestsMod.service=null; }
     }
@@ -459,11 +459,11 @@ public class QuestSystemsTest {
             tile.recieveMana(100); assertEquals(10,data.value(player.getUniqueID(),quest.id,"t0")); assertTrue(service.check(player,quest,true));
         } finally { QuestsMod.service=null; }
     }
-    @Test public void manaReceiverRejectsWrongTasksAndOfflineOwners() {
+    @Test public void manaReceiverRejectsWrongTasksAndMissingOwnersButAcceptsOfflineProgress() {
         task("energy",null,10,false); QuestDevice tile=terminalTile();
         try {
             assertTrue(tile.isFull()); tile.recieveMana(10); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
-            quest.tasks.get(0).type="botania_mana"; doReturn(null).when(tile).player(); assertTrue(tile.isFull()); tile.recieveMana(10); assertEquals(0,data.value(player.getUniqueID(),quest.id,"t0"));
+            quest.tasks.get(0).type="botania_mana"; doReturn(null).when(tile).player(); assertFalse(tile.isFull()); tile.recieveMana(10); assertEquals(10,data.value(player.getUniqueID(),quest.id,"t0")); tile.owner=null; assertTrue(tile.isFull());
         } finally { QuestsMod.service=null; }
     }
     private double[] wallet(double amount) {
@@ -755,6 +755,47 @@ public class QuestSystemsTest {
         data.pins(player.getUniqueID(),Collections.singletonList("removed")); service.pin(player.getUniqueID(),quest.id); assertEquals(Collections.singletonList(quest.id),data.pins(player.getUniqueID())); service.pin(player.getUniqueID(),quest.id); assertTrue(data.pins(player.getUniqueID()).isEmpty());
         quest.hidden=true; quest.dependencies.add("earlier"); try { service.pin(player.getUniqueID(),quest.id); fail(); } catch(IllegalArgumentException expected) {} assertTrue(data.pins(player.getUniqueID()).isEmpty());
         java.util.List<String> tooMany=new java.util.ArrayList<String>(); for(int i=0;i<17;i++) tooMany.add("q"+i); try { data.pins(player.getUniqueID(),tooMany); fail(); } catch(IllegalArgumentException expected) {} assertTrue(data.pins(player.getUniqueID()).isEmpty());
+    }
+
+    @Test public void offlineUuidSubmissionNeverInventsInventoryOrConsumableXp() {
+        UUID recipient=UUID.randomUUID(); QuestCore.Task energy=task("energy",null,10,false),items=task("item","minecraft:iron_ingot",2,true),xp=task("xp",null,5,true);
+        quest.dependencies.add("earlier"); service.creditTask(recipient,quest.id,energy.id,10); assertEquals(0,data.value(recipient,quest.id,energy.id)); data.complete(recipient,"earlier");
+        service.creditTask(recipient,quest.id,energy.id,10); ItemStack input=new ItemStack(Items.iron_ingot,2);
+        assertEquals(2,service.acceptItems(recipient,quest.id,items.id,input,true)); assertEquals(2,input.stackSize); assertEquals(0,data.value(recipient,quest.id,items.id));
+        assertEquals(2,service.acceptItems(recipient,quest.id,items.id,input,false)); assertEquals(0,input.stackSize); assertFalse(service.finishStored(recipient,quest,100));
+        quest.tasks.remove(xp); assertTrue(service.finishStored(recipient,quest,100)); assertFalse(service.finishStored(recipient,quest,101)); assertEquals(10,data.value(recipient,quest.id,energy.id)); assertTrue(data.completed(recipient).contains(quest.id));
+        assertTrue(data.completed(player.getUniqueID()).isEmpty());
+    }
+    @Test public void offlineStoredCompletionKeepsAnyTaskAndNonStickyConditionsSeparate() {
+        UUID recipient=UUID.randomUUID(); QuestCore.Task live=task("dimension",null,1,false); live.dimension=-1; live.sticky=false; QuestCore.Task energy=task("energy",null,4,false); quest.anyTask=true;
+        service.creditTask(recipient,quest.id,energy.id,4); assertTrue(service.finishStored(recipient,quest,100)); assertFalse(data.taskDone(recipient,quest.id,live.id));
+        QuestCore.Quest other=new QuestCore.Quest(); other.id="live"; other.title="Live condition"; other.tasks.add(live); service.quests.put(other.id,other); data.markTask(recipient,other.id,live.id);
+        assertFalse(service.finishStored(recipient,other,100)); live.sticky=true; assertTrue(service.finishStored(recipient,other,100));
+    }
+    @Test public void offlineTerminalAcceptsRfFluidAndEuAndCompletesPersistedRequirements() {
+        QuestCore.Task rf=task("energy",null,100,false),fluid=task("fluid","water",250,false),eu=task("ic2_energy",null,2,false); QuestDevice tile=terminalTile(); doReturn(null).when(tile).player();
+        try {
+            assertEquals(100,tile.receiveEnergy(ForgeDirection.UP,120,true)); assertEquals(0,data.value(tile.owner,quest.id,rf.id)); assertEquals(100,tile.receiveEnergy(ForgeDirection.UP,120,false));
+            tile.task=fluid.id; assertEquals(250,tile.fill(ForgeDirection.UP,new FluidStack(FluidRegistry.WATER,500),true));
+            tile.task=eu.id; assertEquals(0,tile.injectEnergy(ForgeDirection.UP,.4,32),0); assertEquals(1.6,tile.getDemandedEnergy(),1e-9); assertEquals(0,tile.injectEnergy(ForgeDirection.UP,1.6,32),0); assertEquals(2,data.value(tile.owner,quest.id,eu.id));
+            for(int i=0;i<20;i++) tile.updateEntity(); assertTrue(data.completed(tile.owner).contains(quest.id)); assertEquals(0,tile.receiveEnergy(ForgeDirection.UP,100,false));
+        } finally { QuestsMod.service=null; }
+    }
+    @Test public void offlineChestWaitsForItsBoundProfileAndThenConsumesItsOwnInventory() {
+        QuestCore.Task input=task("item","minecraft:iron_ingot",2,true); QuestStorage chest=new QuestStorage(false); chest.owner=UUID.randomUUID(); chest.setWorldObj(player.worldObj); chest.bindingProfile="expert"; chest.setInventorySlotContents(26,new ItemStack(Items.iron_ingot,2)); when(player.worldObj.getBlock(0,0,0)).thenReturn(new QuestBlocks.DeviceBlock(7,"offline_chest")); QuestsMod.service=service;
+        try { for(int i=0;i<20;i++) chest.updateEntity(); assertEquals(2,chest.getStackInSlot(26).stackSize); chest.bindingProfile="default"; for(int i=0;i<20;i++) chest.updateEntity(); assertNull(chest.getStackInSlot(26)); assertTrue(data.completed(chest.owner).contains(quest.id)); assertEquals(2,data.value(chest.owner,quest.id,input.id)); assertTrue(data.completed(player.getUniqueID()).isEmpty()); }
+        finally { QuestsMod.service=null; }
+    }
+    @Test public void nativeScriptApiCanCreditAnOfflineUuidWithoutCreatingAPlayerEntity() {
+        QuestCore.Task energy=task("energy",null,5,false); UUID recipient=UUID.randomUUID(); QuestsMod.service=service;
+        try { new QuestScripts.API().creditId(recipient.toString(),quest.id,energy.id,5); assertEquals(5,data.value(recipient,quest.id,energy.id)); assertEquals(0,data.value(player.getUniqueID(),quest.id,energy.id)); }
+        finally { QuestsMod.service=null; }
+    }
+
+    @Test public void latchedFluidRequirementDoesNotConsumeMoreWhileOtherRequirementsWait() {
+        QuestCore.Task fluid=task("fluid","water",250,false); task("dimension",null,1,false).dimension=-1; QuestDevice tile=terminalTile(); data.markTask(player.getUniqueID(),quest.id,fluid.id);
+        try { assertTrue(service.active(player,quest)); assertEquals(0,tile.fill(ForgeDirection.UP,new FluidStack(FluidRegistry.WATER,250),true)); assertFalse(tile.canFill(ForgeDirection.UP,FluidRegistry.WATER)); assertEquals(0,data.value(player.getUniqueID(),quest.id,fluid.id)); }
+        finally { QuestsMod.service=null; }
     }
 
 }

@@ -154,9 +154,9 @@ public class QuestService {
     }
     public static void say(ICommandSender sender, String message) { sender.addChatMessage(new ChatComponentText(message)); }
     public boolean active(EntityPlayerMP p, QuestCore.Quest q) {
-        Set<String> done = progress().completed(p.getUniqueID());
-        return !done.contains(q.id) && unlocked(p.getUniqueID(),q);
+        return p!=null && active(p.getUniqueID(),q);
     }
+    public boolean active(UUID player,QuestCore.Quest quest) { return player!=null && quest!=null && !progress().completed(player).contains(quest.id) && unlocked(player,quest); }
     public QuestDependencies dependencies(final UUID id) {
         final QuestProgress data=progress();
         return new QuestDependencies(book,quests,new QuestDependencies.Progress() {
@@ -251,10 +251,11 @@ public class QuestService {
             }
     }
     public void creditTask(EntityPlayerMP p, String quest, String task, long amount) {
-        QuestCore.Quest q = quests.get(quest);
-        if (q == null || !active(p, q)) return;
-        for (QuestCore.Task t : q.tasks) if (t.id.equals(task) && (t.type.equals("energy") || t.type.equals("ic2_energy") || t.type.equals("botania_mana") || t.type.equals("buildcraft_mj") || t.type.equals("fluid") || t.type.equals("custom")))
-            progress().add(p.getUniqueID(), quest, task, amount, t.count);
+        if(p!=null) creditTask(p.getUniqueID(),quest,task,amount);
+    }
+    public void creditTask(UUID player,String quest,String task,long amount) {
+        QuestCore.Quest definition=quests.get(quest); if(!active(player,definition)) return;
+        for(QuestCore.Task t:definition.tasks) if(t.id.equals(task) && java.util.Arrays.asList("energy","ic2_energy","botania_mana","buildcraft_mj","fluid","custom").contains(t.type)) progress().add(player,quest,task,amount,t.count);
     }
     public long counter(EntityPlayerMP p, QuestCore.Quest q, QuestCore.Task t) {
         long value = progress().value(p.getUniqueID(), q.id, t.id);
@@ -429,12 +430,13 @@ public class QuestService {
         return true;
     }
     public int acceptItems(EntityPlayerMP p,String quest,String task,ItemStack stack,boolean simulate) {
-        QuestCore.Quest q=quests.get(quest);
-        if(q==null || !active(p,q) || stack==null) return 0;
+        return p==null?0:acceptItems(p.getUniqueID(),quest,task,stack,simulate);
+    }
+    public int acceptItems(UUID player,String quest,String task,ItemStack stack,boolean simulate) {
+        QuestCore.Quest q=quests.get(quest); if(!active(player,q) || stack==null || stack.stackSize<=0) return 0;
         for(QuestCore.Task t:q.tasks) if(t.id.equals(task) && t.type.equals("item") && t.consume && !t.craftingOnly && matches(stack,t)) {
-            int take=(int)Math.min(stack.stackSize,Math.max(0,t.count-counter(p,q,t)));
-            if(!simulate && take>0) { stack.stackSize-=take; progress().add(p.getUniqueID(),q.id,t.id,take,t.count); }
-            return take;
+            int take=(int)Math.min(stack.stackSize,Math.max(0,t.count-progress().value(player,q.id,t.id)));
+            if(!simulate && take>0) { stack.stackSize-=take; progress().add(player,q.id,t.id,take,t.count); } return take;
         }
         return 0;
     }
@@ -462,6 +464,31 @@ public class QuestService {
         if(!check(p,q,true)) return false;
         autoClaim(p,q);
         return true;
+    }
+    /** Completes only persisted/latched requirements; never invents an offline inventory or XP balance. */
+    public boolean finishStored(UUID player,QuestCore.Quest quest,long worldTime) {
+        if(!active(player,quest)) return false; List<QuestCore.Task> ready=new ArrayList<QuestCore.Task>();
+        for(QuestCore.Task task:quest.tasks) {
+            boolean complete=storedTask(player,quest,task);
+            if(quest.anyTask) { if(complete) { ready.add(task); break; } }
+            else { if(!complete) return false; ready.add(task); }
+        }
+        if(quest.anyTask && !quest.tasks.isEmpty() && ready.isEmpty()) return false;
+        for(QuestCore.Task task:ready) progress().markTask(player,quest.id,task.id);
+        progress().timestamp(player,quest.id,worldTime); progress().complete(player,quest.id); return true;
+    }
+    private boolean storedTask(UUID player,QuestCore.Quest quest,QuestCore.Task task) {
+        if(task.sticky && progress().taskDone(player,quest.id,task.id)) return true;
+        long count=progress().value(player,quest.id,task.id);
+        switch(task.type) {
+            case "check": return !task.manual || count>=task.count;
+            case "item": return (task.consume || task.craftingOnly) && count>=task.count;
+            case "kill": if(count==0) count=progress().kills(player,quest.id,quest.tasks.indexOf(task)); return count>=task.count;
+            case "interaction": case "energy": case "ic2_energy": case "botania_mana": case "buildcraft_mj": case "fluid": case "custom": return count>=task.count;
+            case "gamestage": return progress().stage(player,task.target);
+            case "skill": return progress().skill(player,task.target)>=task.count;
+            default: return false;
+        }
     }
     public static void give(EntityPlayerMP player, ItemStack stack) {
         if (!player.inventory.addItemStackToInventory(stack)) player.dropPlayerItemWithRandomChoice(stack,false);

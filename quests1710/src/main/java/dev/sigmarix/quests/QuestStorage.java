@@ -35,7 +35,7 @@ public final class QuestStorage extends QuestDevice {
         super.updateEntity(); if(getWorldObj()==null || getWorldObj().isRemote) return;
         if(crateOnly) { if(++storageTicks%5==0) compact(); return; }
         if(++storageTicks%20!=0) return;
-        net.minecraft.entity.player.EntityPlayerMP owner=player(); QuestService service=QuestsMod.service; if(owner==null || service==null) return;
+        net.minecraft.entity.player.EntityPlayerMP actor=player(); QuestService service=QuestsMod.service; if(owner==null || service==null || !bindingProfile.equals(service.progress().profile())) return;
         List<QuestCore.Quest> quests=new ArrayList<QuestCore.Quest>(service.quests.values()); if(quests.isEmpty()) return; int budget=4096;
         for(int scanned=0;scanned<quests.size() && budget>0;scanned++) {
             QuestCore.Quest definition=quests.get(cursor++%quests.size()); if(cursor>=quests.size()) cursor=0;
@@ -45,7 +45,7 @@ public final class QuestStorage extends QuestDevice {
                 ItemStack stack=stacks[slot]; if(stack==null) continue; budget--;
                 if(service.acceptItems(owner,definition.id,task.id,stack,false)>0) { accepted=true; if(stack.stackSize<=0) stacks[slot]=null; markDirty(); }
             }
-            if(accepted) service.finish(owner,definition);
+            if(accepted) { if(actor!=null) service.finish(actor,definition); else service.finishStored(owner,definition,getWorldObj().getTotalWorldTime()); }
         }
     }
     public void nextPage() {
