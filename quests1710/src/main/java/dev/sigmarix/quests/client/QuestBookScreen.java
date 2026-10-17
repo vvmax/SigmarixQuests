@@ -129,10 +129,10 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
                 double half=2.04*zoom*book().theme.lineWidth,px=-dy/length*half,py=dx/length*half;
                 String state=ClientProxy.snapshot.states.get(from.id); boolean done="complete".equals(state) || "claimed".equals(state),highlight=from.id.equals(focus) || q.id.equals(focus);
                 int color=highlight?(from.id.equals(focus)?0xC8C800:0x00C8C8):done?0x64DC64:0xFFFFFF;
-                if(!book().theme.edge.equals(DEFAULT_THEME.edge)) color=QuestPresentation.color(book().theme.edge)&0xFFFFFF;
+                int alpha=255; if(!book().theme.edge.equals(DEFAULT_THEME.edge)) { int argb=QuestPresentation.color(book().theme.edge); color=argb&0xFFFFFF; alpha=argb>>>24; }
                 int red=color>>16&255,green=color>>8&255,blue=color&255; double offset=highlight?(System.currentTimeMillis()%1200)/1200D:0,u=length/(half*2);
-                t.setColorRGBA(red*3/4,green*3/4,blue*3/4,255); t.addVertexWithUV(sx(from)-px,sy(from)-py,0,-offset,0); t.addVertexWithUV(sx(from)+px,sy(from)+py,0,-offset,1);
-                t.setColorRGBA(red,green,blue,255); t.addVertexWithUV(sx(q)+px,sy(q)+py,0,u-offset,1); t.addVertexWithUV(sx(q)-px,sy(q)-py,0,u-offset,0);
+                t.setColorRGBA(red*3/4,green*3/4,blue*3/4,alpha); t.addVertexWithUV(sx(from)-px,sy(from)-py,0,-offset,0); t.addVertexWithUV(sx(from)+px,sy(from)+py,0,-offset,1);
+                t.setColorRGBA(red,green,blue,alpha); t.addVertexWithUV(sx(q)+px,sy(q)+py,0,u-offset,1); t.addVertexWithUV(sx(q)-px,sy(q)-py,0,u-offset,0);
             } } catch(IllegalArgumentException ignored) {}
             t.draw();
         } finally { GL11.glPopAttrib(); GL11.glColor4f(1,1,1,1); }

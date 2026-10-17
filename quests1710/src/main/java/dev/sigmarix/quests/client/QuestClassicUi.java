@@ -18,6 +18,7 @@ public final class QuestClassicUi extends Gui {
     private static final RenderItem items=new RenderItem();
     public static void background(Minecraft mc,int width,int height) { background(mc,0,0,width,height); }
     public static void background(Minecraft mc,int x,int y,int width,int height) {
+        if(ClientProxy.snapshot!=null && ClientProxy.snapshot.book!=null && !ClientProxy.snapshot.book.theme.background.equals(defaults.background)) { drawRect(x,y,x+width,y+height,QuestPresentation.color(ClientProxy.snapshot.book.theme.background)); return; }
         if(background==null) {
             DynamicTexture texture=new DynamicTexture(64,64); int[] pixels=texture.getTextureData();
             java.util.Random noise=new java.util.Random(1710);
@@ -30,7 +31,6 @@ public final class QuestClassicUi extends Gui {
         GL11.glColor4f(1,1,1,1); mc.getTextureManager().bindTexture(background); GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_WRAP_S,GL11.GL_REPEAT); GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_WRAP_T,GL11.GL_REPEAT);
         net.minecraft.client.renderer.Tessellator t=net.minecraft.client.renderer.Tessellator.instance;
         t.startDrawingQuads(); t.addVertexWithUV(x,y+height,0,0,height/64D); t.addVertexWithUV(x+width,y+height,0,width/64D,height/64D); t.addVertexWithUV(x+width,y,0,width/64D,0); t.addVertexWithUV(x,y,0,0,0); t.draw();
-        if(ClientProxy.snapshot!=null && ClientProxy.snapshot.book!=null && !ClientProxy.snapshot.book.theme.background.equals(defaults.background)) drawRect(x,y,x+width,y+height,QuestPresentation.color(ClientProxy.snapshot.book.theme.background));
     }
     public static void bindDependencies(Minecraft mc) {
         if(dependency==null) {
