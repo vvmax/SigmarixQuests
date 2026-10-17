@@ -949,3 +949,11 @@ BlockState → ID/metadata, ID/классов tile entities, статистик�
 двух участков, а не всех окон и состояний.
 
 Проверки 0.24: 50 JUnit, 127 Forge registry и 39 Python (216 всего).
+
+Снимки 0.24: [команды](docs/images/quest-teams.png),
+[создание команды](docs/images/quest-create-team.png),
+[предметы и устройства](docs/images/quest-reference-items.png),
+[значок](docs/images/quest-custom-icon.png),
+[награды](docs/images/quest-notifications.png).
+Эталонные кадры 1.12.2: [создание команды](docs/images/reference/create-team-112.png)
+и [редактор значения](docs/images/reference/value-dialog-112.png).
