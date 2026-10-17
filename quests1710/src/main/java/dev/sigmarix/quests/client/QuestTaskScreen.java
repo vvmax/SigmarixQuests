@@ -14,8 +14,8 @@ public final class QuestTaskScreen extends GuiScreen {
         buttonList.clear(); int rows=Math.max(1,(height-90)/26); scroll=Math.max(0,Math.min(scroll,Math.max(0,quest.tasks.size()-rows)));
         for(int i=scroll;i<quest.tasks.size() && i<scroll+rows;i++) {
             QuestCore.Task task=quest.tasks.get(i); boolean submit=task.consume && (task.type.equals("emc") || task.type.equals("item") && !task.craftingOnly); boolean done=Boolean.TRUE.equals(ClientProxy.snapshot.taskStates.get(quest.id+":"+task.id));
-            GuiButton button=new GuiButton(100+i,12,42+(i-scroll)*26,width-24,22,fontRendererObj.trimStringToWidth(QuestTaskLabels.title(task)+(done?" [done]":task.type.equals("check")?" - confirm":submit?" - submit":""),width-40));
-            button.enabled=!done && (task.type.equals("check") || submit) && "available".equals(ClientProxy.snapshot.states.get(quest.id)); buttonList.add(button);
+            GuiButton button=new GuiButton(100+i,12,42+(i-scroll)*26,width-24,22,fontRendererObj.trimStringToWidth(QuestTaskLabels.title(task)+(done?" [done]":task.type.equals("check")?" - confirm":task.type.equals("custom") && task.manual?" - run action":submit?" - submit":""),width-40));
+            button.enabled=!done && (task.type.equals("check") || task.type.equals("custom") && task.manual || submit) && "available".equals(ClientProxy.snapshot.states.get(quest.id)); buttonList.add(button);
         }
         buttonList.add(new GuiButton(0,12,height-32,90,20,QuestText.tr("Back")));
         buttonList.add(new GuiButton(1,width-122,height-32,110,20,QuestText.tr("Start quest")));
@@ -25,7 +25,7 @@ public final class QuestTaskScreen extends GuiScreen {
         if(button.id==0) { mc.displayGuiScreen(parent); return; }
         QuestNetwork.Action action=new QuestNetwork.Action(); action.id=quest.id;
         if(button.id==1) action.action="start";
-        else { QuestCore.Task task=quest.tasks.get(button.id-100); action.action=task.type.equals("check")?"task":"submit"; action.text=task.id; }
+        else { QuestCore.Task task=quest.tasks.get(button.id-100); action.action=task.type.equals("check") || task.type.equals("custom") && task.manual?"task":"submit"; action.text=task.id; }
         ClientProxy.send(action);
     }
     @Override public void updateScreen() { if(ClientProxy.snapshot.revision!=revision) { mc.displayGuiScreen(parent); return; } rebuild(); if(++refreshTicks%40==0) ClientProxy.send(new QuestNetwork.Action()); }

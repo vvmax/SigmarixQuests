@@ -20,6 +20,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
     @Override public void initGui() {
         String filter=search==null?"":search.getText(); layoutSplit=split();
         buttonList.clear();
+        if(QuestClicks.available("","custom:ftbmoney:open_gui")) buttonList.add(new GuiButton(15,8,height-62,64,20,QuestText.tr("Shop")));
         buttonList.add(new GuiButton(11,8,height-38,96,20,QuestText.tr("All groups")));
         if(QuestGuides.available("")) buttonList.add(new GuiButton(12,110,height-38,64,20,QuestText.tr("Guides")));
         buttonList.add(new GuiButton(0,width-65,8,57,20,QuestText.tr("Close")));
@@ -138,6 +139,7 @@ public final class QuestBookScreen extends GuiScreen implements GuiYesNoCallback
     @Override protected void actionPerformed(GuiButton button) {
         QuestNetwork.Action action=new QuestNetwork.Action(); action.id=selected;
         switch(button.id) {
+            case 15: QuestClicks.open("","custom:ftbmoney:open_gui",this); return;
             case 13: action.action="pin"; ClientProxy.send(action); return;
             case 14: mc.displayGuiScreen(new QuestPinScreen(this)); return;
             case 12: QuestGuides.open("",this); return;

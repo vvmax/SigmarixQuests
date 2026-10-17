@@ -20,6 +20,8 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(task['type'], 'custom')
         self.assertEqual(task['target'], '')
         self.assertEqual(task['count'], 1)
+        self.assertFalse(task['manual'])
+        self.assertTrue(convert_task({'type': 'custom', 'enable_button': True}, 0)['manual'])
 
     def test_unsupported_types_fail_instead_of_becoming_checkmarks(self):
         with self.assertRaises(ValueError):

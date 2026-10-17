@@ -206,7 +206,7 @@ public final class QuestsMod {
                     if(action.text==null || action.text.length()>32) throw new IllegalArgumentException("Invalid team input");
                     new QuestCommand().team(player,player,new String[]{"team",action.action.substring(5),action.text}); message="Team updated"; break;
                 case "start": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.start(player,quest); message="Quest started"; break;
-                case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message="Task confirmed"; break;
+                case "task": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.confirm(player,quest,action.text); message=quest.tasks.stream().anyMatch(t->t.id.equals(action.text) && t.type.equals("custom"))?"Task action sent":"Task confirmed"; break;
                 case "submit": if(quest==null) throw new IllegalArgumentException("Unknown quest"); message="Submitted: "+service.submit(player,quest,action.text); break;
                 case "check": if(quest==null || !service.finish(player,quest)) throw new IllegalArgumentException("Tasks incomplete or quest locked"); message="Quest complete"; break;
                 case "claim": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.claim(player,quest,choices); message="Rewards claimed"; break;

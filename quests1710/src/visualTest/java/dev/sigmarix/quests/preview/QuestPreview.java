@@ -302,7 +302,7 @@ public final class QuestPreview {
                 QuestPresentation.GuideElement link=new QuestPresentation.GuideElement(); link.type="link"; link.text="Open the guide"; link.uri="https://example.org/guide"; rich.elements.add(link); manual.richPages.add(rich);
                 QuestPresentation.Style style=new QuestPresentation.Style(); style.selector=".important state:available"; style.color="FF9B59B6"; edit.book.styles.add(style);
                 QuestCore.Reward toast=new QuestCore.Reward(); toast.type="toast"; toast.target="Graphical reward"; toast.text="Native quest notification"; manual.rewards.add(toast);
-                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:"+QuestService.JSON.toJson(remoteImage)+",color:16763972}"; manual.tasks.add(check); edit.book.quests.add(manual);
+                QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:"+QuestService.JSON.toJson(remoteImage)+",color:16763972}"; manual.tasks.add(check); QuestCore.Task callback=new QuestCore.Task(); callback.id="callback"; callback.type="custom"; callback.target=""; callback.manual=true; callback.count=3; callback.title="Server script action"; manual.tasks.add(callback); edit.book.quests.add(manual);
                 QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
                 QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
                 pendingBookEdit=edit; lastBookAttempt=System.nanoTime(); ClientProxy.send(edit); stage=5; break;
@@ -361,6 +361,10 @@ public final class QuestPreview {
             case 12:
                 if(waiting<15) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-tasks.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                press(mc.currentScreen,101); stage=72; waiting=0; break;
+            case 72:
+                if(snap==null || waiting<15 || !snap.message.equals("Task action sent") || !Boolean.TRUE.equals(snap.taskStates.get("smoke-manual:callback"))) return;
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-task-action.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
                 QuestNetwork.Action finish=new QuestNetwork.Action(); finish.action="check"; finish.id="smoke-manual"; ClientProxy.send(finish); stage=13; break;
             case 13:
                 if(snap==null || !"complete".equals(snap.states.get("smoke-manual"))) return;
@@ -533,7 +537,15 @@ public final class QuestPreview {
                 QuestDeviceContainer collectorContainer=(QuestDeviceContainer)((QuestDeviceScreen)mc.currentScreen).inventorySlots;
                 if(!collectorContainer.tile.collector() || collectorContainer.inventorySlots.size()!=45 || collectorContainer.tile.getStackInSlot(0)==null) throw new IllegalStateException("Nine-slot collector inventory did not synchronize");
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-reward-collector.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
-                mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=8; waiting=0; break;
+                mc.thePlayer.closeScreen(); QuestBookScreen screen=new QuestBookScreen(); mc.displayGuiScreen(screen); stage=73; waiting=0; break;
+            case 73:
+                if(waiting<20) return;
+                press(mc.currentScreen,15); stage=74; waiting=0; break;
+            case 74:
+                if(waiting<20) return;
+                if(GuideSmoke.shopOpens<1 || !(mc.currentScreen instanceof QuestGuideScreen)) throw new IllegalStateException("Conditional shop button failed to open its provider");
+                ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-shop-hook.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());
+                mc.displayGuiScreen(new QuestBookScreen()); stage=8; waiting=0; break;
             case 8:
                 if(waiting<30) return;
                 ScreenShotHelper.saveScreenshot(new File(mc.mcDataDir,"../build/preview"),"quest-book-live.png",mc.displayWidth,mc.displayHeight,mc.getFramebuffer());

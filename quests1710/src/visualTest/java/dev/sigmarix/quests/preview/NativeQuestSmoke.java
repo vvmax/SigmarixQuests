@@ -26,7 +26,8 @@ public final class NativeQuestSmoke {
         if(engine==null) throw new IllegalStateException("Native pack scripts unavailable");
         engine.put("quests",new QuestScripts.API());
         engine.eval("quests.task('preview:native',function(player,task){return quests.stage(player,'preview:stage') && quests.skill(player,'preview:skill')>=12;});"+
-            "quests.reward('preview:native',function(player,reward){quests.setStage(player,'preview:stage',true);quests.setSkill(player,'preview:skill',12);});");
+            "quests.reward('preview:native',function(player,reward){quests.setStage(player,'preview:stage',true);quests.setSkill(player,'preview:skill',12);});"+
+            "quests.on('task_clicked',function(event){if(String(event.quest)==='smoke-manual' && String(event.task)==='callback') quests.creditId(String(event.player),String(event.quest),String(event.task),3);});");
         QuestCore.Task task=new QuestCore.Task(); task.type="custom"; task.target="preview:native";
         if(QuestHooks.TASKS.get(task.target).complete(player,task)) throw new IllegalStateException("Unfinished native markers passed a script task");
         QuestHooks.REWARDS.get(task.target).grant(player,new QuestCore.Reward());

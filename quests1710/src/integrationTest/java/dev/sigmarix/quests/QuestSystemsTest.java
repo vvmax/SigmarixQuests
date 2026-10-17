@@ -38,6 +38,18 @@ public class QuestSystemsTest {
     private QuestCore.Task task(String type,String target,long count,boolean consume) {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
+    @Test public void customTaskButtonsRequireServerCallbacksAndCannotReplayCompletedActions() {
+        QuestCore.Task custom=task("custom","",3,false); custom.manual=true; service.confirm(player,quest,custom.id);
+        assertEquals(0,data.value(player.getUniqueID(),quest.id,custom.id)); assertFalse(data.taskDone(player.getUniqueID(),quest.id,custom.id));
+        final int[] clicks={0}; java.util.function.Consumer<QuestEvents.Event> listener=event->{ assertEquals(player.getUniqueID(),event.player); clicks[0]++; service.creditTask(event.player,event.quest,event.task,3); };
+        QuestEvents.on("task_clicked",listener);
+        try {
+            service.confirm(player,quest,custom.id); assertEquals(3,data.value(player.getUniqueID(),quest.id,custom.id)); assertTrue(data.taskDone(player.getUniqueID(),quest.id,custom.id));
+            try { service.confirm(player,quest,custom.id); fail(); } catch(IllegalArgumentException expected) {}
+            QuestCore.Task disabled=task("custom","",1,false); try { service.confirm(player,quest,disabled.id); fail(); } catch(IllegalArgumentException expected) {}
+            assertEquals(1,clicks[0]);
+        } finally { QuestEvents.off("task_clicked",listener); }
+    }
     @Test public void worldMapUsesOfflineOwnerProgressWithoutRevealingHiddenViewerGoals() throws Exception {
         QuestCore.Task energy=task("energy",null,100,false); QuestCore.Chapter group=new QuestCore.Chapter(); group.id="group"; group.title="Group"; QuestCore.Chapter child=new QuestCore.Chapter(); child.id="child"; child.title="Child"; child.parent=group.id;
         service.book.chapters.add(group); service.book.chapters.add(child); service.book.quests.add(quest); quest.chapter=child.id;

@@ -232,6 +232,12 @@ public class QuestService {
     public void confirm(EntityPlayerMP p,QuestCore.Quest q,String task) {
         if(!active(p,q)) throw new IllegalArgumentException("Quest is locked or complete");
         for(QuestCore.Task t:q.tasks) if(t.id.equals(task) && t.type.equals("check")) { progress().add(p.getUniqueID(),q.id,t.id,t.count,t.count); progress().markTask(p.getUniqueID(),q.id,t.id); return; }
+        for(QuestCore.Task t:q.tasks) if(t.id.equals(task) && t.type.equals("custom") && t.manual) {
+            if(progress().taskDone(p.getUniqueID(),q.id,t.id)) throw new IllegalArgumentException("Task already complete");
+            QuestEvents.fire("task_clicked",p.getUniqueID(),q.id,t.id);
+            if(ordinary(p,q,t)) progress().markTask(p.getUniqueID(),q.id,t.id);
+            return;
+        }
         throw new IllegalArgumentException("Not a confirmation task");
     }
     public boolean individual(QuestCore.Quest q,QuestCore.Reward r) { return (r.mode.equals("inherit")?q.rewardMode:r.mode).equals("individual"); }

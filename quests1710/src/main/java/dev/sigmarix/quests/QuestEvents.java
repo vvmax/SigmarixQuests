@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 /** Server-thread lifecycle events for Java adapters and native server scripts. */
 public final class QuestEvents {
     private static final Map<String,List<Consumer<Event>>> listeners=new LinkedHashMap<String,List<Consumer<Event>>>();
-    public static final Set<String> TYPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("quest_started","task_started","task_completed","quest_completed","reward_claimed")));
+    public static final Set<String> TYPES=Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("quest_started","task_started","task_completed","task_clicked","quest_completed","reward_claimed")));
     public static final class Event {
         public final String type,quest,task;
         public final UUID player;

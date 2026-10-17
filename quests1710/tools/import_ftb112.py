@@ -304,7 +304,7 @@ def convert_task(raw, index, defaults=None, repeat=False):
     elif kind == 'reskillable':
         result.update(type='skill', target=raw.get('skill', ''), count=int(raw.get('skill_level', 1)))
     elif kind == 'custom':
-        result.update(type='custom', target='', count=1)
+        result.update(type='custom', target='', count=1, manual=bool(raw.get('enable_button', False)))
     else:
         raise ValueError('Task requires manual conversion: ' + kind)
     return result

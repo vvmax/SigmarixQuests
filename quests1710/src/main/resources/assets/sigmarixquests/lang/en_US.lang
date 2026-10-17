@@ -121,3 +121,5 @@ quests.ui.choose_a_reward=Choose a reward
 quests.ui.random_reward=Random reward
 quests.ui.command=Command
 quests.ui.notification=Notification
+
+quests.ui.shop=Shop
