@@ -6,6 +6,28 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.junit.Test;
 import static org.junit.Assert.*;
 public class QuestBoundaryTest {
+    @Test public void largeEditorSaveUsesVanillaSizedPackets() throws Exception {
+        Random random=new Random(73);StringBuilder json=new StringBuilder("{\"text\":\"");
+        for(int i=0;i<180000;i++) json.append((char)('a'+random.nextInt(26)));
+        json.append("\"}");
+        java.util.List<QuestNetwork.RequestChunk> chunks=QuestNetwork.requestChunks(json.toString());
+        assertTrue(chunks.size()>1);QuestNetwork.RequestAssembly assembly=new QuestNetwork.RequestAssembly();String result=null;
+        for(int i=0;i<chunks.size();i++) {
+            io.netty.buffer.ByteBuf wire=io.netty.buffer.Unpooled.buffer();
+            chunks.get(i).toBytes(wire);assertTrue(wire.readableBytes()+1<32767);
+            QuestNetwork.RequestChunk decoded=new QuestNetwork.RequestChunk();decoded.fromBytes(wire);wire.release();
+            result=assembly.accept(decoded,100+i);
+            if(i<chunks.size()-1) assertNull(result);
+        }
+        assertEquals(json.toString(),result);
+        try { assembly.accept(chunks.get(1),200);fail(); } catch(IOException expected) {}
+        assembly.accept(chunks.get(0),0);
+        try { assembly.accept(chunks.get(1),30001);fail(); } catch(IOException expected) {}
+        assembly.accept(chunks.get(0),40000);
+        try { assembly.accept(chunks.get(2),40001);fail(); } catch(IOException expected) {}
+        for(QuestNetwork.RequestChunk chunk:chunks) result=assembly.accept(chunk,50000);
+        assertEquals(json.toString(),result);
+    }
     @Test public void largestWorldMapFitsBoundedWireAndRejectsExtraEntries() throws Exception {
         QuestWorldMap map=new QuestWorldMap(); map.reference="book:";
         for(int i=0;i<4096;i++) map.values.put(String.format("%064x",i),403);

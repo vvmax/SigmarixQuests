@@ -17,6 +17,7 @@ public final class QuestNetwork {
         channel.registerMessage(RequestHandler.class, Request.class, 0, Side.SERVER);
         channel.registerMessage(ResponseHandler.class, Response.class, 1, Side.CLIENT);
         channel.registerMessage(NoticeHandler.class, Notice.class, 2, Side.CLIENT);
+        channel.registerMessage(RequestChunkHandler.class, RequestChunk.class, 3, Side.SERVER);
     }
     public static byte[] encode(String text) throws IOException {
         byte[] raw=text.getBytes(StandardCharsets.UTF_8);
@@ -60,6 +61,61 @@ public final class QuestNetwork {
             if(count<0 || count>MAX_COMPRESSED || count!=buffer.readableBytes()) throw new IllegalArgumentException("Invalid quest payload length");
             byte[] data=new byte[count]; buffer.readBytes(data);
             try { json=decode(data); } catch(IOException e) { throw new IllegalArgumentException(e); }
+        }
+    }
+    // C17PacketCustomPayload has a 32767-byte limit, including the FML discriminator.
+    public static final int CHUNK_BYTES=30000;
+    public static java.util.List<RequestChunk> requestChunks(String json) {
+        try {
+            byte[] encoded=encode(json);
+            java.util.List<RequestChunk> chunks=new java.util.ArrayList<RequestChunk>();
+            for(int offset=0;offset<encoded.length;offset+=CHUNK_BYTES) {
+                RequestChunk chunk=new RequestChunk();chunk.total=encoded.length;chunk.offset=offset;
+                chunk.data=java.util.Arrays.copyOfRange(encoded,offset,Math.min(offset+CHUNK_BYTES,encoded.length));
+                chunks.add(chunk);
+            }
+            return chunks;
+        } catch(IOException e) { throw new IllegalArgumentException(e); }
+    }
+    public static void sendRequest(String json) {
+        for(RequestChunk chunk:requestChunks(json)) channel.sendToServer(chunk);
+    }
+    public static final class RequestChunk implements IMessage {
+        public int total,offset; public byte[] data=new byte[0];
+        public void toBytes(ByteBuf buffer) { validate();buffer.writeInt(total);buffer.writeInt(offset);buffer.writeBytes(data); }
+        public void fromBytes(ByteBuf buffer) {
+            if(buffer.readableBytes()<8 || buffer.readableBytes()>CHUNK_BYTES+8) throw new IllegalArgumentException("Invalid quest chunk size");
+            total=buffer.readInt();offset=buffer.readInt();data=new byte[buffer.readableBytes()];buffer.readBytes(data);validate();
+        }
+        private void validate() {
+            if(total<=0 || total>MAX_COMPRESSED || offset<0 || data.length==0 || data.length>CHUNK_BYTES || offset>total-data.length)
+                throw new IllegalArgumentException("Invalid quest chunk bounds");
+        }
+    }
+    public static final class RequestAssembly {
+        private byte[] data; private int received; private long started;
+        public String accept(RequestChunk chunk,long now) throws IOException {
+            chunk.validate();
+            if(chunk.offset==0) { data=new byte[chunk.total];received=0;started=now; }
+            if(data==null || now-started>30000 || data.length!=chunk.total || received!=chunk.offset) {
+                data=null;throw new IOException("Invalid or expired quest chunk sequence");
+            }
+            System.arraycopy(chunk.data,0,data,received,chunk.data.length);received+=chunk.data.length;
+            if(received<data.length) return null;
+            byte[] complete=data;data=null;return decode(complete);
+        }
+    }
+    public static final class RequestChunkHandler implements IMessageHandler<RequestChunk,IMessage> {
+        private final java.util.Map<EntityPlayerMP,RequestAssembly> pending=new java.util.WeakHashMap<EntityPlayerMP,RequestAssembly>();
+        public synchronized IMessage onMessage(RequestChunk message,MessageContext context) {
+            EntityPlayerMP player=context.getServerHandler().playerEntity;
+            RequestAssembly assembly=pending.get(player);
+            if(assembly==null) { assembly=new RequestAssembly();pending.put(player,assembly); }
+            try {
+                String json=assembly.accept(message,System.currentTimeMillis());
+                if(json!=null) { pending.remove(player);QuestsMod.enqueue(player,json); }
+            } catch(IOException | IllegalArgumentException e) { pending.remove(player); }
+            return null;
         }
     }
     public static final class Request extends Payload { public Request() {} public Request(String json) { super(json); } }

@@ -43,7 +43,9 @@ public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesN
         if(find(selected)==null) selected="";
         buttonList.clear();
         int top=1;
-        if(QuestClicks.available("","custom:ftbmoney:open_gui")) button(15,0,top,20,18,"Shop","shop",true);
+        if(QuestClicks.available("","custom:ftbmoney:open_gui")) { button(15,0,top,20,18,"Shop","shop",true); top+=18; }
+        button(9,0,top,20,18,"Teams","team",true);
+        top=1;
         int right=width-20;
         if(ClientProxy.snapshot.states.containsValue("complete")) { button(20,right,top,20,18,"Collect rewards","reward",true).tint=0xFFF8E71C; top+=18; }
         if(QuestGuides.available("")) { button(12,right,top,20,18,"Guides","book",true).tint=0xFFEF9E1A; top+=18; }
