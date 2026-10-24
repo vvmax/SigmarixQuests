@@ -41,7 +41,7 @@ def q(key,title,text,proof,deps=None,guide='',optional=False,verify='result',tag
  dependencies=([last] if last else []) if deps is None else ([deps] if isinstance(deps,str) else list(deps))
  icon=next((t['target'] for t in tasks if t['type']=='item' and not t['target'].startswith('ore:')),current['icon'])
  meta=next((t.get('meta',0) for t in tasks if t.get('target')==icon),0)
- node=dict(id=key,title=title,description=text,chapter=current['id'],icon=icon,iconMeta=meta,dependencies=dependencies,tasks=tasks,rewards=[dict(id='experience',type='xp',count=12 if optional else 8)],autoComplete=True,rewardMode='individual',optional=optional)
+ node=dict(id=key,title=title,description=text,chapter=current['id'],icon=icon,iconMeta=meta,dependencies=dependencies,tasks=tasks,rewards=[],autoComplete=True,rewardMode='individual',optional=optional)
  if guide:node['pages']=[guide]
  if tags:node['tags']=tags
  quests.append(node);last=key
@@ -116,10 +116,29 @@ for node in quests:
   elif kind=='kill':task['title']='Победить: '+node['title']
   if task.get('nbt') and task.get('target')==node['icon']:node['iconNbt']=task['nbt']
 
-# Keep a dense map within each section, without overlapping nodes.
+# Lay out the actual DAG, rather than drawing an unrelated serpentine list.
+# Cross-section prerequisites remain real gates but do not create empty columns.
 for c in chapters:
  nodes=[q for q in quests if q['chapter']==c['id']]
- for n,node in enumerate(nodes):node.update(x=((n%6) if (n//6)%2==0 else 5-(n%6))*2.5,y=(n//6)*2.25)
+ local={n['id']:n for n in nodes};ranks={};lanes={}
+ def rank(key):
+  if key not in ranks:ranks[key]=max([rank(d)+1 for d in local[key]['dependencies'] if d in local] or [0])
+  return ranks[key]
+ for n in nodes:rank(n['id'])
+ column_offset=0
+ for depth in sorted(set(ranks.values())):
+  layer=[n for n in nodes if ranks[n['id']]==depth]
+  def barycentre(n):
+   p=[lanes[d] for d in n['dependencies'] if d in lanes]
+   return sum(p)/len(p) if p else nodes.index(n)
+  layer.sort(key=barycentre)
+  # Broad independent branches wrap into parallel columns. They remain siblings:
+  # no invented dependencies are added just to produce a compact drawing.
+  for lane,n in enumerate(layer):
+   column,row=divmod(lane,6);rows=min(6,len(layer)-column*6)
+   lanes[n['id']]=row-(rows-1)/2
+   n.update(x=(column_offset+column)*3.2,y=lanes[n['id']]*2.5)
+  column_offset+=(len(layer)+5)//6
  count=sum(q['chapter']==c['id'] for q in quests)
  c['description']+=(('\n\n' if c['description'] else '')+str(count)+' заданий. Ключевые предметы только обнаруживаются; производственные испытания принимают указанные расходуемые образцы. Награды не выдают материалы следующих ступеней.')
  c.pop('mods')

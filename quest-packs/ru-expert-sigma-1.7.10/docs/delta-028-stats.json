@@ -2,10 +2,10 @@
   "commit": "d6a27d3",
   "version": "0.28.0-SNAPSHOT",
   "quests": 696,
-  "initialFrameUtf8Bytes": 2992528,
-  "initialFrameGzipBytes": 153942,
+  "initialFrameUtf8Bytes": 2534681,
+  "initialFrameGzipBytes": 157529,
   "progressDeltaUtf8Bytes": 346,
   "editorSingleFieldDeltaUtf8Bytes": 577,
-  "nativeTestsPassed": 15,
+  "nativeTestsPassed": 16,
   "liveGameRun": false
 }

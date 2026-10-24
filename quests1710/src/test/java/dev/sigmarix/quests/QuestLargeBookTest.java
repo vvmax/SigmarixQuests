@@ -10,6 +10,29 @@ import static org.junit.Assert.*;
 /** Validates authored data without changing the mod transport implementation. */
 public class QuestLargeBookTest {
     private Path config() {return Paths.get("../quest-packs/ru-expert-sigma-1.7.10/config/sigmarixquests");}
+    @Test public void revisedCampaignKeepsParallelBranchesAndIllustrationsAfterNativeRoundTrip() throws Exception {
+        QuestCore.Book original=QuestBookFiles.read(config().resolve("quests.json").toFile()).book;
+        QuestCore.Book book=QuestService.JSON.fromJson(QuestService.JSON.toJson(original),QuestCore.Book.class);book.validate();
+        Map<String,QuestCore.Quest> byId=new HashMap<String,QuestCore.Quest>();
+        int xp=0,paid=0,images=0;
+        for(QuestCore.Quest q:book.quests){
+            byId.put(q.id,q);
+            for(QuestCore.Reward reward:q.rewards){assertEquals("xp",reward.type);assertEquals(3,reward.count);xp+=reward.count;paid++;}
+            for(QuestPresentation.GuidePage page:q.richPages)for(QuestPresentation.GuideElement element:page.elements)if(element.type.equals("image")){
+                String[] ref=element.resource.split(":",2);
+                assertTrue(Files.isRegularFile(Paths.get("../quest-packs/ru-expert-sigma-1.7.10/resourcepacks/Sigma-Quest-Guides/assets",ref[0],ref[1])));images++;
+            }
+        }
+        assertEquals(48,xp);assertEquals(16,paid);assertTrue(images>=9);
+        assertTrue(byId.get("ae_order").dependencies.containsAll(Arrays.asList("ae_patterns","ae_assembler","ae_cpu")));
+        for(String[] pair:new String[][]{{"ic2_macerator","ic2_extractor"},{"ic2_geothermal","ic2_solar"},{"gen_apiary","gen_template"}}){
+            assertFalse(ancestors(pair[0],byId,new HashSet<String>()).contains(pair[1]));
+            assertFalse(ancestors(pair[1],byId,new HashSet<String>()).contains(pair[0]));
+        }
+    }
+    private Set<String> ancestors(String id,Map<String,QuestCore.Quest> byId,Set<String> found){
+        for(String parent:byId.get(id).dependencies)if(found.add(parent))ancestors(parent,byId,found);return found;
+    }
     @Test public void sigmaBookHasValidNativeSchemaAndCrossChapterDependencies() throws Exception {
         QuestBookFiles.Loaded loaded=QuestBookFiles.read(config().resolve("quests.json").toFile());
         loaded.book.validate();assertEquals(696,loaded.book.quests.size());assertEquals(53,loaded.book.chapters.size());

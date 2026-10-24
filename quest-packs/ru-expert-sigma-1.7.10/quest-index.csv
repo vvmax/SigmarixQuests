@@ -2,355 +2,355 @@
 start_wood;start;Рабочее место;result;item;
 start_tools;start;Камень и инструменты;result;item,item;start_wood
 start_light;start;Свет на базе;result;item;start_tools
-start_food;start;Провизия для экспедиции;result;item;start_light
-start_iron;start;Первый металл;result;item;start_food
+start_food;start;Провизия для экспедиции;result;item;start_wood
+start_iron;start;Первый металл;result;item;start_tools
 start_redstone;start;Управляющая пыль;result;item;start_iron
-start_diamond;start;Алмазный рубеж;result;item;start_redstone
-start_water;start;Первые жидкости;result;item;start_diamond
-start_nether;start;Экспедиция в Нижний мир;result;custom;start_water
+start_diamond;start;Алмазный рубеж;result;item;start_iron
+start_water;start;Первые жидкости;result;item;start_iron
+start_nether;start;Экспедиция в Нижний мир;result;custom;start_diamond,start_water
 start_quartz;start;Кварц и огненный порошок;result;item,item;start_nether
 start_end;start;Путь к Энду;result;item;start_quartz
 start_dragon;start;Освободить выход;result;kill;start_end
 qt_book;quest_tools;Книга заданий;result;item;start_tools
 qt_terminal;quest_tools;Приёмный терминал;result;item;qt_book
-qt_chest;quest_tools;Сдача предметов автоматикой;result;item;qt_terminal
-qt_water;quest_tools;Приём жидкости;result;fluid;qt_chest
-qt_screen;quest_tools;Карта на стене;result;item;qt_water
+qt_chest;quest_tools;Сдача предметов автоматикой;result;item;qt_book
+qt_water;quest_tools;Приём жидкости;result;fluid;qt_terminal
+qt_screen;quest_tools;Карта на стене;result;item;qt_book
 qt_redstone;quest_tools;Сигнал готовности;result;item;qt_screen
-qt_rewards;quest_tools;Выдача наград в склад;result;item;qt_redstone
-store_chest;storage;Отдельный склад;result;item;start_iron
-store_iron;storage;Железный сундук;result;item;store_chest
-store_diamond;storage;Большой буфер;result;item;store_iron
-store_drawers;storage;Ящики для массовых ресурсов;result;item;store_diamond
+qt_rewards;quest_tools;Выдача наград в склад;result;item;qt_chest
+store_chest;storage;Отдельный склад;result;item;start_wood
+store_iron;storage;Железный сундук;result;item;store_chest,start_iron
+store_diamond;storage;Большой буфер;result;item;store_iron,start_diamond
+store_drawers;storage;Ящики для массовых ресурсов;result;item;store_chest
 store_controller;storage;Контроллер склада ящиков;result;item;store_drawers
-store_lock;storage;Закреплённые типы;result;item;store_controller
-store_compact;storage;Уплотняющий ящик;result;item;store_lock
+store_lock;storage;Закреплённые типы;result;item;store_drawers
+store_compact;storage;Уплотняющий ящик;result;item;store_drawers
 ic2_rubber;ic2;Каучуковая цепочка;result;item;start_iron
-ic2_plates;ic2;Молот и кусачки;result;item,item;ic2_rubber
-ic2_circuit;ic2;Электронная схема;result;item;ic2_plates
-ic2_casing;ic2;Основной корпус;result;item;ic2_circuit
-ic2_generator;ic2;Генератор и сеть EU;result;item;ic2_casing
-ic2_cables;ic2;Изоляция и потери;result;item;ic2_generator
-ic2_batbox;ic2;Буфер первого уровня;result;item;ic2_cables
-ic2_furnace;ic2;Электрическая плавка;result;item;ic2_batbox
-ic2_macerator;ic2;Удвоение начинается с дробления;result;item;ic2_furnace
-ic2_extractor;ic2;Экстракция;result;item;ic2_macerator
-ic2_compressor;ic2;Давление;result;item;ic2_extractor
-ic2_metalformer;ic2;Три режима формовки;result;item;ic2_compressor
-ic2_wrench;ic2;Демонтаж без потерь;result;item;ic2_metalformer
-ic2_eu;ic2;Проверяемая электрическая линия;result;ic2_energy;ic2_wrench
-ic2_washer;ic2;Рудопромывочная машина;result;item;ic2_eu
+ic2_plates;ic2;Молот и кусачки;result;item,item;start_iron
+ic2_circuit;ic2;Электронная схема;result;item;ic2_rubber,ic2_plates,start_redstone
+ic2_casing;ic2;Основной корпус;result;item;ic2_plates
+ic2_generator;ic2;Генератор и сеть EU;result;item;ic2_plates,ic2_rubber
+ic2_cables;ic2;Изоляция и потери;result;item;ic2_rubber
+ic2_batbox;ic2;Буфер первого уровня;result;item;ic2_circuit
+ic2_furnace;ic2;Электрическая плавка;result;item;ic2_casing,ic2_circuit
+ic2_macerator;ic2;Удвоение начинается с дробления;result;item;ic2_casing,ic2_circuit
+ic2_extractor;ic2;Экстракция;result;item;ic2_casing,ic2_circuit
+ic2_compressor;ic2;Давление;result;item;ic2_casing,ic2_circuit
+ic2_metalformer;ic2;Три режима формовки;result;item;ic2_casing,ic2_circuit
+ic2_wrench;ic2;Демонтаж без потерь;result;item;ic2_circuit
+ic2_eu;ic2;Проверяемая электрическая линия;result;ic2_energy;ic2_generator
+ic2_washer;ic2;Рудопромывочная машина;result;item;ic2_casing,ic2_circuit
 ic2_thermal;ic2;Термальная центрифуга;result;item;ic2_washer
-ic2_advanced;ic2;Продвинутая электроника;result;item;ic2_thermal
-ic2_advanced_case;ic2;Армированный корпус;result;item;ic2_advanced,mek_reinforced
-ic2_mfe;ic2;Накопление среднего уровня;result;item;ic2_advanced_case
-ic2_induction;ic2;Нагретая производительность;result;item;ic2_mfe
-ic2_geothermal;ic2;Лава как топливо;result;item;ic2_induction
-ic2_solar;ic2;Возобновляемый резерв;result;item;ic2_geothermal
-ic2_drill;ic2;Электроинструмент;result;item;ic2_solar
-ic2_charge;ic2;Заряженная батарея;result;item;ic2_drill
-ic2_overclock;ic2;Ускорение с ценой;result;item;ic2_charge
-ic2_transformer;ic2;Допустимое напряжение;result;item;ic2_overclock
-ic2_storage_upgrade;ic2;Внутренний запас;result;item;ic2_transformer
-ic2_eject;ic2;Направленный вывод;result;item;ic2_storage_upgrade
-ic2_recycler;ic2;Утильсырьё;result;item;ic2_eject
+ic2_advanced;ic2;Продвинутая электроника;result;item;ic2_circuit
+ic2_advanced_case;ic2;Армированный корпус;result;item;ic2_advanced,ic2_casing,mek_reinforced
+ic2_mfe;ic2;Накопление среднего уровня;result;item;ic2_advanced
+ic2_induction;ic2;Нагретая производительность;result;item;ic2_advanced_case,ic2_furnace
+ic2_geothermal;ic2;Лава как топливо;result;item;ic2_generator
+ic2_solar;ic2;Возобновляемый резерв;result;item;ic2_generator
+ic2_drill;ic2;Электроинструмент;result;item;ic2_advanced
+ic2_charge;ic2;Заряженная батарея;result;item;ic2_batbox
+ic2_overclock;ic2;Ускорение с ценой;result;item;ic2_circuit
+ic2_transformer;ic2;Допустимое напряжение;result;item;ic2_circuit
+ic2_storage_upgrade;ic2;Внутренний запас;result;item;ic2_circuit
+ic2_eject;ic2;Направленный вывод;result;item;ic2_circuit
+ic2_recycler;ic2;Утильсырьё;result;item;ic2_casing,ic2_circuit
 ic2_scrap;ic2;Запас усилителя;result;item;ic2_recycler
-ic2_reactor;ic2;Ядерная установка;result;item;ic2_scrap
+ic2_reactor;ic2;Ядерная установка;result;item;ic2_advanced_case
 ic2_chambers;ic2;Расширение реактора;result;item;ic2_reactor
-ic2_fuel;ic2;Подготовка топлива;result;item;ic2_chambers
-ic2_heat;ic2;Тепловая энергетика;result;item;ic2_fuel
-ic2_steam;ic2;Паровая установка;result;item;ic2_heat
+ic2_fuel;ic2;Подготовка топлива;result;item;ic2_thermal
+ic2_heat;ic2;Тепловая энергетика;result;item;ic2_advanced_case
+ic2_steam;ic2;Паровая установка;result;item;ic2_reactor,ic2_heat
 ic2_fluidreactor;ic2;Реактор с теплоносителем;result;item;ic2_steam
-ic2_matter;ic2;Генератор материи;result;item;ic2_fluidreactor,mek_atomic,eio_octadic,ae_engineering
+ic2_matter;ic2;Генератор материи;result;item;ic2_advanced_case,mek_atomic,eio_octadic,ae_engineering
 ic2_scanner;ic2;Запись вещества;result;item;ic2_matter
 ic2_patternstorage;ic2;Библиотека шаблонов;result;item;ic2_scanner
 ic2_replicator;ic2;Управляемая репликация;result;item;ic2_patternstorage
-ic2_nano;ic2;Электрическая защита;result;item;ic2_replicator
-ic2_quantum;ic2;Квантовая экипировка;result;item;ic2_nano
+ic2_nano;ic2;Электрическая защита;result;item;ic2_advanced
+ic2_quantum;ic2;Квантовая экипировка;result;item;ic2_matter,ic2_nano
 ie_hammer;ie;Инженерный молот;result;item;start_iron
 ie_coke;ie;Коксовая печь;result;item;ie_hammer
 ie_treated;ie;Пропитанная древесина;result;item;ie_coke
-ie_steel;ie;Доменная плавка;result;item;ie_treated
+ie_steel;ie;Доменная плавка;result;item;ie_coke
 ie_components;ie;Железная механика;result;item;ie_steel
 ie_wire;ie;Катушки и соединители;result;item;ie_components
-ie_waterwheel;ie;Водяной привод;result;item;ie_wire
-ie_wind;ie;Ветровой привод;result;item;ie_waterwheel
-ie_dynamo;ie;Механика становится RF;result;item;ie_wind
-ie_capacitor;ie;Буфер LV;result;item;ie_dynamo
-ie_rf;ie;Энергия инженерной линии;result;energy;ie_capacitor
-ie_workbench;ie;Рабочий стол инженера;result;item;ie_rf
+ie_waterwheel;ie;Водяной привод;result;item;ie_treated
+ie_wind;ie;Ветровой привод;result;item;ie_treated
+ie_dynamo;ie;Механика становится RF;result;item;ie_components
+ie_capacitor;ie;Буфер LV;result;item;ie_components
+ie_rf;ie;Энергия инженерной линии;result;energy;ie_wire,ie_dynamo
+ie_workbench;ie;Рабочий стол инженера;result;item;ie_treated
 ie_blueprint;ie;Чертёж компонентов;result;item;ie_workbench
-ie_hemp;ie;Конопляное волокно;result;item;ie_blueprint
-ie_crusher;ie;Дробилка;direct;observation;ie_hemp
-ie_press;ie;Металлический пресс;direct;observation;ie_crusher
-ie_conveyor;ie;Конвейерная подача;result;item;ie_press
-ie_squeezer;ie;Выжимка масла;direct;observation;ie_conveyor
-ie_fermenter;ie;Брожение;direct;observation;ie_squeezer
-ie_refinery;ie;Смешение биотоплива;direct;observation;ie_fermenter
+ie_hemp;ie;Конопляное волокно;result;item;ie_hammer
+ie_crusher;ie;Дробилка;direct;observation;ie_components,ie_blueprint
+ie_press;ie;Металлический пресс;direct;observation;ie_components,ie_blueprint
+ie_conveyor;ie;Конвейерная подача;result;item;ie_hemp
+ie_squeezer;ie;Выжимка масла;direct;observation;ie_components,ie_blueprint
+ie_fermenter;ie;Брожение;direct;observation;ie_components,ie_blueprint
+ie_refinery;ie;Смешение биотоплива;direct;observation;ie_squeezer,ie_fermenter
 ie_diesel;ie;Дизельная генерация;direct;observation;ie_refinery
-ie_arc;ie;Дуговая печь;direct;observation;ie_diesel
-ie_excavator;ie;Промышленная выемка;direct;observation;ie_arc
-ie_railgun;ie;Рельсотрон;result;item;ie_excavator
+ie_arc;ie;Дуговая печь;direct;observation;ie_steel,ie_components
+ie_excavator;ie;Промышленная выемка;direct;observation;ie_steel,ie_components
+ie_railgun;ie;Рельсотрон;result;item;ie_steel,ie_components
 te_frame0;thermal;Стандартизованная рама;result;item;ic2_casing,ie_components
 te_dynamo;thermal;Первый динамо;result;item;te_frame0
 te_cell;thermal;Накопитель RF;result;item;te_dynamo
-te_pulverizer;thermal;Измельчение и побочные продукты;result;item;te_cell
-te_furnace;thermal;Электрическая печь RF;result;item;te_pulverizer
-te_smelter;thermal;Индукционная плавильня;result;item;te_furnace
-te_sawmill;thermal;Деревообработка;result;item;te_smelter
-te_transposer;thermal;Жидкость внутри предмета;result;item;te_sawmill
-te_crucible;thermal;Расплавы для сплавов;result;item;te_transposer
-te_accumulator;thermal;Непрерывная вода;result;item;te_crucible
-te_extruder;thermal;Камень по требованию;result;item;te_accumulator
-te_frame1;thermal;Усиленная рама;result;item;te_extruder,mek_alloy
+te_pulverizer;thermal;Измельчение и побочные продукты;result;item;te_frame0
+te_furnace;thermal;Электрическая печь RF;result;item;te_frame0
+te_smelter;thermal;Индукционная плавильня;result;item;te_frame1
+te_sawmill;thermal;Деревообработка;result;item;te_frame0
+te_transposer;thermal;Жидкость внутри предмета;result;item;te_frame1
+te_crucible;thermal;Расплавы для сплавов;result;item;te_frame1
+te_accumulator;thermal;Непрерывная вода;result;item;te_frame0
+te_extruder;thermal;Камень по требованию;result;item;te_frame0
+te_frame1;thermal;Усиленная рама;result;item;te_frame0,mek_alloy
 te_induction;thermal;Ледниковый осадитель;result;item;te_frame1
-te_charger;thermal;Зарядный станок;result;item;te_induction
-te_frame2;thermal;Укреплённая рама;result;item;te_charger,mek_reinforced,eio_octadic
-te_augments;thermal;Настройка через улучшения;result;item;te_frame2
-te_frame3;thermal;Резонирующая рама;result;item;te_augments,mek_atomic,ic2_advanced
+te_charger;thermal;Зарядный станок;result;item;te_frame1
+te_frame2;thermal;Укреплённая рама;result;item;te_frame1,mek_reinforced,eio_octadic
+te_augments;thermal;Настройка через улучшения;result;item;te_frame1
+te_frame3;thermal;Резонирующая рама;result;item;te_frame2,mek_atomic,ic2_advanced
 te_tesseract;thermal;Пространственный канал;result;item;te_frame3
 te_working_tesseract;thermal;Передача между площадками;result;item;te_tesseract
 mek_infuser;mekanism;Металлургическое наполнение;result;item;start_redstone
 mek_alloy;mekanism;Обогащённое соединение;result;item;mek_infuser
 mek_steelcase;mekanism;Стальной корпус;result;item;mek_alloy,te_frame0
 mek_enrichment;mekanism;Камера обогащения;result;item;mek_steelcase
-mek_crusher;mekanism;Дробильная ступень;result;item;mek_enrichment
-mek_smelter;mekanism;Плавка на электричестве;result;item;mek_crusher
-mek_power;mekanism;Энергокуб и стороны;result;item;mek_smelter
-mek_cable;mekanism;Универсальные провода;result;item;mek_power
-mek_factory;mekanism;Параллельная обработка;result;item;mek_cable
-mek_reinforced;mekanism;Укреплённые соединения;result;item;mek_factory
-mek_purification;mekanism;Очистительная камера;result;item;mek_reinforced
-mek_electrolyzer;mekanism;Разделение воды;result;item;mek_purification
+mek_crusher;mekanism;Дробильная ступень;result;item;mek_steelcase
+mek_smelter;mekanism;Плавка на электричестве;result;item;mek_steelcase
+mek_power;mekanism;Энергокуб и стороны;result;item;mek_steelcase
+mek_cable;mekanism;Универсальные провода;result;item;mek_steelcase
+mek_factory;mekanism;Параллельная обработка;result;item;mek_steelcase
+mek_reinforced;mekanism;Укреплённые соединения;result;item;mek_alloy
+mek_purification;mekanism;Очистительная камера;result;item;mek_reinforced,mek_electrolyzer
+mek_electrolyzer;mekanism;Разделение воды;result;item;mek_steelcase
 mek_oxygen;mekanism;Газовый буфер;result;item;mek_electrolyzer
-mek_chemicalinfuser;mekanism;Смешение газов;result;item;mek_oxygen
-mek_injection;mekanism;Химическая инъекция;result;item;mek_chemicalinfuser
-mek_atomic;mekanism;Атомный уровень;result;item;mek_injection
-mek_dissolution;mekanism;Растворение руды;result;item;mek_atomic
+mek_chemicalinfuser;mekanism;Смешение газов;result;item;mek_steelcase,mek_electrolyzer
+mek_injection;mekanism;Химическая инъекция;result;item;mek_purification,mek_chemicalinfuser
+mek_atomic;mekanism;Атомный уровень;result;item;mek_reinforced
+mek_dissolution;mekanism;Растворение руды;result;item;mek_injection
 mek_washer;mekanism;Промывка суспензии;result;item;mek_dissolution
 mek_crystallizer;mekanism;Кристаллизация;result;item;mek_washer
-mek_salt;mekanism;Солевой контур;result;item,item;mek_crystallizer
+mek_salt;mekanism;Солевой контур;result;item,item;mek_steelcase
 mek_ports;mekanism;Порты установки;result;item;mek_salt
-mek_sorter;mekanism;Логистический сортировщик;result;item;mek_ports
-mek_transport;mekanism;Логистические транспортеры;result;item;mek_sorter
-mek_bins;mekanism;Бункер для одного ресурса;result;item;mek_transport
-mek_robit;mekanism;Робит как помощник;result;item;mek_bins
-mek_teleportcore;mekanism;Пространственное ядро;result;item;mek_robit
+mek_sorter;mekanism;Логистический сортировщик;result;item;mek_steelcase
+mek_transport;mekanism;Логистические транспортеры;result;item;mek_steelcase
+mek_bins;mekanism;Бункер для одного ресурса;result;item;mek_steelcase
+mek_robit;mekanism;Робит как помощник;result;item;mek_steelcase
+mek_teleportcore;mekanism;Пространственное ядро;result;item;mek_atomic
 mek_miner;mekanism;Цифровой шахтёр;result;item;mek_teleportcore
-mek_laser;mekanism;Лазерная инфраструктура;result;item,item;mek_miner
-mek_assembler;mekanism;Формульный сборщик;result;item;mek_laser
-mek_anchor;mekanism;Улучшения машин;result;item,item,item;mek_assembler
-mg_heat;mek_power;Тепловой генератор;result;item;mek_atomic
-mg_wind;mek_power;Ветрогенератор;result;item;mg_heat
-mg_bio;mek_power;Биотопливная генерация;result;item;mg_wind
-mg_gas;mek_power;Газовая генерация;result;item;mg_bio
-mg_prc;mek_power;Реакционная камера;result;item;mg_gas
-mg_solar;mek_power;Солнечная поддержка;result;item;mg_prc
-mg_fusion;mek_power;Контроллер синтеза;result;item;mg_solar
+mek_laser;mekanism;Лазерная инфраструктура;result;item,item;mek_atomic
+mek_assembler;mekanism;Формульный сборщик;result;item;mek_factory
+mek_anchor;mekanism;Улучшения машин;result;item,item,item;mek_factory
+mg_heat;mek_power;Тепловой генератор;result;item;mek_alloy
+mg_wind;mek_power;Ветрогенератор;result;item;mek_alloy
+mg_bio;mek_power;Биотопливная генерация;result;item;mek_alloy
+mg_gas;mek_power;Газовая генерация;result;item;mg_prc
+mg_prc;mek_power;Реакционная камера;result;item;mg_bio,mek_electrolyzer
+mg_solar;mek_power;Солнечная поддержка;result;item;mek_alloy
+mg_fusion;mek_power;Контроллер синтеза;result;item;mek_atomic,mek_ports
 mg_frame;mek_power;Герметичный корпус;result;item;mg_fusion
-mg_laser;mek_power;Энергия запуска;result;item,item,item;mg_frame
+mg_laser;mek_power;Энергия запуска;result;item,item,item;mg_frame,mek_laser
 mg_output;mek_power;Испытание генерации;result;energy;mg_laser
-eio_chassis;enderio;Машинное шасси;result;item;te_frame0
+eio_chassis;enderio;Машинное шасси;result;item;start_redstone
 eio_generator;enderio;Генерация на топливе;result;item;eio_chassis
-eio_sag;enderio;Измельчитель SAG;result;item;eio_generator
-eio_smelter;enderio;Плавильщик сплавов;result;item;eio_sag
+eio_sag;enderio;Измельчитель SAG;result;item;eio_chassis
+eio_smelter;enderio;Плавильщик сплавов;result;item;eio_chassis
 eio_conductive;enderio;Проводящие материалы;result;item;eio_smelter
-eio_pulsating;enderio;Импульсная логистика;result;item;eio_conductive
-eio_energetic;enderio;Энергетический сплав;result;item;eio_pulsating
+eio_pulsating;enderio;Импульсная логистика;result;item;eio_smelter
+eio_energetic;enderio;Энергетический сплав;result;item;eio_smelter
 eio_vibrant;enderio;Вибрирующий сплав;result;item;eio_energetic
-eio_soularium;enderio;Душарий;result;item;eio_vibrant
-eio_capacitor;enderio;Конденсаторы меняют машину;result;item;eio_soularium
+eio_soularium;enderio;Душарий;result;item;eio_smelter
+eio_capacitor;enderio;Конденсаторы меняют машину;result;item;eio_chassis
 eio_double;enderio;Двойной конденсатор;result;item;eio_capacitor
-eio_octadic;enderio;Октадический конденсатор;result;item;eio_double
-eio_conduits;enderio;Несколько сетей в одном блоке;result;item;eio_octadic
+eio_octadic;enderio;Октадический конденсатор;result;item;eio_double,eio_vibrant
+eio_conduits;enderio;Несколько сетей в одном блоке;result;item;eio_chassis
 eio_filters;enderio;Фильтр и приоритет;result;item;eio_conduits
-eio_reservoir;enderio;Локальный резервуар воды;result;item;eio_filters
+eio_reservoir;enderio;Локальный резервуар воды;result;item;eio_chassis
 eio_vat;enderio;Жидкая химия;result;item;eio_reservoir
 eio_farming;enderio;Фермерская станция;result;item;eio_vat
-eio_darksteel;enderio;Тёмная сталь;result;item;eio_farming
-eio_soulvial;enderio;Захват подходящей души;result;item;eio_darksteel
-eio_soulbinder;enderio;Связывание душ;result;item;eio_soulvial
+eio_darksteel;enderio;Тёмная сталь;result;item;eio_chassis
+eio_soulvial;enderio;Захват подходящей души;result;item;eio_chassis
+eio_soulbinder;enderio;Связывание душ;result;item;eio_soularium,eio_soulvial
 eio_spawner;enderio;Управляемый спавнер;result;item;eio_soulbinder
-eio_obelisk;enderio;Буфер опыта;result;item;eio_spawner
-eio_travel;enderio;Межточечное перемещение;result;item;eio_obelisk
-eio_transceiver;enderio;Общий пространственный канал;result;item;eio_travel
-bc_wrench;buildcraft;Ключ механика;result;item;start_redstone
+eio_obelisk;enderio;Буфер опыта;result;item;eio_soulbinder
+eio_travel;enderio;Межточечное перемещение;result;item;eio_soulbinder,eio_darksteel
+eio_transceiver;enderio;Общий пространственный канал;result;item;eio_octadic
+bc_wrench;buildcraft;Ключ механика;result;item;start_iron
 bc_pipes;buildcraft;Первая предметная труба;result;item;bc_wrench
-bc_engine;buildcraft;Двигатель и управляющий сигнал;result;item;bc_pipes
-bc_diamondpipe;buildcraft;Маршрутизация по фильтру;result;item;bc_engine
-bc_fluidpipes;buildcraft;Отдельная жидкостная сеть;result;item;bc_diamondpipe
-bc_landmarks;buildcraft;Рабочая область;result;item;bc_fluidpipes
-bc_quarry;buildcraft;Механический карьер;result;item;bc_landmarks
-bc_pump;buildcraft;Откачка жидкости;result;item;bc_quarry
+bc_engine;buildcraft;Двигатель и управляющий сигнал;result;item;bc_wrench
+bc_diamondpipe;buildcraft;Маршрутизация по фильтру;result;item;bc_pipes
+bc_fluidpipes;buildcraft;Отдельная жидкостная сеть;result;item;bc_pipes
+bc_landmarks;buildcraft;Рабочая область;result;item;bc_wrench
+bc_quarry;buildcraft;Механический карьер;result;item;bc_landmarks,bc_engine
+bc_pump;buildcraft;Откачка жидкости;result;item;bc_engine,bc_fluidpipes
 bc_refinery;buildcraft;Переработка топлива;result;item;bc_pump
-bc_assembly;buildcraft;Лазерная сборка;result;item;bc_refinery
-bc_laser;buildcraft;Лазерный привод стола;result;item;bc_assembly
-bc_chipset;buildcraft;Чипсеты;result;item;bc_laser
+bc_assembly;buildcraft;Лазерная сборка;result;item;bc_laser
+bc_laser;buildcraft;Лазерный привод стола;result;item;bc_engine
+bc_chipset;buildcraft;Чипсеты;result;item;bc_assembly
 bc_gates;buildcraft;Ворота на трубах;result;item;bc_chipset
-bc_robot;buildcraft;Робот и рабочая зона;result;item;bc_gates
+bc_robot;buildcraft;Робот и рабочая зона;result;item;bc_chipset
 bc_docking;buildcraft;Док-станция;result;item;bc_robot
-bc_builder;buildcraft;Постройка по схеме;result;item;bc_docking
-bc_architect;buildcraft;Запись схемы;result;item;bc_builder
-br_fuel;bigreactors;Топливо реактора;result;item;ic2_advanced_case
-br_casing;bigreactors;Корпус и контроллер;result;item,item;br_fuel
+bc_builder;buildcraft;Постройка по схеме;result;item;bc_architect,bc_assembly
+bc_architect;buildcraft;Запись схемы;result;item;bc_landmarks
+br_fuel;bigreactors;Топливо реактора;result;item;start_iron
+br_casing;bigreactors;Корпус и контроллер;result;item,item;ie_steel
 br_rods;bigreactors;Топливные стержни;result;item,item;br_casing
-br_ports;bigreactors;Порты;result;item,item;br_rods
-br_steam;bigreactors;Активное охлаждение;result;item;br_ports
+br_ports;bigreactors;Порты;result;item,item;br_casing
+br_steam;bigreactors;Активное охлаждение;result;item;br_rods,br_ports,br_fuel
 br_turbine;bigreactors;Паровая турбина;result;item,item,item,item;br_steam
-br_compact;bigreactors;Компактный реактор;result;item;br_turbine
+br_compact;bigreactors;Компактный реактор;result;item;ic2_advanced_case
 br_module1;bigreactors;Расширение I;result;item;br_compact
 br_module2;bigreactors;Расширение II;result;item;br_module1
-br_advanced;bigreactors;Продвинутый компактный реактор;result;item;br_module2
-sol_advanced;solar_gravi;Продвинутая солнечная панель;result;item;ic2_advanced_case
+br_advanced;bigreactors;Продвинутый компактный реактор;result;item;br_compact
+sol_advanced;solar_gravi;Продвинутая солнечная панель;result;item;ic2_solar
 sol_hybrid;solar_gravi;Гибридная ступень;result;item;sol_advanced
 sol_ultimate;solar_gravi;Ультимативная ступень;result;item;sol_hybrid
 sol_transform;solar_gravi;Молекулярное преобразование;result;item;sol_ultimate
 sol_spectral;solar_gravi;Спектральная панель;result;item;sol_transform
 sol_singular;solar_gravi;Сингулярная панель;result;item;sol_spectral
 sol_admin;solar_gravi;Светоадсорбционная панель;result;item;sol_singular
-gravi_jet;solar_gravi;Продвинутый реактивный ранец;result;item;ic2_advanced_case
-gravi_drill;solar_gravi;Продвинутый бур;result;item;gravi_jet
-gravi_lappack;solar_gravi;Переносной накопитель;result;item;gravi_drill
-gravi_chest;solar_gravi;Гравитационная кираса;result;item;gravi_lappack
-gravi_vajra;solar_gravi;Ваджра;result;item;gravi_chest
-gravi_assembler;solar_gravi;Сборка модулей брони;result;item,item;gravi_vajra
-gravi_flight;solar_gravi;Модули полёта и энергии;result;item,item;gravi_assembler
-gravi_sensors;solar_gravi;Датчики реактора;result;item,item;gravi_flight
-gravi_monitor;solar_gravi;Информационная панель;result;item;gravi_sensors
-gravi_convert;solar_gravi;Преобразование энергии;result;item;gravi_monitor
-mfr_plastic;mfr;Пластик;result;item;te_frame0
+gravi_jet;solar_gravi;Продвинутый реактивный ранец;result;item;ic2_mfe
+gravi_drill;solar_gravi;Продвинутый бур;result;item;ic2_drill
+gravi_lappack;solar_gravi;Переносной накопитель;result;item;ic2_mfe
+gravi_chest;solar_gravi;Гравитационная кираса;result;item;ic2_quantum
+gravi_vajra;solar_gravi;Ваджра;result;item;ic2_quantum
+gravi_assembler;solar_gravi;Сборка модулей брони;result;item,item;ic2_advanced
+gravi_flight;solar_gravi;Модули полёта и энергии;result;item,item;gravi_chest
+gravi_sensors;solar_gravi;Датчики реактора;result;item,item;gravi_assembler
+gravi_monitor;solar_gravi;Информационная панель;result;item;gravi_assembler
+gravi_convert;solar_gravi;Преобразование энергии;result;item;gravi_assembler
+mfr_plastic;mfr;Пластик;result;item;start_iron
 mfr_planter;mfr;Посадка и сбор;result;item,item;mfr_plastic
-mfr_fertilizer;mfr;Удобрение;result;item,item;mfr_planter
-mfr_sludge;mfr;Переработка отходов;result;item;mfr_fertilizer
-mfr_animals;mfr;Животноводство;result;item,item;mfr_sludge
-mfr_grinder;mfr;Добыча эссенции;result;item;mfr_animals
-mfr_net;mfr;Сафари-сеть;result;item;mfr_grinder
-mfr_spawner;mfr;Автоспавнер;result;item;mfr_net
-mfr_pink;mfr;Розовая слизь;result;item,item;mfr_spawner
+mfr_fertilizer;mfr;Удобрение;result;item,item;mfr_plastic
+mfr_sludge;mfr;Переработка отходов;result;item;mfr_plastic
+mfr_animals;mfr;Животноводство;result;item,item;mfr_plastic
+mfr_grinder;mfr;Добыча эссенции;result;item;mfr_plastic
+mfr_net;mfr;Сафари-сеть;result;item;mfr_plastic
+mfr_spawner;mfr;Автоспавнер;result;item;mfr_grinder
+mfr_pink;mfr;Розовая слизь;result;item,item;mfr_animals
 mfr_laser;mfr;Лазерный бур;result;item,item;mfr_pink
-mfr_bio;mfr;Биотопливо;result;item,item;mfr_laser
-mfr_enchant;mfr;Работа с чарами;result;item,item;mfr_bio
-mfr_rednet;mfr;Программируемая логика;result;item,item;mfr_enchant
-util_duct;utility_transport;Предметные трубы;result;item,item;te_frame0
+mfr_bio;mfr;Биотопливо;result;item,item;mfr_plastic
+mfr_enchant;mfr;Работа с чарами;result;item,item;mfr_plastic
+mfr_rednet;mfr;Программируемая логика;result;item,item;mfr_plastic
+util_duct;utility_transport;Предметные трубы;result;item,item;start_redstone
 util_retriever;utility_transport;Адресная доставка;result;item,item;util_duct
-util_fluid;utility_transport;Жидкостные трубы;result;item;util_retriever
-util_flux;utility_transport;Флаксовые трубы;result;item;util_fluid
-util_nodes;utility_transport;Передающие узлы;result;item,item;util_flux
+util_fluid;utility_transport;Жидкостные трубы;result;item;util_duct
+util_flux;utility_transport;Флаксовые трубы;result;item;util_duct
+util_nodes;utility_transport;Передающие узлы;result;item,item;start_redstone
 util_drum;utility_transport;Барабан;result;item;util_nodes
-util_ritual;utility_transport;Сигил деления;result;item;util_drum
+util_ritual;utility_transport;Сигил деления;result;item;start_diamond
 util_unstable;utility_transport;Нестабильный слиток;result;item;util_ritual
 util_quarry;utility_transport;Эндер-карьер;result;item;util_unstable
-util_flight;utility_transport;Кольцо ангела;result;item;util_quarry
-util_industrial;utility_transport;Машины Sigmarix Industrial;result;item;util_flight
-util_rotor;utility_transport;Роторы Sigmarix Industrial;result;item,item,item;util_industrial
+util_flight;utility_transport;Кольцо ангела;result;item;util_unstable
+util_industrial;utility_transport;Машины Sigmarix Industrial;result;item;ic2_advanced
+util_rotor;utility_transport;Роторы Sigmarix Industrial;result;item,item,item;ic2_advanced
 ae_quartz;ae2;Истинный кварц;result;item;start_redstone
 ae_charger;ae2;Заряженный кристалл;result;item,item;ae_quartz
-ae_fluix;ae2;Реакция в воде;result;item;ae_charger
+ae_fluix;ae2;Реакция в воде;result;item;ae_charger,start_quartz
 ae_pure;ae2;Выращивание кристаллов;result;item;ae_fluix
-ae_presses;ae2;Четыре пресса;result;item,item,item,item;ae_pure
-ae_inscriber;ae2;Ручной высекатель;result;item;ae_presses
+ae_presses;ae2;Четыре пресса;result;item,item,item,item;start_redstone
+ae_inscriber;ae2;Ручной высекатель;result;item;ae_presses,ae_fluix
 ae_logic;ae2;Логический процессор;result;item;ae_inscriber
-ae_calculation;ae2;Вычислительный процессор;result;item;ae_logic
-ae_engineering;ae2;Инженерный процессор;result;item;ae_calculation
-ae_acceptor;ae2;Ввод энергии;result;item;ae_engineering
-ae_controller;ae2;Контроллер и каналы;result;item;ae_acceptor,te_frame2
-ae_drive;ae2;МЭ-накопитель;result;item;ae_controller,eio_chassis
-ae_cell;ae2;Первая ячейка;result;item;ae_drive
-ae_terminal;ae2;Терминал и ручной крафт;result;item;ae_cell
-ae_bus;ae2;Внешнее хранилище;result;item;ae_terminal
-ae_import;ae2;Импорт и экспорт;result;item,item;ae_bus
-ae_level;ae2;Следить за запасом;result;item;ae_import
-ae_patterns;ae2;Шаблоны крафта;result;item,item;ae_level
-ae_assembler;ae2;Молекулярный сборщик;result;item,item;ae_patterns,te_frame1
-ae_cpu;ae2;Процессор автокрафта;result;item,item;ae_assembler
-ae_order;ae2;Первый заказ;result;item;ae_cpu
-ae_processing;ae2;Шаблон обработки;result;item;ae_order
+ae_calculation;ae2;Вычислительный процессор;result;item;ae_inscriber,ae_pure
+ae_engineering;ae2;Инженерный процессор;result;item;ae_inscriber
+ae_acceptor;ae2;Ввод энергии;result;item;ae_fluix
+ae_controller;ae2;Контроллер и каналы;result;item;ae_engineering,te_frame2
+ae_drive;ae2;МЭ-накопитель;result;item;ae_logic,eio_chassis
+ae_cell;ae2;Первая ячейка;result;item;ae_logic
+ae_terminal;ae2;Терминал и ручной крафт;result;item;ae_acceptor,ae_logic
+ae_bus;ae2;Внешнее хранилище;result;item;ae_acceptor,ae_logic
+ae_import;ae2;Импорт и экспорт;result;item,item;ae_acceptor,ae_logic
+ae_level;ae2;Следить за запасом;result;item;ae_acceptor,ae_logic
+ae_patterns;ae2;Шаблоны крафта;result;item,item;ae_terminal,ae_calculation
+ae_assembler;ae2;Молекулярный сборщик;result;item,item;ae_engineering,te_frame1
+ae_cpu;ae2;Процессор автокрафта;result;item,item;ae_engineering
+ae_order;ae2;Первый заказ;result;item;ae_patterns,ae_assembler,ae_cpu
+ae_processing;ae2;Шаблон обработки;result;item;ae_patterns,ae_cpu,ae_import
 ae_blocking;ae2;Блокирующий режим;result;item;ae_processing
-ae_largecell;ae2;64К и распределение типов;result;item;ae_blocking
-ae_cellworkbench;ae2;Разметка ячеек;result;item;ae_largecell
-ae_security;ae2;Доступ к сети;result;item;ae_cellworkbench
+ae_largecell;ae2;64К и распределение типов;result;item;ae_engineering
+ae_cellworkbench;ae2;Разметка ячеек;result;item;ae_cell
+ae_security;ae2;Доступ к сети;result;item;ae_engineering
 ae_wireless;ae2;Беспроводное подключение;result;item;ae_security
-ae_p2p;ae2;Туннели P2P;result;item;ae_wireless
-ae_quantum;ae2;Квантовая связь;result;item,item;ae_p2p
-ae_spatial;ae2;Пространственное хранение;result;item,item;ae_quantum
-stuff_grow;ae2stuff;Камера кристаллов;result;item;ae_cpu
-stuff_inscribe;ae2stuff;Продвинутый высекатель;result;item;stuff_grow
+ae_p2p;ae2;Туннели P2P;result;item;ae_engineering
+ae_quantum;ae2;Квантовая связь;result;item,item;ae_engineering,ae_fluix
+ae_spatial;ae2;Пространственное хранение;result;item,item;ae_engineering
+stuff_grow;ae2stuff;Камера кристаллов;result;item;ae_fluix
+stuff_inscribe;ae2stuff;Продвинутый высекатель;result;item;ae_inscriber
 stuff_processors;ae2stuff;Партия процессоров;result;item;stuff_inscribe
-stuff_encoder;ae2stuff;Кодировщик шаблонов;result;item;stuff_processors
-stuff_wireless;ae2stuff;Беспроводной соединитель;result;item,item;stuff_encoder
-stuff_view;ae2stuff;Диагностика сети;result;item;stuff_wireless
-sae_interface;sigma_ae;Расширенный интерфейс;result;item;ae_order
-sae_buffer;sigma_ae;Буфер обработки;result;item;sae_interface
-sae_cpu;sigma_ae;Продвинутый процессор;result;item;sae_buffer
+stuff_encoder;ae2stuff;Кодировщик шаблонов;result;item;ae_patterns
+stuff_wireless;ae2stuff;Беспроводной соединитель;result;item,item;ae_controller
+stuff_view;ae2stuff;Диагностика сети;result;item;ae_acceptor
+sae_interface;sigma_ae;Расширенный интерфейс;result;item;ae_assembler
+sae_buffer;sigma_ae;Буфер обработки;result;item;ae_processing
+sae_cpu;sigma_ae;Продвинутый процессор;result;item;ae_cpu
 sae_core;sigma_ae;Ядра исполнения;result;item;sae_cpu
-sae_modular;sigma_ae;Модульный процессор;result;item;sae_core
-sae_stock;sigma_ae;Поддержание запасов;result;item;sae_modular
-sae_editor;sigma_ae;Редактор шаблонов;result;item;sae_stock
-sae_maintenance;sigma_ae;Обслуживание заказов;result;item;sae_editor
-sae_archive;sigma_ae;Архив NBT;result;item,item;sae_maintenance
-sae_wireless;sigma_ae;Терминал крафта без проводов;result;item;sae_archive
+sae_modular;sigma_ae;Модульный процессор;result;item;sae_cpu
+sae_stock;sigma_ae;Поддержание запасов;result;item;ae_order
+sae_editor;sigma_ae;Редактор шаблонов;result;item;ae_patterns
+sae_maintenance;sigma_ae;Обслуживание заказов;result;item;ae_order
+sae_archive;sigma_ae;Архив NBT;result;item,item;ae_largecell
+sae_wireless;sigma_ae;Терминал крафта без проводов;result;item;ae_wireless
 sae_magnet;sigma_ae;Сбор предметов;result;item;sae_wireless
-sae_booster;sigma_ae;Усилитель доступа;result;item;sae_magnet
-aef_cell;ae_fluids;Жидкостная ячейка;result;item;ae_processing
+sae_booster;sigma_ae;Усилитель доступа;result;item;sae_wireless
+aef_cell;ae_fluids;Жидкостная ячейка;result;item;ae_drive
 aef_import;ae_fluids;Подача жидкости;result;item,item;aef_cell
-aef_terminal;ae_fluids;Жидкостные шаблоны;result;item,item;aef_import
+aef_terminal;ae_fluids;Жидкостные шаблоны;result;item,item;aef_cell
 aef_interface;ae_fluids;Жидкостный интерфейс;result;item;aef_terminal
 aef_buffer;ae_fluids;Буфер ингредиентов;result;item,item;aef_interface
-aef_discrete;ae_fluids;Дискретизация жидкости;result;item,item;aef_buffer
-aef_ecell;ae_fluids;Extra Cells: крупное хранение;result;item;aef_discrete
+aef_discrete;ae_fluids;Дискретизация жидкости;result;item,item;aef_interface
+aef_ecell;ae_fluids;Extra Cells: крупное хранение;result;item;aef_cell
 aef_ecdrive;ae_fluids;Уплотнение накопителей;result;item;aef_ecell
-aef_wireless;ae_fluids;Жидкости без проводов;result;item;aef_ecdrive
-aef_gas;ae_fluids;Хранение газов;result;item,item;aef_wireless
-aef_essentia;ae_fluids;Цифровая эссенция;result;item;aef_gas
+aef_wireless;ae_fluids;Жидкости без проводов;result;item;ae_wireless
+aef_gas;ae_fluids;Хранение газов;result;item,item;ae_terminal,mek_electrolyzer
+aef_essentia;ae_fluids;Цифровая эссенция;result;item;ae_terminal,tc_jar
 aef_provider;ae_fluids;Поставка аспектов;result;item,item;aef_essentia
-aef_ess_terminal;ae_fluids;Терминал эссенции;result;item;aef_provider
-aef_arcane;ae_fluids;Магический терминал;result;item;aef_ess_terminal
-aef_ess_wireless;ae_fluids;Удалённая эссенция;result;item;aef_arcane
-flora_processor;flora;Ботанический процессор;result;item;bot_gaia
+aef_ess_terminal;ae_fluids;Терминал эссенции;result;item;aef_essentia
+aef_arcane;ae_fluids;Магический терминал;result;item;aef_provider,tc_infusion
+aef_ess_wireless;ae_fluids;Удалённая эссенция;result;item;aef_ess_terminal,ae_wireless
+flora_processor;flora;Ботанический процессор;result;item;ae_engineering,bot_manasteel
 flora_mana;flora;Мана в МЭ;result;item,item,item;flora_processor
-flora_charger;flora;Зарядка манапредметов;result;item;flora_mana
-flora_daisy;flora;Автоматическая маргаритка;result;item;flora_charger
-flora_petal;flora;Лепестковые рецепты;result;item;flora_daisy
-flora_pool;flora;Рецепты бассейна;result;item;flora_petal
-flora_rune;flora;Рунические заказы;result;item;flora_pool
-flora_terra;flora;Производство террастали;result;item;flora_rune
-flora_elven;flora;Эльфийские обмены;result;item;flora_terra
-flora_brew;flora;Ботанические зелья;result;item;flora_elven
-flora_enchant;flora;Зачарование маной;result;item;flora_brew
-flora_crate;flora;Хранение и подача;result;item;flora_enchant
-flora_machine;flora;Автономные машины;result;item,item;flora_crate
+flora_charger;flora;Зарядка манапредметов;result;item;flora_processor
+flora_daisy;flora;Автоматическая маргаритка;result;item;flora_processor
+flora_petal;flora;Лепестковые рецепты;result;item;flora_processor
+flora_pool;flora;Рецепты бассейна;result;item;flora_processor
+flora_rune;flora;Рунические заказы;result;item;flora_processor
+flora_terra;flora;Производство террастали;result;item;flora_processor,bot_terrasteel
+flora_elven;flora;Эльфийские обмены;result;item;flora_processor,bot_elementium
+flora_brew;flora;Ботанические зелья;result;item;flora_processor,bot_portal
+flora_enchant;flora;Зачарование маной;result;item;flora_processor,bot_portal
+flora_crate;flora;Хранение и подача;result;item;flora_processor
+flora_machine;flora;Автономные машины;result;item,item;flora_processor
 flora_advanced;flora;Продвинутые ботанические машины;result;item,item,item;flora_machine
 flora_gaia;flora;Автоматизация Гайи;result;item;flora_advanced,bot_gaia2,bm_demonic,ae_largecell,eio_octadic
-flora_greenhouse;flora;Теплица;result;item,item;flora_gaia
-flora_capacity;flora;Крупный запас маны;result;item;flora_greenhouse
-bn_relay;blood_network;Связь с личной сетью;result;item;bm_demonic
+flora_greenhouse;flora;Теплица;result;item,item;flora_advanced
+flora_capacity;flora;Крупный запас маны;result;item;flora_advanced
+bn_relay;blood_network;Связь с личной сетью;result;item;bm_altar,ae_logic
 bn_altar;blood_network;Алтарь по заказу;result;item,item;bn_relay
-bn_alchemy;blood_network;Алхимический сборщик;result;item;bn_altar
-bn_generator;blood_network;Энергия из крови;result;item;bn_alchemy
+bn_alchemy;blood_network;Алхимический сборщик;result;item;bn_relay
+bn_generator;blood_network;Энергия из крови;result;item;bn_relay
 bn_upgrade;blood_network;Улучшения кровавой сети;result;item;bn_generator
-bn_capsule;blood_network;Капсула души;result;item,item;bn_upgrade
+bn_capsule;blood_network;Капсула души;result;item,item;bn_relay
 bn_wither;blood_network;Сборщик иссушителя;result;item;bn_capsule
 bn_spawner;blood_network;Продвинутый спавнер;result;item;bn_wither,de_grinder,eio_spawner,mek_atomic
-bn_improve;blood_network;Настройка спавнера;result;item;bn_spawner
+bn_improve;blood_network;Настройка спавнера;result;item;bn_upgrade
 tc_book;thaumcraft;Книга и первый жезл;result;item,item;start_iron
 tc_scan;thaumcraft;Состав мира;result;item;tc_book
-tc_table;thaumcraft;Исследовательский стол;result;item,item;tc_scan
-tc_thaumium;thaumcraft;Алхимия: таум-металл;result;item;tc_table
-tc_goggles;thaumcraft;Видеть потоки;result;item;tc_thaumium
-tc_fabric;thaumcraft;Зачарованная ткань;result;custom,item;tc_goggles,for_silk
-tc_furnace;thaumcraft;Разложение на эссенцию;result;item;tc_fabric
+tc_table;thaumcraft;Исследовательский стол;result;item,item;tc_book
+tc_thaumium;thaumcraft;Алхимия: таум-металл;result;item;tc_table,tc_scan
+tc_goggles;thaumcraft;Видеть потоки;result;item;tc_table,tc_scan
+tc_fabric;thaumcraft;Зачарованная ткань;result;custom,item;tc_thaumium,for_silk
+tc_furnace;thaumcraft;Разложение на эссенцию;result;item;tc_thaumium
 tc_jar;thaumcraft;Банки и метки;result;item,item;tc_furnace
 tc_tubes;thaumcraft;Напор в трубах;result;item;tc_jar
-tc_alchemical;thaumcraft;Точная алхимия;result;item;tc_tubes
-tc_infusion;thaumcraft;Матрица наполнения;result;custom,item;tc_alchemical
+tc_alchemical;thaumcraft;Точная алхимия;result;item;tc_table,tc_thaumium
+tc_infusion;thaumcraft;Матрица наполнения;result;custom,item;tc_goggles,tc_alchemical
 tc_stability;thaumcraft;Стабилизация;result;item,item;tc_infusion
-tc_pick;thaumcraft;Кирка огня;result;item;tc_stability
-tc_golem;thaumcraft;Первый голем;result;item,item;tc_pick
+tc_pick;thaumcraft;Кирка огня;result;item;tc_infusion
+tc_golem;thaumcraft;Первый голем;result;item,item;tc_infusion
 tc_cores;thaumcraft;Сердцевины и метки;result;item;tc_golem
 tc_node;thaumcraft;Узел ауры;result;item,item;tc_goggles,tc_jar
 tc_recharge;thaumcraft;Перезарядка жезлов;result;item;tc_node
-tc_focus;thaumcraft;Набалдашники;result;item;tc_recharge
-tc_mirror;thaumcraft;Магическое зеркало;result;item;tc_focus
+tc_focus;thaumcraft;Набалдашники;result;item;tc_infusion
+tc_mirror;thaumcraft;Магическое зеркало;result;item;tc_infusion
 tc_warp;thaumcraft;Контроль искажения;result;item;tc_infusion
 tc_void;thaumcraft;Пустотный металл;result;item;tc_infusion,tc_warp
 tc_eldritch;thaumcraft;Древние знания;result;item;tc_void
@@ -361,29 +361,29 @@ bot_living;botania;Живые материалы;result;item,item;bot_petals
 bot_wand;botania;Посох леса;result;item;bot_living
 bot_pool;botania;Поток маны;result;item,item;bot_wand
 bot_manasteel;botania;Преобразование в бассейне;result;item;bot_pool
-bot_mana;botania;Проверка доставки маны;result;botania_mana;bot_manasteel
-bot_runes;botania;Рунический алтарь;result;item,item;bot_mana,tc_thaumium
+bot_mana;botania;Проверка доставки маны;result;botania_mana;bot_pool
+bot_runes;botania;Рунический алтарь;result;item,item;bot_manasteel,tc_thaumium
 bot_seasons;botania;Сезонные руны;result;item,item,item,item;bot_runes
-bot_manarune;botania;Руна маны;result;item;bot_seasons
-bot_spark;botania;Искры и быстрый обмен;result;item;bot_manarune
-bot_plate;botania;Наземная агломерация;result;item;bot_spark,tc_infusion
+bot_manarune;botania;Руна маны;result;item;bot_runes
+bot_spark;botania;Искры и быстрый обмен;result;item;bot_manasteel
+bot_plate;botania;Наземная агломерация;result;item;bot_manasteel,tc_infusion
 bot_terrasteel;botania;Террасталь;result;item;bot_plate
 bot_portal;botania;Обмен с эльфами;result;item,item;bot_terrasteel,tc_void
 bot_elementium;botania;Эльфийские материалы;result;item,item;bot_portal
-bot_gaia;botania;Страж Гайи;result;item;bot_elementium
+bot_gaia;botania;Страж Гайи;result;item;bot_elementium,bot_terrasteel
 bot_gaia2;botania;Следующая битва;result;item;bot_gaia
-bot_spread;botania;Распространитель Гайи;result;item;bot_gaia2
-bot_lens;botania;Настройка линз;result;item;bot_spread
-bot_corporea;botania;Корпорея;result;item,item;bot_lens
-bot_redstring;botania;Красная нить;result;item;bot_corporea
-bot_alchemy;botania;Алхимический катализатор;result;item;bot_redstring
-bot_conjuration;botania;Катализатор дублирования;result;item;bot_alchemy
-bot_tools;botania;Инструменты террастали;result;item;bot_conjuration
-bot_baubles;botania;Мана для снаряжения;result;item,item;bot_tools
-bot_sparks;botania;Приоритеты искр;result;item,item;bot_baubles
+bot_spread;botania;Распространитель Гайи;result;item;bot_pool
+bot_lens;botania;Настройка линз;result;item;bot_pool
+bot_corporea;botania;Корпорея;result;item,item;bot_elementium
+bot_redstring;botania;Красная нить;result;item;bot_elementium
+bot_alchemy;botania;Алхимический катализатор;result;item;bot_manasteel
+bot_conjuration;botania;Катализатор дублирования;result;item;bot_manasteel
+bot_tools;botania;Инструменты террастали;result;item;bot_manasteel
+bot_baubles;botania;Мана для снаряжения;result;item,item;bot_manasteel
+bot_sparks;botania;Приоритеты искр;result;item,item;bot_spark
 flower_endoflame;botania;Пламя края;result;item;bot_pool
 flower_hydroangeas;botania;Гидрогортензия;result;item;bot_pool
-flower_thermalily;botania;Термолилия;result;item;bot_runes
+flower_thermalily;botania;Термолилия;result;item;bot_pool
 flower_gourmaryllis;botania;Гурмарилис;result;item;bot_runes
 flower_kekimurus;botania;Кейкимурус;result;item;bot_runes
 flower_entropinnyum;botania;Энтропиниум;result;item;bot_runes
@@ -392,234 +392,234 @@ flower_agricarnation;botania;Агрикарнация;result;item;bot_runes
 flower_hopperhock;botania;Хоппер;result;item;bot_runes
 flower_rannuncarpus;botania;Раннункарпус;result;item;bot_runes
 flower_exoflame;botania;Экзопламя;result;item;bot_runes
-flower_orechid;botania;Рудноцвет;result;item;bot_runes
+flower_orechid;botania;Рудноцвет;result;item;bot_portal
 flower_jadedAmaranthus;botania;Нефритовый амарант;result;item;bot_runes
 flower_bellethorn;botania;Беллаторн;result;item;bot_runes
-bm_altar;bloodmagic;Первый кровавый алтарь;result;item,item;start_diamond
+bm_altar;bloodmagic;Первый кровавый алтарь;result;item,item;start_iron
 bm_divination;bloodmagic;Измерение LP;result;item;bm_altar
-bm_slate;bloodmagic;Чистая плитка;result;item;bm_divination
+bm_slate;bloodmagic;Чистая плитка;result;item;bm_altar
 bm_runes;bloodmagic;Второй уровень;result;item,item;bm_slate
 bm_sacrifice;bloodmagic;Жертвоприношение;result;item,item;bm_runes
-bm_speed;bloodmagic;Скорость против запаса;result;item,item;bm_sacrifice
+bm_speed;bloodmagic;Скорость против запаса;result;item,item;bm_runes
 bm_imbued;bloodmagic;Третий уровень;result;item;bm_speed
-bm_sigils;bloodmagic;Повседневные сигилы;result;item,item;bm_imbued
-bm_alchemy;bloodmagic;Алхимическая установка;result;item,item;bm_sigils
-bm_ritual;bloodmagic;Ритуальные камни;result;item,item;bm_alchemy
+bm_sigils;bloodmagic;Повседневные сигилы;result;item,item;bm_slate
+bm_alchemy;bloodmagic;Алхимическая установка;result;item,item;bm_slate
+bm_ritual;bloodmagic;Ритуальные камни;result;item,item;bm_imbued
 bm_diviner;bloodmagic;Предсказатель ритуалов;result;item;bm_ritual
-bm_bound;bloodmagic;Связывание;result;item;bm_diviner
-bm_demonic;bloodmagic;Четвёртый уровень;result;item;bm_bound
+bm_bound;bloodmagic;Связывание;result;item;bm_imbued
+bm_demonic;bloodmagic;Четвёртый уровень;result;item;bm_bound,bm_ritual
 bm_armour;bloodmagic;Связанная броня;result;item,item;bm_demonic
-bm_telepose;bloodmagic;Телепозеры;result;item,item;bm_armour
-bm_holding;bloodmagic;Управление сигилами;result;item;bm_telepose
-bm_spell;bloodmagic;Составные заклинания;result;item,item;bm_holding
-bm_incense;bloodmagic;Благовония;result;item,item;bm_spell
-bm_reagents;bloodmagic;Алхимическая маршрутизация;result;item,item;bm_incense
-bm_demons;bloodmagic;Демоническая кровь;result;item;bm_reagents
+bm_telepose;bloodmagic;Телепозеры;result;item,item;bm_demonic
+bm_holding;bloodmagic;Управление сигилами;result;item;bm_imbued
+bm_spell;bloodmagic;Составные заклинания;result;item,item;bm_demonic
+bm_incense;bloodmagic;Благовония;result;item,item;bm_altar
+bm_reagents;bloodmagic;Алхимическая маршрутизация;result;item,item;bm_alchemy
+bm_demons;bloodmagic;Демоническая кровь;result;item;bm_demonic,bm_reagents
 bm_transcendent;bloodmagic;Высшая орбита;result;item;bm_demons
-wit_plants;witchery;Ведьмин огород;result;item,item,item,item;start_iron
+wit_plants;witchery;Ведьмин огород;result;item,item,item,item;start_tools
 wit_oven;witchery;Печь и глиняные кувшины;result;item,item;wit_plants
 wit_fumes;witchery;Сбор ароматов;result;item,item,item;wit_oven
 wit_mutandis;witchery;Мутандис и новые растения;result;item;wit_fumes
 wit_altar;witchery;Сила алтаря;result;item;wit_mutandis
 wit_upgrade;witchery;Оснащение алтаря;result;item,item,item;wit_altar
 wit_distill;witchery;Перегонка;result;item,item;wit_upgrade
-wit_kettle;witchery;Котёл отваров;result;item,item;wit_distill
-wit_chalk;witchery;Ритуальные круги;result;item,item;wit_kettle
+wit_kettle;witchery;Котёл отваров;result;item,item;wit_altar
+wit_chalk;witchery;Ритуальные круги;result;item,item;wit_altar
 wit_attune;witchery;Камень силы;result;item,item;wit_chalk
-wit_circle;witchery;Талисман круга;result;item;wit_attune
-wit_taglock;witchery;Привязки;result;item;wit_circle
+wit_circle;witchery;Талисман круга;result;item;wit_chalk
+wit_taglock;witchery;Привязки;result;item;wit_altar
 wit_poppet;witchery;Куклы и защита;result;item,item;wit_taglock
-wit_spinning;witchery;Прядение;result;item,item;wit_poppet
-wit_dream;witchery;Мир снов;result;item,item;wit_spinning
+wit_spinning;witchery;Прядение;result;item,item;wit_altar
+wit_dream;witchery;Мир снов;result;item,item;wit_kettle
 wit_nightmare;witchery;Материалы кошмара;result;item,item;wit_dream
-wit_brew;witchery;Составные зелья;result;item;wit_nightmare
+wit_brew;witchery;Составные зелья;result;item;wit_kettle
 wit_brewbag;witchery;Организация зелий;result;item;wit_brew
-wit_brazier;witchery;Жаровня и духи;result;item;wit_brewbag
-wit_familiar;witchery;Ведьмовской быт;result;item,item;wit_brazier
-wit_demon;witchery;Демон и договор;result;item,item;wit_familiar
-wit_hobgoblin;witchery;Хобгоблины и кобольдит;result;item,item;wit_demon
-wit_necromancy;witchery;Некромантия;result;item,item;wit_hobgoblin
-wit_protection;witchery;Снаряжение охотника;result;item,item;wit_necromancy
-wit_bloodcloth;witchery;Кровавая ткань;result;item;wit_protection
+wit_brazier;witchery;Жаровня и духи;result;item;wit_altar
+wit_familiar;witchery;Ведьмовской быт;result;item,item;wit_altar
+wit_demon;witchery;Демон и договор;result;item,item;wit_attune,wit_brazier
+wit_hobgoblin;witchery;Хобгоблины и кобольдит;result;item,item;wit_altar
+wit_necromancy;witchery;Некромантия;result;item,item;wit_brazier
+wit_protection;witchery;Снаряжение охотника;result;item,item;wit_altar
+wit_bloodcloth;witchery;Кровавая ткань;result;item;wit_nightmare
 wit_vampire;witchery;Путь вампира;direct;custom;wit_bloodcloth
 wit_vampire_master;witchery;Высший вампир;direct;custom;wit_vampire
 wit_werewolf;witchery;Путь оборотня;direct;custom;wit_demon
 wit_werewolf_master;witchery;Высший оборотень;direct;custom;wit_werewolf
-auto_crystal;automagy;Красные кристаллы;result;item;tc_golem
+auto_crystal;automagy;Красные кристаллы;result;item;tc_thaumium
 auto_tank;automagy;Жаждущий бак;result;item;auto_crystal
-auto_clock;automagy;Часы и дозирование;result;item;auto_tank
+auto_clock;automagy;Часы и дозирование;result;item;auto_crystal
 auto_inventarium;automagy;Инвентариум;result;item;auto_clock
 auto_request;automagy;Запрос предметов;result;item,item;auto_inventarium
-auto_golem;automagy;Големный верстак;result;item,item;auto_request
-auto_essentia;automagy;Узел эссенции;result;item;auto_golem
-auto_experience;automagy;Хранение опыта;result;item;auto_essentia
-tt_repair;thaumic_tinkerer;Восстановитель;result;item;tc_void
-tt_dislocate;thaumic_tinkerer;Перемещение блоков;result;item;tt_repair
-tt_funnel;thaumic_tinkerer;Воронка и интерфейс;result;item,item;tt_dislocate
-tt_enchant;thaumic_tinkerer;Осмотический зачарователь;result;item;tt_funnel
-tt_focus;thaumic_tinkerer;Набалдашники для работы;result;item,item;tt_enchant
-tt_cloth;thaumic_tinkerer;Ткань снятия чар;result;item;tt_focus
-tt_ichor;thaumic_tinkerer;Ихор;result;item;tt_cloth
+auto_golem;automagy;Големный верстак;result;item,item;auto_inventarium
+auto_essentia;automagy;Узел эссенции;result;item;tc_jar
+auto_experience;automagy;Хранение опыта;result;item;auto_crystal
+tt_repair;thaumic_tinkerer;Восстановитель;result;item;tc_thaumium
+tt_dislocate;thaumic_tinkerer;Перемещение блоков;result;item;tc_thaumium
+tt_funnel;thaumic_tinkerer;Воронка и интерфейс;result;item,item;tc_thaumium
+tt_enchant;thaumic_tinkerer;Осмотический зачарователь;result;item;tt_repair
+tt_focus;thaumic_tinkerer;Набалдашники для работы;result;item,item;tc_focus
+tt_cloth;thaumic_tinkerer;Ткань снятия чар;result;item;tc_fabric
+tt_ichor;thaumic_tinkerer;Ихор;result;item;tt_cloth,tc_pearl
 tt_tools;thaumic_tinkerer;Ихориевые инструменты;result;item,item;tt_ichor
-tt_armour;thaumic_tinkerer;Ихориевая ткань;result;item;tt_tools
-tt_bedrock;thaumic_tinkerer;Портал KAMI;result;item;tt_armour
-fm_shards;forbidden;Осколки пороков;result;item;tc_infusion
+tt_armour;thaumic_tinkerer;Ихориевая ткань;result;item;tt_ichor
+tt_bedrock;thaumic_tinkerer;Портал KAMI;result;item;tt_tools
+fm_shards;forbidden;Осколки пороков;result;item;tc_scan
 fm_ink;forbidden;Чернильный цветок;result;item;fm_shards
-fm_taint;forbidden;Заражённая древесина;result;item;fm_ink
-fm_wand;forbidden;Гибридные жезлы;result;item,item;fm_taint
-fm_cage;forbidden;Клетка гнева;result;item;fm_wand
-fm_blood;forbidden;Кровавая рапира;result;item;fm_cage
-gado_claw;gadomancy;Клешня наполнения;result;item;tc_infusion
-gado_jars;gadomancy;Особые банки;result;item,item;gado_claw
-gado_node;gadomancy;Работа с узлом;result;item,item;gado_jars
+fm_taint;forbidden;Заражённая древесина;result;item;fm_shards
+fm_wand;forbidden;Гибридные жезлы;result;item,item;tc_thaumium
+fm_cage;forbidden;Клетка гнева;result;item;tc_infusion
+fm_blood;forbidden;Кровавая рапира;result;item;tc_infusion,bm_altar
+gado_claw;gadomancy;Клешня наполнения;result;item;tc_golem
+gado_jars;gadomancy;Особые банки;result;item,item;tc_jar
+gado_node;gadomancy;Работа с узлом;result;item,item;tc_node
 gado_compress;gadomancy;Сжатие эссенции;result;item;gado_node
-gado_aura;gadomancy;Пилон ауры;result;item,item;gado_compress
-gado_golem;gadomancy;Улучшенные големы;result;item,item;gado_aura
-th_lenses;horizons;Линзы наблюдения;result;item,item;tc_void
-th_blood;horizons;Кровяное наполнение;result;item,item;th_lenses
+gado_aura;gadomancy;Пилон ауры;result;item,item;gado_node
+gado_golem;gadomancy;Улучшенные големы;result;item,item;gado_claw
+th_lenses;horizons;Линзы наблюдения;result;item,item;tc_goggles
+th_blood;horizons;Кровяное наполнение;result;item,item;tc_infusion
 th_vat;horizons;Чан преобразований;result;item,item;th_blood
-th_soul;horizons;Обработка душ;result;item,item;th_vat
-th_dynamo;horizons;Энергия из магии;result;item,item;th_soul
-th_node;horizons;Синтетический узел;result;item,item;th_dynamo
-th_recombine;horizons;Рекомбинация;result;item;th_node
-th_vortex;horizons;Стабилизатор вихря;result;item;th_recombine
-wg_camera;witchgadgets;Камера исследований;result;item;tc_void
-wg_bag;witchgadgets;Магическая сумка;result;item;wg_camera
-wg_cluster;witchgadgets;Кластеры руд;result;item;wg_bag
+th_soul;horizons;Обработка душ;result;item,item;th_blood
+th_dynamo;horizons;Энергия из магии;result;item,item;tc_node
+th_node;horizons;Синтетический узел;result;item,item;tc_node
+th_recombine;horizons;Рекомбинация;result;item;th_vat
+th_vortex;horizons;Стабилизатор вихря;result;item;th_node,th_soul
+wg_camera;witchgadgets;Камера исследований;result;item;tc_goggles
+wg_bag;witchgadgets;Магическая сумка;result;item;tc_thaumium
+wg_cluster;witchgadgets;Кластеры руд;result;item;tc_node
 wg_gems;witchgadgets;Наполненные камни;result;item;wg_cluster
-wg_robe;witchgadgets;Продвинутая мантия;result;item;wg_gems
-wg_primordial;witchgadgets;Первобытные инструменты;result;item;wg_robe
-tm_wood;taintedmagic;Искажённая древесина;result;item;tc_void
+wg_robe;witchgadgets;Продвинутая мантия;result;item;tc_fabric
+wg_primordial;witchgadgets;Первобытные инструменты;result;item;tc_pearl
+tm_wood;taintedmagic;Искажённая древесина;result;item;tc_warp
 tm_metal;taintedmagic;Теневой металл;result;item;tm_wood
 tm_goggles;taintedmagic;Пустотные очки;result;item;tm_metal
-tm_focus;taintedmagic;Специализированные набалдашники;result;item,item;tm_goggles
-tm_fortress;taintedmagic;Пустотная крепостная броня;result;item;tm_focus
-tm_disassembler;taintedmagic;Таум-разрушитель;result;item;tm_fortress
-emt_scribe;electromagic;Электрические письменные принадлежности;result;item;ic2_advanced_case
+tm_focus;taintedmagic;Специализированные набалдашники;result;item,item;tm_metal
+tm_fortress;taintedmagic;Пустотная крепостная броня;result;item;tm_metal
+tm_disassembler;taintedmagic;Таум-разрушитель;result;item;tm_metal
+emt_scribe;electromagic;Электрические письменные принадлежности;result;item;tc_thaumium,ic2_circuit
 emt_goggles;electromagic;Электрические очки;result;item;emt_scribe
-emt_drill;electromagic;Таум-бур;result;item;emt_goggles
-emt_wings;electromagic;Магический полёт;result;item;emt_drill
-emt_focus;electromagic;Энергетические набалдашники;result;item,item;emt_wings
-emt_quantum;electromagic;Квантовая магическая экипировка;result;item,item;emt_focus
-ba_glass;bloodarsenal;Стеклянные кинжалы;result;item,item;bm_demonic
+emt_drill;electromagic;Таум-бур;result;item;tc_infusion,ic2_drill
+emt_wings;electromagic;Магический полёт;result;item;tc_infusion,gravi_jet
+emt_focus;electromagic;Энергетические набалдашники;result;item,item;tc_focus
+emt_quantum;electromagic;Квантовая магическая экипировка;result;item,item;tc_void,ic2_quantum
+ba_glass;bloodarsenal;Стеклянные кинжалы;result;item,item;bm_slate
 ba_iron;bloodarsenal;Наполненное железо;result;item;ba_glass
 ba_life;bloodarsenal;Наполнитель жизни;result;item;ba_iron
 ba_portable;bloodarsenal;Переносной алтарь;result;item;ba_life
-ba_amulets;bloodarsenal;Амулеты жертвоприношения;result;item,item;ba_portable
-ba_sigils;bloodarsenal;Усиленные сигилы;result;item;ba_amulets
+ba_amulets;bloodarsenal;Амулеты жертвоприношения;result;item,item;ba_life
+ba_sigils;bloodarsenal;Усиленные сигилы;result;item;ba_life
 for_scoop;forestry;Первые пчёлы;result;item,item,item;start_iron
 for_apiary;forestry;Пасека;result;item;for_scoop
-for_analyzer;forestry;Генетический анализ;result;item;for_apiary
-for_centrifuge;forestry;Переработка сот;result;item,item,item;for_analyzer
+for_analyzer;forestry;Генетический анализ;result;item;for_scoop
+for_centrifuge;forestry;Переработка сот;result;item,item,item;for_apiary
 for_carpenter;forestry;Плотник;result;item,item;for_centrifuge
-for_squeezer;forestry;Масло семян;result;item,item;for_carpenter
-for_frames;forestry;Рамки пасеки;result;item;for_squeezer
-for_silk;forestry;Шёлковая линия;result;item,item;for_frames
-for_jelly;forestry;Маточное молочко;result;item;for_silk
-for_alveary;forestry;Большой улей;result;item;for_jelly
+for_squeezer;forestry;Масло семян;result;item,item;for_centrifuge
+for_frames;forestry;Рамки пасеки;result;item;for_centrifuge
+for_silk;forestry;Шёлковая линия;result;item,item;for_apiary
+for_jelly;forestry;Маточное молочко;result;item;for_apiary
+for_alveary;forestry;Большой улей;result;item;for_carpenter,for_jelly
 for_climate;forestry;Климат улья;result;item,item,item;for_alveary
-for_trees;forestry;Опыление деревьев;result;item,item,item;for_climate
+for_trees;forestry;Опыление деревьев;result;item,item,item;for_apiary
 for_fruit;forestry;Плодовые культуры;result;item;for_trees
-for_butterflies;forestry;Бабочки;result;item,item;for_fruit
-for_farm;forestry;Многоблочная ферма;result;item,item;for_butterflies
-for_ferment;forestry;Биомасса;result;item,item;for_farm
+for_butterflies;forestry;Бабочки;result;item,item;for_apiary
+for_farm;forestry;Многоблочная ферма;result;item,item;for_carpenter
+for_ferment;forestry;Биомасса;result;item,item;for_squeezer
 for_distill;forestry;Биоэтанол;result;item,item;for_ferment
-for_thermionic;forestry;Электроламповый завод;result;item,item;for_distill
-for_backpack;forestry;Рюкзаки и фильтры;result;item;for_thermionic
-gen_processor;gendustry;Генетический процессор;result;item;for_alveary,ae_engineering,eio_soularium,ic2_advanced
+for_thermionic;forestry;Электроламповый завод;result;item,item;for_carpenter
+for_backpack;forestry;Рюкзаки и фильтры;result;item;for_carpenter
+gen_processor;gendustry;Генетический процессор;result;item;for_analyzer,ae_engineering,eio_soularium,ic2_advanced
 gen_apiary;gendustry;Промышленная пасека;result;item;gen_processor
 gen_upgrades;gendustry;Климат и автоматизация;result;item,item,item;gen_apiary
-gen_sampler;gendustry;Выделение гена;result;item,item;gen_upgrades
+gen_sampler;gendustry;Выделение гена;result;item,item;gen_processor
 gen_template;gendustry;Шаблон наследования;result;item,item;gen_sampler
 gen_imprint;gendustry;Запись генов;result;item;gen_template
-gen_mutagen;gendustry;Мутаген;result;item,item;gen_imprint
-gen_mutatron;gendustry;Мутатрон;result;item;gen_mutagen
+gen_mutagen;gendustry;Мутаген;result;item,item;gen_processor
+gen_mutatron;gendustry;Мутатрон;result;item;gen_mutagen,gen_template
 gen_advanced;gendustry;Управляемая мутация;result;item;gen_mutatron,binnie_splice
-gen_dna;gendustry;Жидкая ДНК;result;item,item;gen_advanced
-gen_protein;gendustry;Белок;result;item,item;gen_dna
-gen_replicate;gendustry;Репликация;result;item;gen_protein,mek_atomic
-crop_minicio;magicalcrops;Основа эссенций;result;item;bot_manasteel
+gen_dna;gendustry;Жидкая ДНК;result;item,item;gen_processor
+gen_protein;gendustry;Белок;result;item,item;gen_processor
+gen_replicate;gendustry;Репликация;result;item;gen_advanced,mek_atomic
+crop_minicio;magicalcrops;Основа эссенций;result;item;start_iron
 crop_regular;magicalcrops;Первое усиление;result;item;crop_minicio,bot_runes
 crop_strong;magicalcrops;Сильный камень;result;item;crop_regular,bot_terrasteel,bot_manarune
 crop_extreme;magicalcrops;Мощнейший камень;result;item;crop_strong,tc_void
 crop_master;magicalcrops;Мастерский камень;result;item;crop_extreme,bot_gaia
 crop_elements;magicalcrops;Стихийные культуры;result;item,item,item,item;crop_regular
 crop_metals;magicalcrops;Металлический урожай;result;item,item,item;crop_master,crop_elements
-crop_precious;magicalcrops;Драгоценные культуры;result;item,item,item;crop_metals
-crop_mob;magicalcrops;Культуры существ;result;item,item;crop_precious
-crop_alloys;magicalcrops;Сплавы на грядке;result;item,item;crop_mob
-crop_magic;magicalcrops;Магические ресурсы;result;item,item;crop_alloys
-crop_boost;magicalcrops;Ускорение роста;result;item;crop_magic
-crop_draconium;magicalcrops;Дракониевая ферма;result;item;crop_boost,de_awakenedcore,ava_catalyst
+crop_precious;magicalcrops;Драгоценные культуры;result;item,item,item;crop_master,crop_elements
+crop_mob;magicalcrops;Культуры существ;result;item,item;crop_master,crop_elements
+crop_alloys;magicalcrops;Сплавы на грядке;result;item,item;crop_master,crop_elements
+crop_magic;magicalcrops;Магические ресурсы;result;item,item;crop_master,crop_elements
+crop_boost;magicalcrops;Ускорение роста;result;item;crop_master
+crop_draconium;magicalcrops;Дракониевая ферма;result;item;crop_magic,de_awakenedcore,ava_catalyst
 binnie_analyst;binnie_genetics;Аналитик;result;item;for_analyzer
 binnie_isolate;binnie_genetics;Изоляция генов;result;item;binnie_analyst
 binnie_sequence;binnie_genetics;Секвенирование;result;item;binnie_isolate
-binnie_polymer;binnie_genetics;Полимеризация;result;item;binnie_sequence
-binnie_inoculate;binnie_genetics;Инокуляция;result;item;binnie_polymer
+binnie_polymer;binnie_genetics;Полимеризация;result;item;binnie_isolate
+binnie_inoculate;binnie_genetics;Инокуляция;result;item;binnie_sequence,binnie_polymer
 binnie_splice;binnie_genetics;Сплайсер;result;item;binnie_inoculate
 binnie_lab;binnie_genetics;Лабораторное снабжение;result;item,item,item;binnie_splice
-binnie_database;binnie_genetics;База генов;result;item;binnie_lab
-binnie_extra;binnie_genetics;Extra Bees: дополнительные виды;result;item;binnie_database
-binnie_alveary;binnie_genetics;Модули большого улья;result;item;binnie_extra
-binnie_magic;binnie_genetics;Magic Bees: магические линии;result;item,item;binnie_alveary
+binnie_database;binnie_genetics;База генов;result;item;binnie_analyst
+binnie_extra;binnie_genetics;Extra Bees: дополнительные виды;result;item;for_apiary
+binnie_alveary;binnie_genetics;Модули большого улья;result;item;for_alveary
+binnie_magic;binnie_genetics;Magic Bees: магические линии;result;item,item;for_trees
 binnie_aura;binnie_genetics;Пчёлы и магическая энергия;result;item,item;binnie_magic
-bt_soil;botany_trees;Анализ почвы;result;item,item;for_trees
+bt_soil;botany_trees;Анализ почвы;result;item,item;start_tools
 bt_flowers;botany_trees;Селекция цветов;result;item,item;bt_soil
 bt_seed;botany_trees;Семена и наследование;result;item;bt_flowers
-bt_beds;botany_trees;Клумбы и сорняки;result;item,item;bt_seed
-bt_pigment;botany_trees;Пигменты;result;item,item;bt_beds
-bt_database;botany_trees;Ботаническая база;result;item;bt_pigment
-bt_saw;botany_trees;Лесопилка;result;item;bt_database
+bt_beds;botany_trees;Клумбы и сорняки;result;item,item;bt_flowers
+bt_pigment;botany_trees;Пигменты;result;item,item;bt_flowers
+bt_database;botany_trees;Ботаническая база;result;item;bt_flowers
+bt_saw;botany_trees;Лесопилка;result;item;for_trees
 bt_carpentry;botany_trees;Столярное дело;result;item,item;bt_saw
 bt_panels;botany_trees;Панели и стекло;result;item,item,item;bt_carpentry
 tic_manual;tconstruct;Материалы и вы;result;item;start_tools
 tic_patterns;tconstruct;Шаблоны;result;item,item;tic_manual
-tic_station;tconstruct;Сборка первого инструмента;result;item,item;tic_patterns
+tic_station;tconstruct;Сборка первого инструмента;result;item,item;tic_manual
 tic_repair;tconstruct;Ремонт и модификаторы;result;item,item;tic_station
-tic_grout;tconstruct;Обожжённый кирпич;result;item;tic_repair
+tic_grout;tconstruct;Обожжённый кирпич;result;item;tic_manual
 tic_smeltery;tconstruct;Плавильня;result;item,item;tic_grout
 tic_casting;tconstruct;Литейная площадка;result;item,item;tic_smeltery
-tic_alloys;tconstruct;Управление сплавами;result;item;tic_casting
-tic_forge;tconstruct;Инструментальная кузня;result;item;tic_alloys
+tic_alloys;tconstruct;Управление сплавами;result;item;tic_smeltery
+tic_forge;tconstruct;Инструментальная кузня;result;item;tic_casting,tic_alloys
 tic_hammer;tconstruct;Молот;result;item;tic_forge
-tic_lumber;tconstruct;Лесоруб и землекоп;result;item,item;tic_hammer
-tic_weapons;tconstruct;Составное оружие;result;item,item;tic_lumber
-tic_bolts;tconstruct;Боеприпасы;result;item;tic_weapons
-tic_heart;tconstruct;Постоянная подготовка;result;item;tic_bolts
-tic_travel;tconstruct;Снаряжение путешественника;result;item,item;tic_heart
-gc_plates;galacticraft;Сжатые материалы;result;item,item;te_frame1
+tic_lumber;tconstruct;Лесоруб и землекоп;result;item,item;tic_forge
+tic_weapons;tconstruct;Составное оружие;result;item,item;tic_forge
+tic_bolts;tconstruct;Боеприпасы;result;item;tic_forge
+tic_heart;tconstruct;Постоянная подготовка;result;item;tic_manual
+tic_travel;tconstruct;Снаряжение путешественника;result;item,item;tic_manual
+gc_plates;galacticraft;Сжатые материалы;result;item,item;ic2_advanced
 gc_wafers;galacticraft;Кремниевые пластины;result;item,item;gc_plates
 gc_oxygen;galacticraft;Личная система кислорода;result;item,item,item;gc_wafers
-gc_collector;galacticraft;Сбор и сжатие кислорода;result;item,item;gc_oxygen
-gc_fuel;galacticraft;Ракетное топливо;result;item,item;gc_collector
-gc_workbench;galacticraft;Верстак NASA;result;item;gc_fuel
-gc_rocket;galacticraft;Первая ракета;result;item,item;gc_workbench
+gc_collector;galacticraft;Сбор и сжатие кислорода;result;item,item;gc_wafers
+gc_fuel;galacticraft;Ракетное топливо;result;item,item;gc_wafers
+gc_workbench;galacticraft;Верстак NASA;result;item;gc_wafers
+gc_rocket;galacticraft;Первая ракета;result;item,item;gc_workbench,gc_fuel,gc_oxygen
 gc_moon;galacticraft;Лунная экспедиция;result;custom;gc_rocket
 gc_meteor;galacticraft;Метеоритное железо;result;item;gc_moon
-gc_seal;galacticraft;Герметичная база;result;item,item;gc_meteor
-gc_dungeon;galacticraft;Лунные подземелья;result;item,item;gc_seal
+gc_seal;galacticraft;Герметичная база;result;item,item;gc_moon
+gc_dungeon;galacticraft;Лунные подземелья;result;item,item;gc_moon
 gc_mars;galacticraft;Марс;result;custom;gc_dungeon
 gc_desh;galacticraft;Марсианская технология;result;item,item;gc_mars
-gc_thermal;galacticraft;Термозащита;result;item;gc_desh
-gc_tier3;galacticraft;Третья ракета;result;item;gc_thermal
+gc_thermal;galacticraft;Термозащита;result;item;gc_mars
+gc_tier3;galacticraft;Третья ракета;result;item;gc_desh
 gc_asteroids;galacticraft;Пояс астероидов;result;custom;gc_tier3
 gc_miner;galacticraft;Астрошахтёр;result;item,item;gc_asteroids
-gc_beam;galacticraft;Лучевая энергия;result;item,item;gc_miner
-gc_telepad;galacticraft;Телепады;result;item;gc_beam
-home_chisel;building;Палитра Chisel;result;item;store_iron
-home_carpenter;building;Каркасные блоки;result;item;home_chisel
-home_lighting;building;Освещение мастерской;result;item;home_carpenter
-home_library;building;Хранение книг;result;item;home_lighting
-home_display;building;Витрины;result;item;home_library
-home_armour;building;Стойки снаряжения;result;item;home_display
-div_realmite;divine;Первая особая руда;result;item;start_end
+gc_beam;galacticraft;Лучевая энергия;result;item,item;gc_asteroids
+gc_telepad;galacticraft;Телепады;result;item;gc_asteroids
+home_chisel;building;Палитра Chisel;result;item;start_tools
+home_carpenter;building;Каркасные блоки;result;item;start_tools
+home_lighting;building;Освещение мастерской;result;item;start_tools
+home_library;building;Хранение книг;result;item;start_tools
+home_display;building;Витрины;result;item;start_tools
+home_armour;building;Стойки снаряжения;result;item;start_tools
+div_realmite;divine;Первая особая руда;result;item;start_diamond
 div_advanced;divine;Арлемит и рупий;result;item,item;div_realmite
-div_aquatic;divine;Водная ветка;result;item;div_advanced
-div_nether;divine;Адские ресурсы;result;item,item;div_aquatic
-div_shards;divine;Стихийные осколки;result;item,item,item,item;div_nether
+div_aquatic;divine;Водная ветка;result;item;div_realmite
+div_nether;divine;Адские ресурсы;result;item,item;div_realmite
+div_shards;divine;Стихийные осколки;result;item,item,item,item;div_advanced
 div_divine;divine;Божественный камень;result;item;div_shards
-div_clock;divine;Сумеречные часы;result;item;div_divine
-div_eden;divine;Эдем;result;custom;div_clock
+div_clock;divine;Сумеречные часы;result;item;div_shards
+div_eden;divine;Эдем;result;custom;div_divine
 div_eden_resources;divine;Ресурсы Эдема;result;item,item;div_eden
 div_wildwood;divine;Дикий лес;result;custom;div_eden_resources
 div_wildwood_resources;divine;Ресурсы Дикого леса;result;item,item;div_wildwood
@@ -630,68 +630,68 @@ div_skythern_resources;divine;Ресурсы Небесного терна;resul
 div_mortum;divine;Мортум;result;custom;div_skythern_resources
 div_mortum_resources;divine;Ресурсы Мортума;result;item,item;div_mortum
 div_side_iceika;divine;Айсика;result;custom;div_advanced
-div_side_arcana;divine;Аркана;result;custom;div_side_iceika
-div_side_vethea;divine;Ветеа;result;custom;div_side_arcana
-biome_finder;biomes;Поиск биомов;result;item;start_nether
+div_side_arcana;divine;Аркана;result;custom;div_advanced
+div_side_vethea;divine;Ветеа;result;custom;div_advanced
+biome_finder;biomes;Поиск биомов;result;item;start_tools
 biome_gems;biomes;Самоцветы биомов;result;item,item,item;biome_finder
-biome_wood;biomes;Редкая древесина;result;item,item;biome_gems
-biome_amethyst;biomes;Аметист Края;result;item;biome_wood
-biome_netherwood;biomes;Новые материалы Нижнего мира;result;item,item;biome_amethyst
-biome_netherfood;biomes;Адское земледелие;result;item,item;biome_netherwood
-biome_crystal;biomes;Кристаллы Нижнего мира;result;item,item;biome_netherfood
+biome_wood;biomes;Редкая древесина;result;item,item;start_tools
+biome_amethyst;biomes;Аметист Края;result;item;biome_gems
+biome_netherwood;biomes;Новые материалы Нижнего мира;result;item,item;start_nether
+biome_netherfood;biomes;Адское земледелие;result;item,item;start_nether
+biome_crystal;biomes;Кристаллы Нижнего мира;result;item,item;start_nether
 de_tablet;draconic;Дракониевое руководство;result;item,item;mek_atomic
 de_core;draconic;Ядро Дракона;result;item;de_tablet
 de_infuser;draconic;Наполнитель энергии;result;item;de_core
-de_grinder;draconic;Уничтожитель мобов;result;item;de_infuser
-de_chest;draconic;Дракониевый сундук;result;item;de_grinder
-de_wyvern;draconic;Ядро Виверны;result;item;de_chest,bm_imbued
+de_grinder;draconic;Уничтожитель мобов;result;item;de_core
+de_chest;draconic;Дракониевый сундук;result;item;de_core
+de_wyvern;draconic;Ядро Виверны;result;item;de_core,bm_imbued
 de_armour;draconic;Снаряжение Виверны;result;item,item;de_wyvern
-de_heart;draconic;Сердце дракона;result;item;de_armour
-de_awaken;draconic;Пробуждение дракония;result;item;de_heart
+de_heart;draconic;Сердце дракона;result;item;start_dragon
+de_awaken;draconic;Пробуждение дракония;result;item;de_heart,de_core
 de_awakenedcore;draconic;Пробуждённое ядро;result;item;de_awaken,bot_gaia,tc_void,bm_demonic,wit_demon
 de_draconic;draconic;Драконья экипировка;result;item,item;de_awakenedcore
-de_modifier;draconic;Улучшения снаряжения;result;item;de_draconic
-de_storage;draconic;Энергетическое ядро;result;item,item;de_modifier
-de_crystals;draconic;Энергетические кристаллы;result;item,item;de_storage
-de_teleport;draconic;Телепортационная сеть;result;item,item;de_crystals
-de_chaos;draconic;Осколок Хаоса;result;item;de_teleport
+de_modifier;draconic;Улучшения снаряжения;result;item;de_armour
+de_storage;draconic;Энергетическое ядро;result;item,item;de_awakenedcore
+de_crystals;draconic;Энергетические кристаллы;result;item,item;de_awakenedcore
+de_teleport;draconic;Телепортационная сеть;result;item,item;de_awakenedcore
+de_chaos;draconic;Осколок Хаоса;result;item;de_draconic
 de_chaoticcore;draconic;Ядро Хаоса;result;item;de_chaos,ava_catalyst
-de_reactor;draconic;Дракониевый реактор;result;item,item,item;de_chaoticcore
+de_reactor;draconic;Дракониевый реактор;result;item,item,item;de_awakenedcore
 ava_matrix;avaritia;Кристаллическая матрица;result;item;de_awakenedcore
 ava_table;avaritia;Ужасный верстак;result;item;ava_matrix
 ava_neutron;avaritia;Коллектор нейтрония;result;item;ava_table,ic2_quantum,mek_atomic,ae_largecell,bot_gaia,tc_void
 ava_ingot;avaritia;Первый нейтроний;result;item;ava_neutron
 ava_compressor;avaritia;Нейтронный компрессор;result;item;ava_ingot
 ava_singularity;avaritia;Первый сжатый ресурс;result;item;ava_compressor
-ava_food;avaritia;Космическая кухня;result;item,item;ava_singularity
-ava_catalyst;avaritia;Катализатор бесконечности;result;item;ava_food,tc_pearl,bm_demons,wit_demon,for_jelly,te_frame3
-ava_infinity;avaritia;Слиток бесконечности;result;item;ava_catalyst
-ava_encoder;avaritia;Шаблоны большого верстака;result;item,item;ava_infinity
-ava_assembler;avaritia;Экстремальный сборщик;result;item;ava_encoder
-ava_pick;avaritia;Финальные инструменты;result;item;ava_assembler
-ava_armour;avaritia;Финальная защита;result;item;ava_pick
-ava_photonic;avaritia;Фотонная панель;result;item;ava_armour,de_chaoticcore,sol_admin
-ava_token;avaritia;Необязательный творческий жетон;result;item;ava_photonic
-ava_researchbook;avaritia;Том полных знаний;result;item;ava_token
-project_smelt;practical_projects;Запрос плавки;result;item;ae_processing
-project_processors;practical_projects;Три линии процессоров;result;item,item,item;project_smelt
-project_slates;practical_projects;Плитки разных ступеней;result;item,item,item;project_processors
-project_runes;practical_projects;Партия стихийных рун;result;item,item,item,item;project_slates
-project_alloys;practical_projects;Партия промышленных компонентов;result;item,item,item;project_runes
-project_silk;practical_projects;Возобновляемая магическая одежда;result;item,item;project_alloys
-project_terrasteel;practical_projects;Террасталь по запросу;result;item;project_silk
-project_neutron;practical_projects;Финальная материальная база;result;item;project_terrasteel
+ava_food;avaritia;Космическая кухня;result;item,item;ava_table
+ava_catalyst;avaritia;Катализатор бесконечности;result;item;ava_ingot,ava_food,tc_pearl,bm_demons,wit_demon,for_jelly,te_frame3
+ava_infinity;avaritia;Слиток бесконечности;result;item;ava_catalyst,ava_singularity
+ava_encoder;avaritia;Шаблоны большого верстака;result;item,item;ava_table,ae_patterns
+ava_assembler;avaritia;Экстремальный сборщик;result;item;ava_encoder,ae_cpu
+ava_pick;avaritia;Финальные инструменты;result;item;ava_infinity
+ava_armour;avaritia;Финальная защита;result;item;ava_infinity
+ava_photonic;avaritia;Фотонная панель;result;item;ava_infinity,de_chaoticcore,sol_admin
+ava_token;avaritia;Необязательный творческий жетон;result;item;ava_infinity
+ava_researchbook;avaritia;Том полных знаний;result;item;ava_catalyst,tc_pearl
+project_smelt;practical_projects;Запрос плавки;result;item;te_smelter,ae_processing
+project_processors;practical_projects;Три линии процессоров;result;item,item,item;ae_processing,stuff_inscribe
+project_slates;practical_projects;Плитки разных ступеней;result;item,item,item;ae_processing,bm_imbued
+project_runes;practical_projects;Партия стихийных рун;result;item,item,item,item;ae_processing,bot_runes
+project_alloys;practical_projects;Партия промышленных компонентов;result;item,item,item;ae_processing,mek_reinforced
+project_silk;practical_projects;Возобновляемая магическая одежда;result;item,item;ae_processing,for_silk
+project_terrasteel;practical_projects;Террасталь по запросу;result;item;ae_processing,bot_terrasteel
+project_neutron;practical_projects;Финальная материальная база;result;item;ae_processing,ava_ingot
 mek_extra_induction;mekanism;Индукционная матрица;result;item,item,item,item;mek_atomic
-mek_extra_boiler;mekanism;Термоэлектрический бойлер;result;item,item,item;mek_extra_induction
-mek_extra_heat;mekanism;Передача тепла;result;item,item;mek_extra_boiler
-mg_extra_turbine;mek_power;Промышленная турбина;result;item,item,item,item;mg_frame
-mg_extra_condense;mek_power;Возврат воды;result;item,item;mg_extra_turbine
-mg_extra_fuel;mek_power;Топливо термоядерной установки;result;item,item;mg_extra_condense
-gc_extra_cargo;galacticraft;Грузовая логистика;result;item;gc_moon
-gc_extra_station;galacticraft;Орбитальная инфраструктура;result;item,item;gc_extra_cargo
-decor_travel;building;Гардероб путешественника;result;item,item;tc_fabric
-decor_fabric;building;Thaumic Dyes: ткани;result;item;decor_travel
+mek_extra_boiler;mekanism;Термоэлектрический бойлер;result;item,item,item;mek_steelcase
+mek_extra_heat;mekanism;Передача тепла;result;item,item;mek_steelcase
+mg_extra_turbine;mek_power;Промышленная турбина;result;item,item,item,item;mek_extra_boiler
+mg_extra_condense;mek_power;Возврат воды;result;item,item;mek_salt
+mg_extra_fuel;mek_power;Топливо термоядерной установки;result;item,item;mg_extra_condense,mek_electrolyzer
+gc_extra_cargo;galacticraft;Грузовая логистика;result;item;gc_rocket
+gc_extra_station;galacticraft;Орбитальная инфраструктура;result;item,item;gc_rocket
+decor_travel;building;Гардероб путешественника;result;item,item;start_tools
+decor_fabric;building;Thaumic Dyes: ткани;result;item;tc_fabric
 decor_robe;building;Мантия тауматурга;result;item;decor_fabric
-ava_extra_compressed;avaritia;Сжатый сундук;result;item;ava_infinity
-ava_extra_infinite;avaritia;Сундук бесконечности;result;item;ava_extra_compressed
-ava_extra_autocrafter;avaritia;Большой автокрафтер;result;item;ava_extra_infinite
+ava_extra_compressed;avaritia;Сжатый сундук;result;item;ava_compressor
+ava_extra_infinite;avaritia;Сундук бесконечности;result;item;ava_infinity
+ava_extra_autocrafter;avaritia;Большой автокрафтер;result;item;ava_table,ae_patterns

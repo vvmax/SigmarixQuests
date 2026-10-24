@@ -1,0 +1,14 @@
+[04:26:29] [Server thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:server:40]: GUIDE_VALIDATED altar=2 components=8
+[04:26:29] [Server thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:verifyReactor:76]: GUIDE_VALIDATED IC2 native component simulation: 20000 cycles, hull heat=0, vent retained
+[04:26:38] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED blood_altar_t2
+[04:26:38] [Server thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:server:40]: GUIDE_VALIDATED altar=3 components=40
+[04:26:46] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED blood_altar_t3
+[04:26:46] [Server thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:server:40]: GUIDE_VALIDATED altar=4 components=88
+[04:26:54] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED blood_altar_t4
+[04:26:54] [Server thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:server:40]: GUIDE_VALIDATED altar=5 components=144
+[04:27:03] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED blood_altar_t5
+[04:27:03] [Server thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:server:40]: GUIDE_VALIDATED altar=6 components=252
+[04:27:11] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED blood_altar_t6
+[04:27:19] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED blood_ritual_water
+[04:27:27] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED thaum_infusion
+[04:27:35] [Client thread/INFO] [STDOUT]: [sigma.guide.GuideCapture:client:86]: GUIDE_CAPTURED witchery_altar
