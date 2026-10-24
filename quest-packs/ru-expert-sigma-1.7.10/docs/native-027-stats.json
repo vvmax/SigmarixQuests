@@ -1,0 +1,12 @@
+{
+  "commit": "a4a9d16",
+  "modVersion": "0.27.0-SNAPSHOT",
+  "nativePrettyBookBytes": 2588982,
+  "nativeBookGzipBytes": 139380,
+  "bookResponseChunks": 5,
+  "largestNativeChapterBytes": 144179,
+  "largestNativeChapter": "22_botania.json",
+  "wholeBookRawLimit": 16777216,
+  "wireRawLimit": 33554432,
+  "wireCompressedLimit": 16777216
+}

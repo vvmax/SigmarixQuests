@@ -1,0 +1,515 @@
+{
+  "version": {
+    "name": "1.7.10",
+    "protocol": 5
+  },
+  "modinfo": {
+    "type": "FML",
+    "modList": [
+      {
+        "modid": "mcp",
+        "version": "9.05"
+      },
+      {
+        "modid": "Crucible",
+        "version": "1.7.10-5.4"
+      },
+      {
+        "modid": "FML",
+        "version": "7.10.99.99"
+      },
+      {
+        "modid": "Forge",
+        "version": "10.13.4.1614"
+      },
+      {
+        "modid": "kimagine",
+        "version": "0.2"
+      },
+      {
+        "modid": "CodeChickenCore",
+        "version": "1.0.7.48"
+      },
+      {
+        "modid": "appliedenergistics2-core",
+        "version": "rv3-beta-6"
+      },
+      {
+        "modid": "ThE-core",
+        "version": "1.0.0.1"
+      },
+      {
+        "modid": "ThaumicTinkerer-preloader",
+        "version": "0.1"
+      },
+      {
+        "modid": "Micdoodlecore",
+        "version": ""
+      },
+      {
+        "modid": "WitchingGadgetsCore",
+        "version": "1.1.10"
+      },
+      {
+        "modid": "ChocoPatcher",
+        "version": "1.1"
+      },
+      {
+        "modid": "<CoFH ASM>",
+        "version": "000"
+      },
+      {
+        "modid": "PacketUnlimiter",
+        "version": "1.1"
+      },
+      {
+        "modid": "bspkrsCore",
+        "version": "6.16"
+      },
+      {
+        "modid": "Treecapitator",
+        "version": "1.7.10"
+      },
+      {
+        "modid": "appliedenergistics2",
+        "version": "rv3-beta-6"
+      },
+      {
+        "modid": "ae2fc",
+        "version": "g92699c9"
+      },
+      {
+        "modid": "AWWayofTime",
+        "version": "v1.3.3"
+      },
+      {
+        "modid": "Baubles",
+        "version": "1.0.1.10"
+      },
+      {
+        "modid": "Thaumcraft",
+        "version": "4.2.3.5"
+      },
+      {
+        "modid": "Botania",
+        "version": "r1.8-249"
+      },
+      {
+        "modid": "Avaritia",
+        "version": "1.13"
+      },
+      {
+        "modid": "appliedavaritia",
+        "version": "0.4.2-alpha"
+      },
+      {
+        "modid": "bdlib",
+        "version": "1.9.5.1"
+      },
+      {
+        "modid": "betterquesting",
+        "version": "3.0.328"
+      },
+      {
+        "modid": "CoFHCore",
+        "version": "1.7.10R3.1.4"
+      },
+      {
+        "modid": "ThermalFoundation",
+        "version": "1.7.10R1.2.6"
+      },
+      {
+        "modid": "ThermalExpansion",
+        "version": "1.7.10R4.1.5"
+      },
+      {
+        "modid": "BigReactors",
+        "version": "0.4.3A"
+      },
+      {
+        "modid": "bloodnetwork",
+        "version": "1.6.1"
+      },
+      {
+        "modid": "BrandonsCore",
+        "version": "1.0.0.12"
+      },
+      {
+        "modid": "compactreactors",
+        "version": "0.4.1"
+      },
+      {
+        "modid": "customnpcs",
+        "version": "1.7.10d"
+      },
+      {
+        "modid": "EventHelper",
+        "version": "1.7.10-1.13.1"
+      },
+      {
+        "modid": "fastleafdecay",
+        "version": "1.4"
+      },
+      {
+        "modid": "IC2",
+        "version": "2.2.827-experimental"
+      },
+      {
+        "modid": "AdvancedSolarPanel",
+        "version": "1.7.10-3.5.1"
+      },
+      {
+        "modid": "ae2stuff",
+        "version": "0.5.1.vvmax-634354e"
+      },
+      {
+        "modid": "MineFactoryReloaded",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatThaumcraft",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "Automagy",
+        "version": "0.28.2"
+      },
+      {
+        "modid": "wanionlib",
+        "version": "1.7.10-1.2"
+      },
+      {
+        "modid": "avaritiaddons",
+        "version": "1.4b"
+      },
+      {
+        "modid": "BiblioCraft",
+        "version": "1.11.7"
+      },
+      {
+        "modid": "BiomesOPlenty",
+        "version": "2.1.0"
+      },
+      {
+        "modid": "Forestry",
+        "version": "4.2.16.64"
+      },
+      {
+        "modid": "BinnieCore",
+        "version": "2.0.22.7"
+      },
+      {
+        "modid": "Botany",
+        "version": "2.0.22.7"
+      },
+      {
+        "modid": "ExtraBees",
+        "version": "2.0.22.7"
+      },
+      {
+        "modid": "ExtraTrees",
+        "version": "2.0.22.7"
+      },
+      {
+        "modid": "Genetics",
+        "version": "2.0.22.7"
+      },
+      {
+        "modid": "ForgeMultipart",
+        "version": "1.2.0.345"
+      },
+      {
+        "modid": "BuildCraft|Core",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "ExtraUtilities",
+        "version": "1.2.12"
+      },
+      {
+        "modid": "ImmersiveEngineering",
+        "version": "0.7.7"
+      },
+      {
+        "modid": "Mantle",
+        "version": "1.7.10-0.3.2.jenkins191"
+      },
+      {
+        "modid": "TConstruct",
+        "version": "1.7.10-1.8.8.build988"
+      },
+      {
+        "modid": "ThaumicTinkerer",
+        "version": "unspecified"
+      },
+      {
+        "modid": "ForbiddenMagic",
+        "version": "1.7.10-0.575"
+      },
+      {
+        "modid": "BloodArsenal",
+        "version": "1.2-5"
+      },
+      {
+        "modid": "BuildCraft|Transport",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "BuildCraft|Factory",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "BuildCraft|Silicon",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "BuildCraft|Robotics",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "BuildCraft|Energy",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "BuildCraft|Builders",
+        "version": "7.1.23"
+      },
+      {
+        "modid": "chisel",
+        "version": "2.9.5.11"
+      },
+      {
+        "modid": "CarpentersBlocks",
+        "version": "3.3.8.1"
+      },
+      {
+        "modid": "divinerpg",
+        "version": "1.4.1.4"
+      },
+      {
+        "modid": "DraconicEvolution",
+        "version": "1.0.2h"
+      },
+      {
+        "modid": "EMT",
+        "version": "1.2.6.2"
+      },
+      {
+        "modid": "endercore",
+        "version": "1.7.10-0.2.0.39_beta"
+      },
+      {
+        "modid": "EnderIO",
+        "version": "1.7.10-2.3.0.429_beta"
+      },
+      {
+        "modid": "extracells",
+        "version": "2.3.14"
+      },
+      {
+        "modid": "GalacticraftCore",
+        "version": "3.0.12"
+      },
+      {
+        "modid": "GalacticraftMars",
+        "version": "3.0.12"
+      },
+      {
+        "modid": "GraviSuite",
+        "version": "1.7.10-2.0.3"
+      },
+      {
+        "modid": "IC2NuclearControl",
+        "version": "2.4.3a"
+      },
+      {
+        "modid": "MagicBees",
+        "version": "2.4.4"
+      },
+      {
+        "modid": "Mekanism",
+        "version": "9.1.1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatAppliedEnergistics",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatBuildCraft",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatForestry",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatForgeMicroblock",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatIC2",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatThermalExpansion",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatTConstruct",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "MineFactoryReloaded|CompatVanilla",
+        "version": "1.7.10R2.8.2B1"
+      },
+      {
+        "modid": "StorageDrawers",
+        "version": "1.7.10-1.10.9"
+      },
+      {
+        "modid": "TaintedMagic",
+        "version": "r7.82"
+      },
+      {
+        "modid": "thaumicenergistics",
+        "version": "1.1.3.0"
+      },
+      {
+        "modid": "ThaumicHorizons",
+        "version": "1.1.9"
+      },
+      {
+        "modid": "ThermalDynamics",
+        "version": "1.7.10R1.2.1"
+      },
+      {
+        "modid": "TravellersGear",
+        "version": "1.16.6"
+      },
+      {
+        "modid": "floraenergistics",
+        "version": "0.9.0"
+      },
+      {
+        "modid": "gadomancy",
+        "version": "1.0.7.3"
+      },
+      {
+        "modid": "gendustry",
+        "version": "1.6.3.132"
+      },
+      {
+        "modid": "iChunUtil",
+        "version": "4.2.3"
+      },
+      {
+        "modid": "Hats",
+        "version": "4.0.1"
+      },
+      {
+        "modid": "IC2CA",
+        "version": "1.14.5.06"
+      },
+      {
+        "modid": "IronChest",
+        "version": "6.0.62.742"
+      },
+      {
+        "modid": "magicalcrops",
+        "version": "4.0.0_PUBLIC_BETA_4b"
+      },
+      {
+        "modid": "mc1710botchat",
+        "version": "0.1.0"
+      },
+      {
+        "modid": "MekanismGenerators",
+        "version": "9.1.1"
+      },
+      {
+        "modid": "minetuner",
+        "version": "1.7.10-1.2"
+      },
+      {
+        "modid": "MineTweaker3",
+        "version": "3.0.10"
+      },
+      {
+        "modid": "MTRM",
+        "version": "1.0"
+      },
+      {
+        "modid": "modtweaker2",
+        "version": "0.9.6"
+      },
+      {
+        "modid": "netherlicious",
+        "version": "3.2.8"
+      },
+      {
+        "modid": "PowerConverters3",
+        "version": "1.7.10-2.11"
+      },
+      {
+        "modid": "sigmarixquests",
+        "version": "0.26.0-SNAPSHOT"
+      },
+      {
+        "modid": "Roguelike",
+        "version": "1.5.0"
+      },
+      {
+        "modid": "sigmarixae",
+        "version": "0.4.1-alpha"
+      },
+      {
+        "modid": "sigmarixindustrial",
+        "version": "0.2.4"
+      },
+      {
+        "modid": "soulspawner",
+        "version": "0.5.0"
+      },
+      {
+        "modid": "supersolarpanel",
+        "version": "1.7.10-1.1.1-release"
+      },
+      {
+        "modid": "symcalc",
+        "version": "0.14"
+      },
+      {
+        "modid": "tcinventoryscan",
+        "version": "1.0.11"
+      },
+      {
+        "modid": "thaumicdyes",
+        "version": "1.10.5"
+      },
+      {
+        "modid": "universalsingularities",
+        "version": "1.7.10-8.0"
+      },
+      {
+        "modid": "witchery",
+        "version": "0.24.1"
+      },
+      {
+        "modid": "WitchingGadgets",
+        "version": "1.1.10"
+      },
+      {
+        "modid": "McMultipart",
+        "version": "1.2.0.345"
+      },
+      {
+        "modid": "UniDict",
+        "version": "1.7.10-2.9.2"
+      },
+      {
+        "modid": "ForgeMicroblock",
+        "version": "1.2.0.345"
+      }
+    ]
+  }
+}

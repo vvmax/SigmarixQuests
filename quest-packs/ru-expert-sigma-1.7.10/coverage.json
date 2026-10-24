@@ -1,0 +1,9082 @@
+[
+  {
+    "quest": "start_wood",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Рабочее место",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_tools",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Камень и инструменты",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "start_light",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Свет на базе",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_food",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Провизия для экспедиции",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_iron",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Первый металл",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_redstone",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Управляющая пыль",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_diamond",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Алмазный рубеж",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_water",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Первые жидкости",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_nether",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Экспедиция в Нижний мир",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "start_quartz",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Кварц и огненный порошок",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "start_end",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Путь к Энду",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "start_dragon",
+    "chapter": "start",
+    "mods": [
+      "minecraft",
+      "sigmarixquests"
+    ],
+    "mechanic": "Освободить выход",
+    "verification": "result",
+    "taskTypes": [
+      "kill"
+    ]
+  },
+  {
+    "quest": "qt_book",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Книга заданий",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "qt_terminal",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Приёмный терминал",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "qt_chest",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Сдача предметов автоматикой",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "qt_water",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Приём жидкости",
+    "verification": "result",
+    "taskTypes": [
+      "fluid"
+    ]
+  },
+  {
+    "quest": "qt_screen",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Карта на стене",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "qt_redstone",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Сигнал готовности",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "qt_rewards",
+    "chapter": "quest_tools",
+    "mods": [
+      "sigmarixquests"
+    ],
+    "mechanic": "Выдача наград в склад",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_chest",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Отдельный склад",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_iron",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Железный сундук",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_diamond",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Большой буфер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_drawers",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Ящики для массовых ресурсов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_controller",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Контроллер склада ящиков",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_lock",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Закреплённые типы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "store_compact",
+    "chapter": "storage",
+    "mods": [
+      "IronChest",
+      "StorageDrawers"
+    ],
+    "mechanic": "Уплотняющий ящик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_rubber",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Каучуковая цепочка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_plates",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Молот и кусачки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_circuit",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Электронная схема",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_casing",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Основной корпус",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_generator",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Генератор и сеть EU",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_cables",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Изоляция и потери",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_batbox",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Буфер первого уровня",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_furnace",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Электрическая плавка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_macerator",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Удвоение начинается с дробления",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_extractor",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Экстракция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_compressor",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Давление",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_metalformer",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Три режима формовки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_wrench",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Демонтаж без потерь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_eu",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Проверяемая электрическая линия",
+    "verification": "result",
+    "taskTypes": [
+      "ic2_energy"
+    ]
+  },
+  {
+    "quest": "ic2_washer",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Рудопромывочная машина",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_thermal",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Термальная центрифуга",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_advanced",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Продвинутая электроника",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_advanced_case",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Армированный корпус",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_mfe",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Накопление среднего уровня",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_induction",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Нагретая производительность",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_geothermal",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Лава как топливо",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_solar",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Возобновляемый резерв",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_drill",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Электроинструмент",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_charge",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Заряженная батарея",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_overclock",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Ускорение с ценой",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_transformer",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Допустимое напряжение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_storage_upgrade",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Внутренний запас",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_eject",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Направленный вывод",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_recycler",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Утильсырьё",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_scrap",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Запас усилителя",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_reactor",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Ядерная установка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_chambers",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Расширение реактора",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_fuel",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Подготовка топлива",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_heat",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Тепловая энергетика",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_steam",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Паровая установка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_fluidreactor",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Реактор с теплоносителем",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_matter",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Генератор материи",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_scanner",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Запись вещества",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_patternstorage",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Библиотека шаблонов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_replicator",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Управляемая репликация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_nano",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Электрическая защита",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ic2_quantum",
+    "chapter": "ic2",
+    "mods": [
+      "IC2"
+    ],
+    "mechanic": "Квантовая экипировка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_hammer",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Инженерный молот",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_coke",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Коксовая печь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_treated",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Пропитанная древесина",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_steel",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Доменная плавка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_components",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Железная механика",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_wire",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Катушки и соединители",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_waterwheel",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Водяной привод",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_wind",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Ветровой привод",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_dynamo",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Механика становится RF",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_capacitor",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Буфер LV",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_rf",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Энергия инженерной линии",
+    "verification": "result",
+    "taskTypes": [
+      "energy"
+    ]
+  },
+  {
+    "quest": "ie_workbench",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Рабочий стол инженера",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_blueprint",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Чертёж компонентов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_hemp",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Конопляное волокно",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_crusher",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Дробилка",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_press",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Металлический пресс",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_conveyor",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Конвейерная подача",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ie_squeezer",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Выжимка масла",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_fermenter",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Брожение",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_refinery",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Смешение биотоплива",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_diesel",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Дизельная генерация",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_arc",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Дуговая печь",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_excavator",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Промышленная выемка",
+    "verification": "direct",
+    "taskTypes": [
+      "observation"
+    ]
+  },
+  {
+    "quest": "ie_railgun",
+    "chapter": "ie",
+    "mods": [
+      "ImmersiveEngineering"
+    ],
+    "mechanic": "Рельсотрон",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_frame0",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Стандартизованная рама",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_dynamo",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Первый динамо",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_cell",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Накопитель RF",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_pulverizer",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Измельчение и побочные продукты",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_furnace",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Электрическая печь RF",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_smelter",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Индукционная плавильня",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_sawmill",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Деревообработка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_transposer",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Жидкость внутри предмета",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_crucible",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Расплавы для сплавов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_accumulator",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Непрерывная вода",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_extruder",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Камень по требованию",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_frame1",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Усиленная рама",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_induction",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Ледниковый осадитель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_charger",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Зарядный станок",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_frame2",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Укреплённая рама",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_augments",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Настройка через улучшения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_frame3",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Резонирующая рама",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_tesseract",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Пространственный канал",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "te_working_tesseract",
+    "chapter": "thermal",
+    "mods": [
+      "ThermalExpansion",
+      "ThermalFoundation"
+    ],
+    "mechanic": "Передача между площадками",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_infuser",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Металлургическое наполнение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_alloy",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Обогащённое соединение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_steelcase",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Стальной корпус",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_enrichment",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Камера обогащения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_crusher",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Дробильная ступень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_smelter",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Плавка на электричестве",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_power",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Энергокуб и стороны",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_cable",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Универсальные провода",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_factory",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Параллельная обработка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_reinforced",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Укреплённые соединения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_purification",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Очистительная камера",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_electrolyzer",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Разделение воды",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_oxygen",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Газовый буфер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_chemicalinfuser",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Смешение газов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_injection",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Химическая инъекция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_atomic",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Атомный уровень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_dissolution",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Растворение руды",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_washer",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Промывка суспензии",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_crystallizer",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Кристаллизация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_salt",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Солевой контур",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_ports",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Порты установки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_sorter",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Логистический сортировщик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_transport",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Логистические транспортеры",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_bins",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Бункер для одного ресурса",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_robit",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Робит как помощник",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_teleportcore",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Пространственное ядро",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_miner",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Цифровой шахтёр",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_laser",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Лазерная инфраструктура",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_assembler",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Формульный сборщик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_anchor",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Улучшения машин",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_heat",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Тепловой генератор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_wind",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Ветрогенератор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_bio",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Биотопливная генерация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_gas",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Газовая генерация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_prc",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Реакционная камера",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_solar",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Солнечная поддержка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_fusion",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Контроллер синтеза",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_frame",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Герметичный корпус",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_laser",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Энергия запуска",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_output",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Испытание генерации",
+    "verification": "result",
+    "taskTypes": [
+      "energy"
+    ]
+  },
+  {
+    "quest": "eio_chassis",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Машинное шасси",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_generator",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Генерация на топливе",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_sag",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Измельчитель SAG",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_smelter",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Плавильщик сплавов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_conductive",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Проводящие материалы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_pulsating",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Импульсная логистика",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_energetic",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Энергетический сплав",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_vibrant",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Вибрирующий сплав",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_soularium",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Душарий",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_capacitor",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Конденсаторы меняют машину",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_double",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Двойной конденсатор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_octadic",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Октадический конденсатор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_conduits",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Несколько сетей в одном блоке",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_filters",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Фильтр и приоритет",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_reservoir",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Локальный резервуар воды",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_vat",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Жидкая химия",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_farming",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Фермерская станция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_darksteel",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Тёмная сталь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_soulvial",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Захват подходящей души",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_soulbinder",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Связывание душ",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_spawner",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Управляемый спавнер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_obelisk",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Буфер опыта",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_travel",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Межточечное перемещение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "eio_transceiver",
+    "chapter": "enderio",
+    "mods": [
+      "EnderIO"
+    ],
+    "mechanic": "Общий пространственный канал",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_wrench",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Ключ механика",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_pipes",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Первая предметная труба",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_engine",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Двигатель и управляющий сигнал",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_diamondpipe",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Маршрутизация по фильтру",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_fluidpipes",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Отдельная жидкостная сеть",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_landmarks",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Рабочая область",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_quarry",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Механический карьер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_pump",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Откачка жидкости",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_refinery",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Переработка топлива",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_assembly",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Лазерная сборка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_laser",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Лазерный привод стола",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_chipset",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Чипсеты",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_gates",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Ворота на трубах",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_robot",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Робот и рабочая зона",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_docking",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Док-станция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_builder",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Постройка по схеме",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bc_architect",
+    "chapter": "buildcraft",
+    "mods": [
+      "BuildCraft|Core",
+      "BuildCraft|Transport",
+      "BuildCraft|Factory",
+      "BuildCraft|Silicon",
+      "BuildCraft|Robotics",
+      "BuildCraft|Energy",
+      "BuildCraft|Builders"
+    ],
+    "mechanic": "Запись схемы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "br_fuel",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Топливо реактора",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "br_casing",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Корпус и контроллер",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "br_rods",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Топливные стержни",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "br_ports",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Порты",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "br_steam",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Активное охлаждение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "br_turbine",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Паровая турбина",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "br_compact",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Компактный реактор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "br_module1",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Расширение I",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "br_module2",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Расширение II",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "br_advanced",
+    "chapter": "bigreactors",
+    "mods": [
+      "BigReactors",
+      "compactreactors"
+    ],
+    "mechanic": "Продвинутый компактный реактор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_advanced",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Продвинутая солнечная панель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_hybrid",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Гибридная ступень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_ultimate",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Ультимативная ступень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_transform",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Молекулярное преобразование",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_spectral",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Спектральная панель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_singular",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Сингулярная панель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sol_admin",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Светоадсорбционная панель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_jet",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Продвинутый реактивный ранец",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_drill",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Продвинутый бур",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_lappack",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Переносной накопитель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_chest",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Гравитационная кираса",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_vajra",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Ваджра",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_assembler",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Сборка модулей брони",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_flight",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Модули полёта и энергии",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_sensors",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Датчики реактора",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_monitor",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Информационная панель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gravi_convert",
+    "chapter": "solar_gravi",
+    "mods": [
+      "AdvancedSolarPanel",
+      "supersolarpanel",
+      "GraviSuite",
+      "IC2CA",
+      "IC2NuclearControl",
+      "PowerConverters3"
+    ],
+    "mechanic": "Преобразование энергии",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_plastic",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Пластик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_planter",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Посадка и сбор",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_fertilizer",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Удобрение",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_sludge",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Переработка отходов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_animals",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Животноводство",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_grinder",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Добыча эссенции",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_net",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Сафари-сеть",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_spawner",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Автоспавнер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_pink",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Розовая слизь",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_laser",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Лазерный бур",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_bio",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Биотопливо",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_enchant",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Работа с чарами",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mfr_rednet",
+    "chapter": "mfr",
+    "mods": [
+      "MineFactoryReloaded"
+    ],
+    "mechanic": "Программируемая логика",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "util_duct",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Предметные трубы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "util_retriever",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Адресная доставка",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "util_fluid",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Жидкостные трубы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_flux",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Флаксовые трубы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_nodes",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Передающие узлы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "util_drum",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Барабан",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_ritual",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Сигил деления",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_unstable",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Нестабильный слиток",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_quarry",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Эндер-карьер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_flight",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Кольцо ангела",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_industrial",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Машины Sigmarix Industrial",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "util_rotor",
+    "chapter": "utility_transport",
+    "mods": [
+      "ThermalDynamics",
+      "ExtraUtilities",
+      "sigmarixindustrial"
+    ],
+    "mechanic": "Роторы Sigmarix Industrial",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_quartz",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Истинный кварц",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_charger",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Заряженный кристалл",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_fluix",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Реакция в воде",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_pure",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Выращивание кристаллов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_presses",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Четыре пресса",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_inscriber",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Ручной высекатель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_logic",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Логический процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_calculation",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Вычислительный процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_engineering",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Инженерный процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_acceptor",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Ввод энергии",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_controller",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Контроллер и каналы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_drive",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "МЭ-накопитель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_cell",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Первая ячейка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_terminal",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Терминал и ручной крафт",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_bus",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Внешнее хранилище",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_import",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Импорт и экспорт",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_level",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Следить за запасом",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_patterns",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Шаблоны крафта",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_assembler",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Молекулярный сборщик",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_cpu",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Процессор автокрафта",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_order",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Первый заказ",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_processing",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Шаблон обработки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_blocking",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Блокирующий режим",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_largecell",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "64К и распределение типов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_cellworkbench",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Разметка ячеек",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_security",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Доступ к сети",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_wireless",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Беспроводное подключение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_p2p",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Туннели P2P",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_quantum",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Квантовая связь",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ae_spatial",
+    "chapter": "ae2",
+    "mods": [
+      "appliedenergistics2"
+    ],
+    "mechanic": "Пространственное хранение",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "stuff_grow",
+    "chapter": "ae2stuff",
+    "mods": [
+      "ae2stuff"
+    ],
+    "mechanic": "Камера кристаллов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "stuff_inscribe",
+    "chapter": "ae2stuff",
+    "mods": [
+      "ae2stuff"
+    ],
+    "mechanic": "Продвинутый высекатель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "stuff_processors",
+    "chapter": "ae2stuff",
+    "mods": [
+      "ae2stuff"
+    ],
+    "mechanic": "Партия процессоров",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "stuff_encoder",
+    "chapter": "ae2stuff",
+    "mods": [
+      "ae2stuff"
+    ],
+    "mechanic": "Кодировщик шаблонов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "stuff_wireless",
+    "chapter": "ae2stuff",
+    "mods": [
+      "ae2stuff"
+    ],
+    "mechanic": "Беспроводной соединитель",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "stuff_view",
+    "chapter": "ae2stuff",
+    "mods": [
+      "ae2stuff"
+    ],
+    "mechanic": "Диагностика сети",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_interface",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Расширенный интерфейс",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_buffer",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Буфер обработки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_cpu",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Продвинутый процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_core",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Ядра исполнения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_modular",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Модульный процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_stock",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Поддержание запасов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_editor",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Редактор шаблонов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_maintenance",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Обслуживание заказов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_archive",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Архив NBT",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_wireless",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Терминал крафта без проводов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_magnet",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Сбор предметов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "sae_booster",
+    "chapter": "sigma_ae",
+    "mods": [
+      "sigmarixae"
+    ],
+    "mechanic": "Усилитель доступа",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_cell",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Жидкостная ячейка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_import",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Подача жидкости",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_terminal",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Жидкостные шаблоны",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_interface",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Жидкостный интерфейс",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_buffer",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Буфер ингредиентов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_discrete",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Дискретизация жидкости",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_ecell",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Extra Cells: крупное хранение",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_ecdrive",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Уплотнение накопителей",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_wireless",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Жидкости без проводов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_gas",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Хранение газов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_essentia",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Цифровая эссенция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_provider",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Поставка аспектов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_ess_terminal",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Терминал эссенции",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_arcane",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Магический терминал",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "aef_ess_wireless",
+    "chapter": "ae_fluids",
+    "mods": [
+      "extracells",
+      "ae2fc",
+      "thaumicenergistics"
+    ],
+    "mechanic": "Удалённая эссенция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_processor",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Ботанический процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_mana",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Мана в МЭ",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_charger",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Зарядка манапредметов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_daisy",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Автоматическая маргаритка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_petal",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Лепестковые рецепты",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_pool",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Рецепты бассейна",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_rune",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Рунические заказы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_terra",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Производство террастали",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_elven",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Эльфийские обмены",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_brew",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Ботанические зелья",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_enchant",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Зачарование маной",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_crate",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Хранение и подача",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_machine",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Автономные машины",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_advanced",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Продвинутые ботанические машины",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_gaia",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Автоматизация Гайи",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_greenhouse",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Теплица",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "flora_capacity",
+    "chapter": "flora",
+    "mods": [
+      "floraenergistics"
+    ],
+    "mechanic": "Крупный запас маны",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_relay",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Связь с личной сетью",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_altar",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Алтарь по заказу",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_alchemy",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Алхимический сборщик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_generator",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Энергия из крови",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_upgrade",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Улучшения кровавой сети",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_capsule",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Капсула души",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_wither",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Сборщик иссушителя",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_spawner",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Продвинутый спавнер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bn_improve",
+    "chapter": "blood_network",
+    "mods": [
+      "bloodnetwork",
+      "soulspawner"
+    ],
+    "mechanic": "Настройка спавнера",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_book",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Книга и первый жезл",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_scan",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Состав мира",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_table",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Исследовательский стол",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_thaumium",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Алхимия: таум-металл",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_goggles",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Видеть потоки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_fabric",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Зачарованная ткань",
+    "verification": "result",
+    "taskTypes": [
+      "custom",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_furnace",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Разложение на эссенцию",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_jar",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Банки и метки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_tubes",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Напор в трубах",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_alchemical",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Точная алхимия",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_infusion",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Матрица наполнения",
+    "verification": "result",
+    "taskTypes": [
+      "custom",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_stability",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Стабилизация",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_pick",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Кирка огня",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_golem",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Первый голем",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_cores",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Сердцевины и метки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_node",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Узел ауры",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_recharge",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Перезарядка жезлов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_focus",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Набалдашники",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_mirror",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Магическое зеркало",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_warp",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Контроль искажения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_void",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Пустотный металл",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_eldritch",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Древние знания",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tc_pearl",
+    "chapter": "thaumcraft",
+    "mods": [
+      "Thaumcraft"
+    ],
+    "mechanic": "Первобытная жемчужина",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_book",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Лексика Ботании",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_petals",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Лепестковый аптекарь",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_living",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Живые материалы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_wand",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Посох леса",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_pool",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Поток маны",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_manasteel",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Преобразование в бассейне",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_mana",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Проверка доставки маны",
+    "verification": "result",
+    "taskTypes": [
+      "botania_mana"
+    ]
+  },
+  {
+    "quest": "bot_runes",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Рунический алтарь",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_seasons",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Сезонные руны",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_manarune",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Руна маны",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_spark",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Искры и быстрый обмен",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_plate",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Наземная агломерация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_terrasteel",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Террасталь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_portal",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Обмен с эльфами",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_elementium",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Эльфийские материалы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_gaia",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Страж Гайи",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_gaia2",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Следующая битва",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_spread",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Распространитель Гайи",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_lens",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Настройка линз",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_corporea",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Корпорея",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_redstring",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Красная нить",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_alchemy",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Алхимический катализатор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_conjuration",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Катализатор дублирования",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_tools",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Инструменты террастали",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_baubles",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Мана для снаряжения",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bot_sparks",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Приоритеты искр",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_endoflame",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Пламя края",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_hydroangeas",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Гидрогортензия",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_thermalily",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Термолилия",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_gourmaryllis",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Гурмарилис",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_kekimurus",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Кейкимурус",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_entropinnyum",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Энтропиниум",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_rosaArcana",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Роза аркана",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_agricarnation",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Агрикарнация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_hopperhock",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Хоппер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_rannuncarpus",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Раннункарпус",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_exoflame",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Экзопламя",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_orechid",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Рудноцвет",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_jadedAmaranthus",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Нефритовый амарант",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "flower_bellethorn",
+    "chapter": "botania",
+    "mods": [
+      "Botania"
+    ],
+    "mechanic": "Беллаторн",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_altar",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Первый кровавый алтарь",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_divination",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Измерение LP",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_slate",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Чистая плитка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_runes",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Второй уровень",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_sacrifice",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Жертвоприношение",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_speed",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Скорость против запаса",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_imbued",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Третий уровень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_sigils",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Повседневные сигилы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_alchemy",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Алхимическая установка",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_ritual",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Ритуальные камни",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_diviner",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Предсказатель ритуалов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_bound",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Связывание",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_demonic",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Четвёртый уровень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_armour",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Связанная броня",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_telepose",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Телепозеры",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_holding",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Управление сигилами",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_spell",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Составные заклинания",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_incense",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Благовония",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_reagents",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Алхимическая маршрутизация",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_demons",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Демоническая кровь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bm_transcendent",
+    "chapter": "bloodmagic",
+    "mods": [
+      "AWWayofTime"
+    ],
+    "mechanic": "Высшая орбита",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_plants",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Ведьмин огород",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_oven",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Печь и глиняные кувшины",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_fumes",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Сбор ароматов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_mutandis",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Мутандис и новые растения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_altar",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Сила алтаря",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_upgrade",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Оснащение алтаря",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_distill",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Перегонка",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_kettle",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Котёл отваров",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_chalk",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Ритуальные круги",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_attune",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Камень силы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_circle",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Талисман круга",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_taglock",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Привязки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_poppet",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Куклы и защита",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_spinning",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Прядение",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_dream",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Мир снов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_nightmare",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Материалы кошмара",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_brew",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Составные зелья",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_brewbag",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Организация зелий",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_brazier",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Жаровня и духи",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_familiar",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Ведьмовской быт",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_demon",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Демон и договор",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_hobgoblin",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Хобгоблины и кобольдит",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_necromancy",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Некромантия",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_protection",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Снаряжение охотника",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_bloodcloth",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Кровавая ткань",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wit_vampire",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Путь вампира",
+    "verification": "direct",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "wit_vampire_master",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Высший вампир",
+    "verification": "direct",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "wit_werewolf",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Путь оборотня",
+    "verification": "direct",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "wit_werewolf_master",
+    "chapter": "witchery",
+    "mods": [
+      "witchery"
+    ],
+    "mechanic": "Высший оборотень",
+    "verification": "direct",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "auto_crystal",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Красные кристаллы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_tank",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Жаждущий бак",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_clock",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Часы и дозирование",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_inventarium",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Инвентариум",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_request",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Запрос предметов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_golem",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Големный верстак",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_essentia",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Узел эссенции",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "auto_experience",
+    "chapter": "automagy",
+    "mods": [
+      "Automagy"
+    ],
+    "mechanic": "Хранение опыта",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_repair",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Восстановитель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_dislocate",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Перемещение блоков",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_funnel",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Воронка и интерфейс",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_enchant",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Осмотический зачарователь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_focus",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Набалдашники для работы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_cloth",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Ткань снятия чар",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_ichor",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Ихор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_tools",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Ихориевые инструменты",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_armour",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Ихориевая ткань",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tt_bedrock",
+    "chapter": "thaumic_tinkerer",
+    "mods": [
+      "ThaumicTinkerer"
+    ],
+    "mechanic": "Портал KAMI",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "fm_shards",
+    "chapter": "forbidden",
+    "mods": [
+      "ForbiddenMagic"
+    ],
+    "mechanic": "Осколки пороков",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "fm_ink",
+    "chapter": "forbidden",
+    "mods": [
+      "ForbiddenMagic"
+    ],
+    "mechanic": "Чернильный цветок",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "fm_taint",
+    "chapter": "forbidden",
+    "mods": [
+      "ForbiddenMagic"
+    ],
+    "mechanic": "Заражённая древесина",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "fm_wand",
+    "chapter": "forbidden",
+    "mods": [
+      "ForbiddenMagic"
+    ],
+    "mechanic": "Гибридные жезлы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "fm_cage",
+    "chapter": "forbidden",
+    "mods": [
+      "ForbiddenMagic"
+    ],
+    "mechanic": "Клетка гнева",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "fm_blood",
+    "chapter": "forbidden",
+    "mods": [
+      "ForbiddenMagic"
+    ],
+    "mechanic": "Кровавая рапира",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gado_claw",
+    "chapter": "gadomancy",
+    "mods": [
+      "gadomancy"
+    ],
+    "mechanic": "Клешня наполнения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gado_jars",
+    "chapter": "gadomancy",
+    "mods": [
+      "gadomancy"
+    ],
+    "mechanic": "Особые банки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gado_node",
+    "chapter": "gadomancy",
+    "mods": [
+      "gadomancy"
+    ],
+    "mechanic": "Работа с узлом",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gado_compress",
+    "chapter": "gadomancy",
+    "mods": [
+      "gadomancy"
+    ],
+    "mechanic": "Сжатие эссенции",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gado_aura",
+    "chapter": "gadomancy",
+    "mods": [
+      "gadomancy"
+    ],
+    "mechanic": "Пилон ауры",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gado_golem",
+    "chapter": "gadomancy",
+    "mods": [
+      "gadomancy"
+    ],
+    "mechanic": "Улучшенные големы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_lenses",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Линзы наблюдения",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_blood",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Кровяное наполнение",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_vat",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Чан преобразований",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_soul",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Обработка душ",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_dynamo",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Энергия из магии",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_node",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Синтетический узел",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "th_recombine",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Рекомбинация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "th_vortex",
+    "chapter": "horizons",
+    "mods": [
+      "ThaumicHorizons"
+    ],
+    "mechanic": "Стабилизатор вихря",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wg_camera",
+    "chapter": "witchgadgets",
+    "mods": [
+      "WitchingGadgets"
+    ],
+    "mechanic": "Камера исследований",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wg_bag",
+    "chapter": "witchgadgets",
+    "mods": [
+      "WitchingGadgets"
+    ],
+    "mechanic": "Магическая сумка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wg_cluster",
+    "chapter": "witchgadgets",
+    "mods": [
+      "WitchingGadgets"
+    ],
+    "mechanic": "Кластеры руд",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wg_gems",
+    "chapter": "witchgadgets",
+    "mods": [
+      "WitchingGadgets"
+    ],
+    "mechanic": "Наполненные камни",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wg_robe",
+    "chapter": "witchgadgets",
+    "mods": [
+      "WitchingGadgets"
+    ],
+    "mechanic": "Продвинутая мантия",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "wg_primordial",
+    "chapter": "witchgadgets",
+    "mods": [
+      "WitchingGadgets"
+    ],
+    "mechanic": "Первобытные инструменты",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tm_wood",
+    "chapter": "taintedmagic",
+    "mods": [
+      "TaintedMagic"
+    ],
+    "mechanic": "Искажённая древесина",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tm_metal",
+    "chapter": "taintedmagic",
+    "mods": [
+      "TaintedMagic"
+    ],
+    "mechanic": "Теневой металл",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tm_goggles",
+    "chapter": "taintedmagic",
+    "mods": [
+      "TaintedMagic"
+    ],
+    "mechanic": "Пустотные очки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tm_focus",
+    "chapter": "taintedmagic",
+    "mods": [
+      "TaintedMagic"
+    ],
+    "mechanic": "Специализированные набалдашники",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tm_fortress",
+    "chapter": "taintedmagic",
+    "mods": [
+      "TaintedMagic"
+    ],
+    "mechanic": "Пустотная крепостная броня",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tm_disassembler",
+    "chapter": "taintedmagic",
+    "mods": [
+      "TaintedMagic"
+    ],
+    "mechanic": "Таум-разрушитель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "emt_scribe",
+    "chapter": "electromagic",
+    "mods": [
+      "EMT"
+    ],
+    "mechanic": "Электрические письменные принадлежности",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "emt_goggles",
+    "chapter": "electromagic",
+    "mods": [
+      "EMT"
+    ],
+    "mechanic": "Электрические очки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "emt_drill",
+    "chapter": "electromagic",
+    "mods": [
+      "EMT"
+    ],
+    "mechanic": "Таум-бур",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "emt_wings",
+    "chapter": "electromagic",
+    "mods": [
+      "EMT"
+    ],
+    "mechanic": "Магический полёт",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "emt_focus",
+    "chapter": "electromagic",
+    "mods": [
+      "EMT"
+    ],
+    "mechanic": "Энергетические набалдашники",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "emt_quantum",
+    "chapter": "electromagic",
+    "mods": [
+      "EMT"
+    ],
+    "mechanic": "Квантовая магическая экипировка",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ba_glass",
+    "chapter": "bloodarsenal",
+    "mods": [
+      "BloodArsenal"
+    ],
+    "mechanic": "Стеклянные кинжалы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ba_iron",
+    "chapter": "bloodarsenal",
+    "mods": [
+      "BloodArsenal"
+    ],
+    "mechanic": "Наполненное железо",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ba_life",
+    "chapter": "bloodarsenal",
+    "mods": [
+      "BloodArsenal"
+    ],
+    "mechanic": "Наполнитель жизни",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ba_portable",
+    "chapter": "bloodarsenal",
+    "mods": [
+      "BloodArsenal"
+    ],
+    "mechanic": "Переносной алтарь",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ba_amulets",
+    "chapter": "bloodarsenal",
+    "mods": [
+      "BloodArsenal"
+    ],
+    "mechanic": "Амулеты жертвоприношения",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ba_sigils",
+    "chapter": "bloodarsenal",
+    "mods": [
+      "BloodArsenal"
+    ],
+    "mechanic": "Усиленные сигилы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_scoop",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Первые пчёлы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_apiary",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Пасека",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_analyzer",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Генетический анализ",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_centrifuge",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Переработка сот",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_carpenter",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Плотник",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_squeezer",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Масло семян",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_frames",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Рамки пасеки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_silk",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Шёлковая линия",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_jelly",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Маточное молочко",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_alveary",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Большой улей",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_climate",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Климат улья",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_trees",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Опыление деревьев",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_fruit",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Плодовые культуры",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "for_butterflies",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Бабочки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_farm",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Многоблочная ферма",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_ferment",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Биомасса",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_distill",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Биоэтанол",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_thermionic",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Электроламповый завод",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "for_backpack",
+    "chapter": "forestry",
+    "mods": [
+      "Forestry"
+    ],
+    "mechanic": "Рюкзаки и фильтры",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_processor",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Генетический процессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_apiary",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Промышленная пасека",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_upgrades",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Климат и автоматизация",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_sampler",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Выделение гена",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_template",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Шаблон наследования",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_imprint",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Запись генов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_mutagen",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Мутаген",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_mutatron",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Мутатрон",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_advanced",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Управляемая мутация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_dna",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Жидкая ДНК",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_protein",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Белок",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gen_replicate",
+    "chapter": "gendustry",
+    "mods": [
+      "gendustry"
+    ],
+    "mechanic": "Репликация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_minicio",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Основа эссенций",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_regular",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Первое усиление",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_strong",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Сильный камень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_extreme",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Мощнейший камень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_master",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Мастерский камень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_elements",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Стихийные культуры",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_metals",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Металлический урожай",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_precious",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Драгоценные культуры",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_mob",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Культуры существ",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_alloys",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Сплавы на грядке",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_magic",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Магические ресурсы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_boost",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Ускорение роста",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "crop_draconium",
+    "chapter": "magicalcrops",
+    "mods": [
+      "magicalcrops"
+    ],
+    "mechanic": "Дракониевая ферма",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_analyst",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Аналитик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_isolate",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Изоляция генов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_sequence",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Секвенирование",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_polymer",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Полимеризация",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_inoculate",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Инокуляция",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_splice",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Сплайсер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_lab",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Лабораторное снабжение",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_database",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "База генов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_extra",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Extra Bees: дополнительные виды",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_alveary",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Модули большого улья",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_magic",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Magic Bees: магические линии",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "binnie_aura",
+    "chapter": "binnie_genetics",
+    "mods": [
+      "Genetics",
+      "ExtraBees",
+      "MagicBees"
+    ],
+    "mechanic": "Пчёлы и магическая энергия",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_soil",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Анализ почвы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_flowers",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Селекция цветов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_seed",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Семена и наследование",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_beds",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Клумбы и сорняки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_pigment",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Пигменты",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_database",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Ботаническая база",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_saw",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Лесопилка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_carpentry",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Столярное дело",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "bt_panels",
+    "chapter": "botany_trees",
+    "mods": [
+      "Botany",
+      "ExtraTrees"
+    ],
+    "mechanic": "Панели и стекло",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_manual",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Материалы и вы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_patterns",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Шаблоны",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_station",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Сборка первого инструмента",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_repair",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Ремонт и модификаторы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_grout",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Обожжённый кирпич",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_smeltery",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Плавильня",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_casting",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Литейная площадка",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_alloys",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Управление сплавами",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_forge",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Инструментальная кузня",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_hammer",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Молот",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_lumber",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Лесоруб и землекоп",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_weapons",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Составное оружие",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_bolts",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Боеприпасы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_heart",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Постоянная подготовка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "tic_travel",
+    "chapter": "tconstruct",
+    "mods": [
+      "TConstruct"
+    ],
+    "mechanic": "Снаряжение путешественника",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_plates",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Сжатые материалы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_wafers",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Кремниевые пластины",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_oxygen",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Личная система кислорода",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_collector",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Сбор и сжатие кислорода",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_fuel",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Ракетное топливо",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_workbench",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Верстак NASA",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_rocket",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Первая ракета",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_moon",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Лунная экспедиция",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "gc_meteor",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Метеоритное железо",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_seal",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Герметичная база",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_dungeon",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Лунные подземелья",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_mars",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Марс",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "gc_desh",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Марсианская технология",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_thermal",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Термозащита",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_tier3",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Третья ракета",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_asteroids",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Пояс астероидов",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "gc_miner",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Астрошахтёр",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_beam",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Лучевая энергия",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_telepad",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Телепады",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "home_chisel",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Палитра Chisel",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "home_carpenter",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Каркасные блоки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "home_lighting",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Освещение мастерской",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "home_library",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Хранение книг",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "home_display",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Витрины",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "home_armour",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Стойки снаряжения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "div_realmite",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Первая особая руда",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "div_advanced",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Арлемит и рупий",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_aquatic",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Водная ветка",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "div_nether",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Адские ресурсы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_shards",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Стихийные осколки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_divine",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Божественный камень",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "div_clock",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Сумеречные часы",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "div_eden",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Эдем",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_eden_resources",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Ресурсы Эдема",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_wildwood",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Дикий лес",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_wildwood_resources",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Ресурсы Дикого леса",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_apalachia",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Апалачия",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_apalachia_resources",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Ресурсы Апалачии",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_skythern",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Небесный терн",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_skythern_resources",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Ресурсы Небесного терна",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_mortum",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Мортум",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_mortum_resources",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Ресурсы Мортума",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "div_side_iceika",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Айсика",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_side_arcana",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Аркана",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "div_side_vethea",
+    "chapter": "divine",
+    "mods": [
+      "divinerpg"
+    ],
+    "mechanic": "Ветеа",
+    "verification": "result",
+    "taskTypes": [
+      "custom"
+    ]
+  },
+  {
+    "quest": "biome_finder",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Поиск биомов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "biome_gems",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Самоцветы биомов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "biome_wood",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Редкая древесина",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "biome_amethyst",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Аметист Края",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "biome_netherwood",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Новые материалы Нижнего мира",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "biome_netherfood",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Адское земледелие",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "biome_crystal",
+    "chapter": "biomes",
+    "mods": [
+      "BiomesOPlenty",
+      "netherlicious"
+    ],
+    "mechanic": "Кристаллы Нижнего мира",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_tablet",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Дракониевое руководство",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_core",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Ядро Дракона",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_infuser",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Наполнитель энергии",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_grinder",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Уничтожитель мобов",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_chest",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Дракониевый сундук",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_wyvern",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Ядро Виверны",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_armour",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Снаряжение Виверны",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_heart",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Сердце дракона",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_awaken",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Пробуждение дракония",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_awakenedcore",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Пробуждённое ядро",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_draconic",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Драконья экипировка",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_modifier",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Улучшения снаряжения",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_storage",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Энергетическое ядро",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_crystals",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Энергетические кристаллы",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_teleport",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Телепортационная сеть",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "de_chaos",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Осколок Хаоса",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_chaoticcore",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Ядро Хаоса",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "de_reactor",
+    "chapter": "draconic",
+    "mods": [
+      "DraconicEvolution"
+    ],
+    "mechanic": "Дракониевый реактор",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_matrix",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Кристаллическая матрица",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_table",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Ужасный верстак",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_neutron",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Коллектор нейтрония",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_ingot",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Первый нейтроний",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_compressor",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Нейтронный компрессор",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_singularity",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Первый сжатый ресурс",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_food",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Космическая кухня",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_catalyst",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Катализатор бесконечности",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_infinity",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Слиток бесконечности",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_encoder",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Шаблоны большого верстака",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_assembler",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Экстремальный сборщик",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_pick",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Финальные инструменты",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_armour",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Финальная защита",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_photonic",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Фотонная панель",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_token",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Необязательный творческий жетон",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_researchbook",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Том полных знаний",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "project_smelt",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Запрос плавки",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "project_processors",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Три линии процессоров",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "project_slates",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Плитки разных ступеней",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "project_runes",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Партия стихийных рун",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "project_alloys",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Партия промышленных компонентов",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "project_silk",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Возобновляемая магическая одежда",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "project_terrasteel",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Террасталь по запросу",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "project_neutron",
+    "chapter": "practical_projects",
+    "mods": [
+      "appliedenergistics2",
+      "Mekanism",
+      "IC2",
+      "Botania",
+      "Forestry"
+    ],
+    "mechanic": "Финальная материальная база",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_extra_induction",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Индукционная матрица",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_extra_boiler",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Термоэлектрический бойлер",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mek_extra_heat",
+    "chapter": "mekanism",
+    "mods": [
+      "Mekanism"
+    ],
+    "mechanic": "Передача тепла",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_extra_turbine",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Промышленная турбина",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item",
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_extra_condense",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Возврат воды",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "mg_extra_fuel",
+    "chapter": "mek_power",
+    "mods": [
+      "MekanismGenerators"
+    ],
+    "mechanic": "Топливо термоядерной установки",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_extra_cargo",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Грузовая логистика",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "gc_extra_station",
+    "chapter": "galacticraft",
+    "mods": [
+      "GalacticraftCore",
+      "GalacticraftMars"
+    ],
+    "mechanic": "Орбитальная инфраструктура",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "decor_travel",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Гардероб путешественника",
+    "verification": "result",
+    "taskTypes": [
+      "item",
+      "item"
+    ]
+  },
+  {
+    "quest": "decor_fabric",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Thaumic Dyes: ткани",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "decor_robe",
+    "chapter": "building",
+    "mods": [
+      "chisel",
+      "CarpentersBlocks",
+      "BiblioCraft",
+      "TravellersGear",
+      "thaumicdyes"
+    ],
+    "mechanic": "Мантия тауматурга",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_extra_compressed",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Сжатый сундук",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_extra_infinite",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Сундук бесконечности",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  },
+  {
+    "quest": "ava_extra_autocrafter",
+    "chapter": "avaritia",
+    "mods": [
+      "Avaritia",
+      "appliedavaritia",
+      "avaritiaddons",
+      "universalsingularities"
+    ],
+    "mechanic": "Большой автокрафтер",
+    "verification": "result",
+    "taskTypes": [
+      "item"
+    ]
+  }
+]
