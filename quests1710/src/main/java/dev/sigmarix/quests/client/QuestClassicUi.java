@@ -18,6 +18,12 @@ public final class QuestClassicUi extends Gui {
     private static final RenderItem items=new RenderItem();
     public static void background(Minecraft mc,int width,int height) { background(mc,0,0,width,height); }
     public static void background(Minecraft mc,int x,int y,int width,int height) { tiled(mc,x,y,width,height,0xDCFFFFFF); }
+    public static void opaqueBackground(Minecraft mc,int x,int y,int width,int height) {
+        if(ClientProxy.snapshot!=null && ClientProxy.snapshot.book!=null && !ClientProxy.snapshot.book.theme.background.equals(defaults.background)) {
+            drawRect(x,y,x+width,y+height,QuestPresentation.color(ClientProxy.snapshot.book.theme.background)|0xFF000000);return;
+        }
+        tiled(mc,x,y,width,height,0xFFFFFFFF);
+    }
     private static void tiled(Minecraft mc,int x,int y,int width,int height,int color) {
         if(ClientProxy.snapshot!=null && ClientProxy.snapshot.book!=null && !ClientProxy.snapshot.book.theme.background.equals(defaults.background)) {drawRect(x,y,x+width,y+height,QuestPresentation.color(ClientProxy.snapshot.book.theme.background));return;}
         if(background==null)background=new ResourceLocation("ftblib:textures/gui/background_squares.png");

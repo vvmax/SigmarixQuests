@@ -64,6 +64,7 @@ public final class QuestPreview {
         if(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/teams-only").exists()){captureModes=new String[]{"team_select","team_actions","team_disabled","team_leader","team_create","team_create-hover"};captureName=captureModes[0];renderMode="team";}
         if(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/registry-only").exists())renderMode="registry";
         if(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/questpack-only").exists()){captureModes=new String[]{"pack_botania","pack_altar","pack_ru","pack_literal"};captureName=captureModes[0];renderMode="pack";}
+        if(new File(Minecraft.getMinecraft().mcDataDir,"../build/preview/category-overlay-only").exists())renderMode="category-overlay";
         if(renderMode.isEmpty())GuideSmoke.register();
         fixture=new QuestNetwork.Snapshot();
         try(Reader reader=new InputStreamReader(getClass().getResourceAsStream("/example-quests.json"),StandardCharsets.UTF_8)) {
@@ -201,6 +202,12 @@ public final class QuestPreview {
         ClientProxy.snapshot=fixture; ticks++;
         if(!russianPrepared && ticks==30 && (new File(mc.mcDataDir,"../build/preview/russian-only").exists() || new File(mc.mcDataDir,"../build/preview/teams-only").exists())){russianPrepared=true;mc.gameSettings.language="ru_RU";mc.getLanguageManager().setCurrentLanguage(new net.minecraft.client.resources.Language("ru_RU","RU","Русский",false));mc.getLanguageManager().onResourceManagerReload(mc.getResourceManager());mc.fontRenderer.setUnicodeFlag(mc.getLanguageManager().isCurrentLocaleUnicode());System.out.println("Quest Russian fixture unicode="+mc.fontRenderer.getUnicodeFlag());}
 
+        if(renderMode.equals("category-overlay")) {
+            mc.gameSettings.guiScale=2;
+            if(ticks==30)QuestCategoryOverlaySmoke.setup(mc,fixture);
+            if(ticks==65)QuestCategoryOverlaySmoke.verify(mc,fixture);
+            if(ticks==75)mc.shutdown();return;
+        }
         if(renderMode.equals("pack")){
             if(ticks==30){
                 if(!russianPrepared){

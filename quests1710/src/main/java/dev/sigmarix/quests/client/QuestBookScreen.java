@@ -43,13 +43,12 @@ public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesN
         if(find(selected)==null) selected="";
         buttonList.clear();
         int top=1;
-        if(QuestClicks.available("","custom:ftbmoney:open_gui")) { button(15,0,top,20,18,"Shop","shop",true); top+=18; }
-        button(9,0,top,20,18,"Teams","team",true);
-        top=1;
+        if(QuestClicks.available("","custom:ftbmoney:open_gui")) button(15,0,top,20,18,"Shop","shop",true);
         int right=width-20;
         if(ClientProxy.snapshot.states.containsValue("complete")) { button(20,right,top,20,18,"Collect rewards","reward",true).tint=0xFFF8E71C; top+=18; }
         if(QuestGuides.available("")) { button(12,right,top,20,18,"Guides","book",true).tint=0xFFEF9E1A; top+=18; }
         if(!book().emergencyItems.isEmpty()) { button(10,right,top,20,18,"Help items","emergency_items",true); top+=18; }
+        button(9,right,top,20,18,"Teams","team",true);
         button(14,right,height-(ClientProxy.snapshot.canEdit?55:37),20,18,ClientProxy.snapshot.autoPin?"Automatic tracking: ON":"Automatic tracking: OFF","pin",true).tint=ClientProxy.snapshot.autoPin?0xFFF8BD1C:0xFFDBDBDB;
         button(21,right,height-(ClientProxy.snapshot.canEdit?37:19),20,18,"Support","support",true);
         if(ClientProxy.snapshot.canEdit) button(3,right,height-19,20,18,"Edit book","settings",true);
@@ -113,7 +112,12 @@ public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesN
             if(over && card==null) { hover=q; nodeOverlay(x,y,r,style[2],0x64FFFFFF); }
             if("claimed".equals(state) || "complete".equals(state)){GL11.glPushMatrix();GL11.glTranslated(x,y-r,0);GL11.glScaled(r,r,1);QuestClassicUi.icon("claimed".equals(state)?"check":"alert",0,0,1,"claimed".equals(state)?0xFF65D529:0xFFFFDD55);GL11.glPopMatrix();}
         }
-        drawEditorCursor(mx,my);unclip(); GL11.glPushMatrix(); GL11.glTranslated(0,0,300); drawChapters(mx,my); GL11.glPopMatrix();
+        drawEditorCursor(mx,my);unclip();
+        // Item renderers and selected nodes leave depth values above the map plane.
+        // The chapter selector is a separate overlay, including its 3D item icons.
+        GL11.glPushAttrib(GL11.GL_ENABLE_BIT|GL11.GL_DEPTH_BUFFER_BIT);GL11.glPushMatrix();
+        try { GL11.glDepthMask(true);GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);GL11.glDisable(GL11.GL_DEPTH_TEST);GL11.glTranslated(0,0,300);drawChapters(mx,my); }
+        finally { GL11.glPopMatrix();GL11.glPopAttrib(); }
         if(showSearch && card==null) search.drawTextBox();
         if(card!=null) { GL11.glPushMatrix(); GL11.glTranslated(0,0,500); drawCard(mx,my); GL11.glPopMatrix(); } else super.drawScreen(mx,my,partial);
         QuestClassicUi.frame(0,0,width,height,QuestClassicUi.BORDER);
@@ -165,7 +169,7 @@ public final class QuestBookScreen extends QuestLibraryScreen implements GuiYesN
         if(mx>=w || my<top || my>=top+expanded.size()*20){hoverChapter="";return;}
         for(int i=0;i<expanded.size();i++){
             QuestCore.Chapter c=expanded.get(i);int x=i==0?0:20,cy=top+i*20;boolean over=mx>=x && mx<w && my>=cy && my<cy+20;
-            QuestClassicUi.background(mc,x,cy,w-x,20);if(over)drawRect(x,cy,w-1,cy+20,0x44000000);
+            QuestClassicUi.opaqueBackground(mc,x,cy,w-x,20);if(over)drawRect(x,cy,w-1,cy+20,0x44000000);
             if(i==0)QuestClassicUi.frame(x,cy,w-x,20,QuestClassicUi.BORDER);else{drawRect(w-1,cy,w,cy+20,QuestClassicUi.BORDER);if(i==expanded.size()-1)drawRect(x,cy+19,w-1,cy+20,QuestClassicUi.BORDER);}
             chapterIcon(c,x+2,cy+2);fontRendererObj.drawStringWithShadow(chapterTitle(c),x+22,cy+6,over?0xFFFFFFA0:0xFFFFFFFF);chapterHits.add(new Hit(c.id,x,cy,w-x,20));
             if(over && !c.description.isEmpty()){List<String> tip=new ArrayList<String>();for(String line:c.description.split("\n"))tip.add("§7"+line);drawHoveringText(tip,mx,my,fontRendererObj);}

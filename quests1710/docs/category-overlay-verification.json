@@ -1,0 +1,30 @@
+{
+  "version": "0.28.1-SNAPSHOT",
+  "artifact": {
+    "file": "quests1710-0.28.1-SNAPSHOT.jar",
+    "sha256": "71455df3b080bea77631c4651ed1a9dcf4bed2676a6903c33a693ee748616c9e"
+  },
+  "changes": [
+    "separate depth buffer pass for chapter selector",
+    "opaque popup background",
+    "teams button moved to right toolbar"
+  ],
+  "java_tests": {
+    "junit": 76,
+    "forge_integration": 155
+  },
+  "live_framebuffer_test": {
+    "passed": true,
+    "pixels_compared": 59092,
+    "differing_pixels": 0,
+    "underlying_nodes": [
+      "3D obsidian block icons",
+      "enchanted book icons",
+      "selected quest highlight"
+    ],
+    "click_priority": "child category selected while underlying quest remained unselected",
+    "fixture_marker": "build/preview/category-overlay-only",
+    "result": "build/preview/category-overlay-smoke.txt",
+    "screenshot": "build/preview/screenshots/category-overlay-fixed.png"
+  }
+}
