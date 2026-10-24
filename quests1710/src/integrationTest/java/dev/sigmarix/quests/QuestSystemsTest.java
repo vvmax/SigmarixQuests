@@ -1148,6 +1148,48 @@ public class QuestSystemsTest {
         finally { QuestsMod.service=null; }
     }
 
+    @Test public void multiMegabyteBooksSaveReloadAndRoundTripOverBothDirections() throws Exception {
+        java.nio.file.Path folder=java.nio.file.Files.createTempDirectory("quest-large-book-");
+        java.nio.file.Path root=folder.resolve("quests.json");
+        try {
+            QuestCore.Book book=new QuestCore.Book();book.title="Большая книга";
+            StringBuilder description=new StringBuilder();java.util.Random random=new java.util.Random(482);
+            for(int n=0;n<14000;n++) description.append((char)('a'+random.nextInt(26)));
+            for(int n=0;n<128;n++) {
+                QuestCore.Quest q=new QuestCore.Quest();q.id="large_"+n;q.title="Квест "+n;q.description=description.toString();
+                QuestCore.Task t=new QuestCore.Task();t.id="check";t.type="check";q.tasks.add(t);book.quests.add(q);
+            }
+            QuestNetwork.Action action=new QuestNetwork.Action();action.action="save";action.book=book;
+            String json=QuestService.JSON.toJson(action);assertTrue(json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>1024*1024);
+            QuestNetwork.RequestAssembly incoming=new QuestNetwork.RequestAssembly();String received=null;
+            for(QuestNetwork.RequestChunk chunk:QuestNetwork.requestChunks(json)) received=incoming.accept(chunk,0);
+            QuestNetwork.Action decoded=QuestService.JSON.fromJson(received,QuestNetwork.Action.class);
+            QuestService actual=new QuestService(root.toFile());actual.save(decoded.book,actual.revision);
+            assertTrue(java.nio.file.Files.size(root)>1024*1024);actual.load();assertEquals(128,actual.quests.size());
+            assertEquals(description.toString(),actual.quests.get("large_127").description);
+            QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot();snapshot.book=actual.book;snapshot.revision=actual.revision;
+            QuestNetwork.RequestAssembly outgoing=new QuestNetwork.RequestAssembly();
+            for(QuestNetwork.RequestChunk chunk:QuestNetwork.responseChunks(QuestService.JSON.toJson(snapshot))) received=outgoing.accept(chunk,0);
+            QuestNetwork.Snapshot client=QuestService.JSON.fromJson(received,QuestNetwork.Snapshot.class);
+            assertEquals(snapshot.revision,client.revision);assertEquals(description.toString(),client.book.quests.get(127).description);
+            // External chapters have the same aggregate limit and stay separate after editing.
+            java.nio.file.Files.createDirectory(folder.resolve("chapters"));book.chapterDirectory="chapters";
+            QuestCore.Chapter chapter=new QuestCore.Chapter();chapter.id="large";chapter.title="Большая глава";book.chapters.add(chapter);
+            for(QuestCore.Quest q:book.quests) q.chapter=chapter.id;
+            java.nio.file.Files.write(root,"{format:2,chapterDirectory:'chapters',chapters:[],quests:[]}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            com.google.gson.JsonObject fragment=new com.google.gson.JsonObject();fragment.addProperty("format",2);
+            fragment.add("chapters",QuestService.JSON.toJsonTree(book.chapters));fragment.add("quests",QuestService.JSON.toJsonTree(book.quests));
+            java.nio.file.Files.write(folder.resolve("chapters/large.json"),QuestService.JSON.toJson(fragment).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            QuestService external=new QuestService(root.toFile());external.load();assertEquals(128,external.quests.size());
+            external.book.quests.get(0).title="Изменено";external.save(external.book,external.revision);external.load();
+            assertEquals("Изменено",external.quests.get("large_0").title);
+            assertTrue(java.nio.file.Files.size(folder.resolve("chapters/large.json"))>1024*1024);
+            assertTrue(java.nio.file.Files.size(root)<1024*1024);
+
+        } finally {
+            try(java.util.stream.Stream<java.nio.file.Path> paths=java.nio.file.Files.walk(folder)){for(java.nio.file.Path path:paths.sorted(java.util.Comparator.reverseOrder()).collect(java.util.stream.Collectors.toList()))java.nio.file.Files.deleteIfExists(path);}
+        }
+    }
     @Test public void externalVanillaChaptersValidateSaveAndCreateIndependentProfiles() throws Exception {
         java.nio.file.Path folder=java.nio.file.Files.createTempDirectory("quest-external-world-");java.nio.file.Files.createDirectory(folder.resolve("chapters"));
         java.nio.file.Path root=folder.resolve("quests.json");

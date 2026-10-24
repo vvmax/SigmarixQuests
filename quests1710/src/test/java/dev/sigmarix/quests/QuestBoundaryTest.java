@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 public class QuestBoundaryTest {
     @Test public void largeEditorSaveUsesVanillaSizedPackets() throws Exception {
         Random random=new Random(73);StringBuilder json=new StringBuilder("{\"text\":\"");
-        for(int i=0;i<180000;i++) json.append((char)('a'+random.nextInt(26)));
+        for(int i=0;i<2400000;i++) json.append((char)('a'+random.nextInt(26)));
         json.append("\"}");
         java.util.List<QuestNetwork.RequestChunk> chunks=QuestNetwork.requestChunks(json.toString());
         assertTrue(chunks.size()>1);QuestNetwork.RequestAssembly assembly=new QuestNetwork.RequestAssembly();String result=null;
@@ -20,13 +20,35 @@ public class QuestBoundaryTest {
             if(i<chunks.size()-1) assertNull(result);
         }
         assertEquals(json.toString(),result);
+        assertTrue(chunks.get(0).total>1024*1024);
+        // The server->client direction must also avoid oversized FML payloads.
+        QuestNetwork.RequestAssembly response=new QuestNetwork.RequestAssembly();
+        for(QuestNetwork.RequestChunk chunk:QuestNetwork.responseChunks(json.toString())) {
+            assertTrue(chunk instanceof QuestNetwork.ResponseChunk);
+            io.netty.buffer.ByteBuf wire=io.netty.buffer.Unpooled.buffer();chunk.toBytes(wire);
+            assertTrue(wire.readableBytes()+1<32767);
+            QuestNetwork.ResponseChunk decoded=new QuestNetwork.ResponseChunk();decoded.fromBytes(wire);wire.release();
+            result=response.accept(decoded,100);
+        }
+        assertEquals(json.toString(),result);
         try { assembly.accept(chunks.get(1),200);fail(); } catch(IOException expected) {}
         assembly.accept(chunks.get(0),0);
-        try { assembly.accept(chunks.get(1),30001);fail(); } catch(IOException expected) {}
+        try { assembly.accept(chunks.get(1),QuestNetwork.ASSEMBLY_TIMEOUT_MS+1);fail(); } catch(IOException expected) {}
         assembly.accept(chunks.get(0),40000);
         try { assembly.accept(chunks.get(2),40001);fail(); } catch(IOException expected) {}
         for(QuestNetwork.RequestChunk chunk:chunks) result=assembly.accept(chunk,50000);
         assertEquals(json.toString(),result);
+    }
+    @Test public void malformedChunksAndQueueMemoryAreBounded() throws Exception {
+        QuestNetwork.RequestChunk chunk=new QuestNetwork.RequestChunk();chunk.total=QuestNetwork.MAX_COMPRESSED+1;chunk.data=new byte[]{1};
+        io.netty.buffer.ByteBuf wire=io.netty.buffer.Unpooled.buffer();
+        try { chunk.toBytes(wire);fail(); } catch(IllegalArgumentException expected) {} finally { wire.release(); }
+        wire=io.netty.buffer.Unpooled.buffer();wire.writeInt(1);
+        try { new QuestNetwork.ResponseChunk().fromBytes(wire);fail(); } catch(IllegalArgumentException expected) {} finally { wire.release(); }
+        QuestMessageQueue<String> queue=new QuestMessageQueue<String>(2,5,String::length);
+        assertTrue(queue.offer("1234"));assertFalse(queue.offer("xx"));assertEquals("1234",queue.poll());
+        assertTrue(queue.offer("12"));assertTrue(queue.offer("34"));assertFalse(queue.offer("5"));
+        queue.clear();assertTrue(queue.offer("12345"));assertEquals("12345",queue.poll());assertNull(queue.poll());
     }
     @Test public void largestWorldMapFitsBoundedWireAndRejectsExtraEntries() throws Exception {
         QuestWorldMap map=new QuestWorldMap(); map.reference="book:";

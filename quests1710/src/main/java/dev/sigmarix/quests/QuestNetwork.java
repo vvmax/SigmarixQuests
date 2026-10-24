@@ -10,7 +10,8 @@ import java.util.zip.*;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 public final class QuestNetwork {
-    public static final int MAX_BYTES=1024*1024, MAX_COMPRESSED=512*1024;
+    public static final int MAX_BOOK_BYTES=16*1024*1024, MAX_BYTES=32*1024*1024, MAX_COMPRESSED=16*1024*1024;
+    public static final long ASSEMBLY_TIMEOUT_MS=120000;
     public static SimpleNetworkWrapper channel;
     public static void init() {
         channel=NetworkRegistry.INSTANCE.newSimpleChannel("sigmarixquests");
@@ -18,6 +19,7 @@ public final class QuestNetwork {
         channel.registerMessage(ResponseHandler.class, Response.class, 1, Side.CLIENT);
         channel.registerMessage(NoticeHandler.class, Notice.class, 2, Side.CLIENT);
         channel.registerMessage(RequestChunkHandler.class, RequestChunk.class, 3, Side.SERVER);
+        channel.registerMessage(ResponseChunkHandler.class, ResponseChunk.class, 4, Side.CLIENT);
     }
     public static byte[] encode(String text) throws IOException {
         byte[] raw=text.getBytes(StandardCharsets.UTF_8);
@@ -65,12 +67,14 @@ public final class QuestNetwork {
     }
     // C17PacketCustomPayload has a 32767-byte limit, including the FML discriminator.
     public static final int CHUNK_BYTES=30000;
-    public static java.util.List<RequestChunk> requestChunks(String json) {
+    public static java.util.List<RequestChunk> requestChunks(String json) { return chunks(json,false); }
+    public static java.util.List<RequestChunk> responseChunks(String json) { return chunks(json,true); }
+    private static java.util.List<RequestChunk> chunks(String json,boolean response) {
         try {
             byte[] encoded=encode(json);
             java.util.List<RequestChunk> chunks=new java.util.ArrayList<RequestChunk>();
             for(int offset=0;offset<encoded.length;offset+=CHUNK_BYTES) {
-                RequestChunk chunk=new RequestChunk();chunk.total=encoded.length;chunk.offset=offset;
+                RequestChunk chunk=response?new ResponseChunk():new RequestChunk();chunk.total=encoded.length;chunk.offset=offset;
                 chunk.data=java.util.Arrays.copyOfRange(encoded,offset,Math.min(offset+CHUNK_BYTES,encoded.length));
                 chunks.add(chunk);
             }
@@ -80,7 +84,10 @@ public final class QuestNetwork {
     public static void sendRequest(String json) {
         for(RequestChunk chunk:requestChunks(json)) channel.sendToServer(chunk);
     }
-    public static final class RequestChunk implements IMessage {
+    public static void sendResponse(String json,EntityPlayerMP player) {
+        for(RequestChunk chunk:responseChunks(json)) channel.sendTo((ResponseChunk)chunk,player);
+    }
+    public static class RequestChunk implements IMessage {
         public int total,offset; public byte[] data=new byte[0];
         public void toBytes(ByteBuf buffer) { validate();buffer.writeInt(total);buffer.writeInt(offset);buffer.writeBytes(data); }
         public void fromBytes(ByteBuf buffer) {
@@ -94,10 +101,12 @@ public final class QuestNetwork {
     }
     public static final class RequestAssembly {
         private byte[] data; private int received; private long started;
+        int retainedBytes() { return data==null?0:data.length; }
+        boolean expired(long now) { return data==null || now-started>ASSEMBLY_TIMEOUT_MS; }
         public String accept(RequestChunk chunk,long now) throws IOException {
             chunk.validate();
             if(chunk.offset==0) { data=new byte[chunk.total];received=0;started=now; }
-            if(data==null || now-started>30000 || data.length!=chunk.total || received!=chunk.offset) {
+            if(data==null || now-started>ASSEMBLY_TIMEOUT_MS || data.length!=chunk.total || received!=chunk.offset) {
                 data=null;throw new IOException("Invalid or expired quest chunk sequence");
             }
             System.arraycopy(chunk.data,0,data,received,chunk.data.length);received+=chunk.data.length;
@@ -105,10 +114,32 @@ public final class QuestNetwork {
             byte[] complete=data;data=null;return decode(complete);
         }
     }
+    public static final class ResponseChunk extends RequestChunk {}
+    public static final class ResponseChunkHandler implements IMessageHandler<ResponseChunk,IMessage> {
+        private final java.util.Map<net.minecraft.network.INetHandler,RequestAssembly> pending=new java.util.WeakHashMap<net.minecraft.network.INetHandler,RequestAssembly>();
+        public synchronized IMessage onMessage(ResponseChunk message,MessageContext context) {
+            net.minecraft.network.INetHandler connection=context.netHandler;
+            RequestAssembly assembly=pending.get(connection);
+            if(assembly==null) { assembly=new RequestAssembly();pending.put(connection,assembly); }
+            try {
+                String json=assembly.accept(message,System.currentTimeMillis());
+                if(json!=null) { pending.remove(connection);QuestsMod.proxy.receive(json); }
+            } catch(IOException | IllegalArgumentException e) { pending.remove(connection);throw new IllegalArgumentException("Invalid quest response",e); }
+            return null;
+        }
+    }
     public static final class RequestChunkHandler implements IMessageHandler<RequestChunk,IMessage> {
         private final java.util.Map<EntityPlayerMP,RequestAssembly> pending=new java.util.WeakHashMap<EntityPlayerMP,RequestAssembly>();
         public synchronized IMessage onMessage(RequestChunk message,MessageContext context) {
             EntityPlayerMP player=context.getServerHandler().playerEntity;
+            long now=System.currentTimeMillis();
+            pending.entrySet().removeIf(entry->entry.getValue().expired(now));
+            // A forged first chunk must not reserve an unbounded amount of server memory.
+            if(message.offset==0) {
+                long retained=0;for(java.util.Map.Entry<EntityPlayerMP,RequestAssembly> entry:pending.entrySet())
+                    if(entry.getKey()!=player) retained+=entry.getValue().retainedBytes();
+                if(retained+message.total>2L*MAX_COMPRESSED) return null;
+            }
             RequestAssembly assembly=pending.get(player);
             if(assembly==null) { assembly=new RequestAssembly();pending.put(player,assembly); }
             try {

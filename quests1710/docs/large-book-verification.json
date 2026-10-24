@@ -1,0 +1,35 @@
+{
+  "version": "0.27.0-SNAPSHOT",
+  "book_utf8_limit_bytes": 16777216,
+  "assembled_raw_limit_bytes": 33554432,
+  "assembled_compressed_limit_bytes": 16777216,
+  "chunk_bytes": 30000,
+  "assembly_timeout_seconds": 120,
+  "full_book_transport": true,
+  "incremental_updates": false,
+  "junit_tests": 70,
+  "forge_integration_tests": 155,
+  "python_tests": 43,
+  "live_forge_client_server": {
+    "passed": true,
+    "snapshot_raw_bytes": 2144120,
+    "snapshot_compressed_bytes": 1150792,
+    "checks": [
+      "real client-to-server editor save",
+      "real server-to-client snapshot",
+      "exact final quest description preserved"
+    ],
+    "fixture_marker": "build/preview/large-book-smoke",
+    "result_file": "build/preview/large-book-smoke.txt"
+  },
+  "artifact": {
+    "file": "quests1710-0.27.0-SNAPSHOT.jar",
+    "sha256": "077d48096c026f0acdf236d9a7a23110f72b8c6737044283dbb2500ed6f853d0"
+  },
+  "limitations": [
+    "4096 quest count limit remains",
+    "individual field limits remain",
+    "both client and server must use version 0.27",
+    "no claim of a full 16 MiB book tested in a live client"
+  ]
+}

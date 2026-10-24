@@ -46,7 +46,7 @@ public final class QuestEditorScreen extends QuestLibraryScreen {
     private void insert(String value) {
         if(value==null) return;
         String next=selectAll?value:text.substring(0,cursor)+value+text.substring(cursor);
-        if(next.length()>900000) { message="Maximum 900000 characters"; return; }
+        if(next.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>QuestNetwork.MAX_BOOK_BYTES) { message="Book too large (16 MiB maximum)"; return; }
         undo=text; text=next; cursor=selectAll?value.length():cursor+value.length(); selectAll=false; ensureVisible();
     }
     private int lineStart() { return text.lastIndexOf('\n',Math.max(-1,cursor-1))+1; }

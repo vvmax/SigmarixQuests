@@ -8,7 +8,6 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 import net.minecraft.command.*;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.*;
@@ -29,7 +28,7 @@ public final class QuestsMod {
     public static QuestService service;
     private File config;
     private int ticks;
-    private static final ArrayBlockingQueue<Pending> QUEUE=new ArrayBlockingQueue<Pending>(128);
+    private static final QuestMessageQueue<Pending> QUEUE=new QuestMessageQueue<Pending>(128,2L*QuestNetwork.MAX_BYTES,p->p.json.length());
     private static final Map<UUID,Long> LAST_REQUEST=new HashMap<UUID,Long>(),LAST_VIEW=new HashMap<UUID,Long>(),LAST_SCREEN=new HashMap<UUID,Long>();
     private static final Set<UUID> PENDING_VIEWS=new HashSet<UUID>();
     private static final Map<UUID,String> LAST_MESSAGE=new HashMap<UUID,String>();
@@ -136,14 +135,14 @@ public final class QuestsMod {
                 net.minecraft.tileentity.TileEntity raw=player.worldObj.getTileEntity(action.x,action.y,action.z);
                 if(!(raw instanceof QuestDevice) || !(raw.getBlockType() instanceof QuestBlocks.DeviceBlock) || ((QuestBlocks.DeviceBlock)raw.getBlockType()).mode!=1) return;
                 QuestNetwork.Snapshot response=new QuestNetwork.Snapshot(); response.screen=QuestWorldMap.create(service,player.getUniqueID(),(QuestDevice)raw);
-                QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(response)),player); return;
+                QuestNetwork.sendResponse(QuestService.JSON.toJson(response),player); return;
             }
             if(action.action.equals("view") || action.action.equals("refresh")) { if(action.action.equals("refresh")) LAST_MESSAGE.remove(player.getUniqueID()); PENDING_VIEWS.add(player.getUniqueID()); return; }
             Long last=LAST_REQUEST.get(player.getUniqueID());
             if(last!=null && ticks-last<2) {
                 QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message="Error: Please wait before another action"; error.revision=service.revision;
                 if("icon_edit".equals(actionName) || "storage_page".equals(actionName)) QuestService.say(player,error.message);
-                QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return;
+                QuestNetwork.sendResponse(QuestService.JSON.toJson(error),player); return;
             }
             LAST_REQUEST.put(player.getUniqueID(),(long)ticks); counted=true;
             if(!action.action.equals("icon_edit") && !action.action.equals("storage_page") && action.revision!=service.revision) throw new IllegalArgumentException("Book changed; refresh before acting");
@@ -253,7 +252,7 @@ public final class QuestsMod {
         } catch(Exception ex) {
             message="Error: "+ex.getMessage();
             if("icon_edit".equals(actionName) || "storage_page".equals(actionName)) QuestService.say(player,message);
-            if(!counted) { QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message=message; error.revision=service.revision; QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(error)),player); return; }
+            if(!counted) { QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message=message; error.revision=service.revision; QuestNetwork.sendResponse(QuestService.JSON.toJson(error),player); return; }
         }
         PENDING_VIEWS.remove(player.getUniqueID()); LAST_VIEW.put(player.getUniqueID(),(long)ticks); sendSnapshot(player,message);
     }
@@ -292,7 +291,7 @@ public final class QuestsMod {
                 snapshot.taskStates.put(q.id+":"+task.id,service.dependencies(id).satisfied("task:"+q.id+"/"+task.id,false));
             }
         }
-        QuestNetwork.channel.sendTo(new QuestNetwork.Response(QuestService.JSON.toJson(snapshot)),player);
+        QuestNetwork.sendResponse(QuestService.JSON.toJson(snapshot),player);
     }
     private static String playerName(UUID id) {
         com.mojang.authlib.GameProfile profile=MinecraftServer.getServer().func_152358_ax().func_152652_a(id);

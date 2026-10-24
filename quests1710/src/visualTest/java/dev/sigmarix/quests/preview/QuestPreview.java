@@ -488,11 +488,31 @@ public final class QuestPreview {
                 QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:"+QuestService.JSON.toJson(remoteImage)+",color:16763972}"; manual.tasks.add(check); QuestCore.Task callback=new QuestCore.Task(); callback.id="callback"; callback.type="custom"; callback.target=""; callback.manual=true; callback.count=3; callback.title="Server script action"; manual.tasks.add(callback); edit.book.quests.add(manual);
                 QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
                 QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
+                if(new File(mc.mcDataDir,"../build/preview/large-book-smoke").exists()) {
+                    java.util.Random random=new java.util.Random(270);
+                    for(int n=0;n<128;n++) {
+                        QuestCore.Quest large=new QuestCore.Quest();large.id="large_"+n;large.title="Large network quest "+n;
+                        StringBuilder largeDescription=new StringBuilder();for(int c=0;c<14000;c++)largeDescription.append((char)('a'+random.nextInt(26)));large.description=largeDescription.toString();
+                        QuestCore.Task largeCheck=new QuestCore.Task();largeCheck.id="check";largeCheck.type="check";large.tasks.add(largeCheck);edit.book.quests.add(large);
+                    }
+                }
                 pendingBookEdit=edit; lastBookAttempt=System.nanoTime(); ClientProxy.send(edit); stage=5; break;
             case 5:
                 if(snap==null) return;
                 if(snap.revision==oldRevision) { if(pendingBookEdit!=null && realNow-lastBookAttempt>java.util.concurrent.TimeUnit.SECONDS.toNanos(1)) { ClientProxy.send(pendingBookEdit); lastBookAttempt=realNow; } return; }
                 if(!snap.book.title.equals("Network edit smoke")) throw new IllegalStateException("Editor did not save");
+                if(new File(mc.mcDataDir,"../build/preview/large-book-smoke").exists()) {
+                    QuestCore.Quest expected=pendingBookEdit.book.quests.stream().filter(q->q.id.equals("large_127")).findFirst().get();
+                    QuestCore.Quest actual=snap.book.quests.stream().filter(q->q.id.equals("large_127")).findFirst().get();
+                    if(!expected.description.equals(actual.description))throw new IllegalStateException("Large book text changed in transit");
+                    String payload=QuestService.JSON.toJson(snap);
+                    int bytes=payload.getBytes(StandardCharsets.UTF_8).length,compressed=QuestNetwork.encode(payload).length;
+                    if(bytes<=1024*1024 || compressed<=1024*1024)throw new IllegalStateException("Large book fixture is too small");
+                    java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/large-book-smoke.txt").toPath(),
+                        ("PASS: real Forge client->server save and server->client snapshot; "+bytes+" raw bytes; "+compressed+" compressed bytes; exact description preserved").getBytes(StandardCharsets.UTF_8));
+                    mc.shutdown();return;
+                }
+
                 QuestNetwork.Action stale=new QuestNetwork.Action(); stale.action="save"; stale.revision=oldRevision; stale.book=original;
                 ClientProxy.send(stale); stage=6; break;
             case 6:

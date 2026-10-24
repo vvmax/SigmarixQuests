@@ -8,7 +8,11 @@ Each `*.json` fragment contains `format`, `chapters`, and `quests`. Other top-le
 fields are rejected; keep book defaults, themes and loot tables in `quests.json`.
 Every quest in a fragment must belong to a chapter declared by that fragment.
 References between files are validated after all files load. Files load in name
-order. The combined source limit remains 900 KB and at most 64 fragments.
+order. Since 0.27, the combined UTF-8 source limit is 16 MiB, with at most 64 fragments.
+Single-file books have the same 16 MiB limit. Saves and snapshots in both
+directions use 30,000-byte chunks, bounded to 32 MiB uncompressed / 16 MiB
+compressed per assembled message. Both endpoints must run the same mod version.
+This is full-book transport, not incremental or per-chapter network updates.
 
 The server validates the whole book and network envelope before installing it.
 Editor saves partition the current chapters/quests back into their original

@@ -26,7 +26,7 @@ final class QuestBookFiles {
         try(DirectoryStream<Path> stream=Files.newDirectoryStream(folder,"*.json")){for(Path p:stream)files.add(p);}
         Collections.sort(files);if(files.size()>64)throw new IOException("Too many chapter files (64 maximum)");
         long size=config.length();
-        for(Path file:files){size+=Files.size(file);if(size>900000)throw new IOException("Quest book exceeds 900 KB");
+        for(Path file:files){size+=Files.size(file);if(size>QuestNetwork.MAX_BOOK_BYTES)throw new IOException("Quest book exceeds 16 MiB");
             JsonObject fragment=readObject(file);
             for(Map.Entry<String,JsonElement> e:fragment.entrySet())if(!Arrays.asList("format","chapters","quests").contains(e.getKey()))throw new IOException("Unsupported chapter file field: "+e.getKey());
             QuestCore.Book part=QuestService.JSON.fromJson(fragment,QuestCore.Book.class);
@@ -37,7 +37,7 @@ final class QuestBookFiles {
         return result;
     }
     private static JsonObject readObject(Path path)throws IOException {
-        if(Files.size(path)>900000)throw new IOException("Quest book exceeds 900 KB");
+        if(Files.size(path)>QuestNetwork.MAX_BOOK_BYTES)throw new IOException("Quest book exceeds 16 MiB");
         String text=new String(Files.readAllBytes(path),StandardCharsets.UTF_8);QuestNetwork.guardJson(text);
         try{return new JsonParser().parse(text).getAsJsonObject();}catch(RuntimeException e){throw new IOException("Invalid quest JSON: "+path.getFileName(),e);}
     }
@@ -53,12 +53,18 @@ final class QuestBookFiles {
             for(QuestCore.Quest quest:next.quests){Path file=layout.owners.get(quest.chapter);JsonObject destination=documents.containsKey(file)?documents.get(file):root;destination.getAsJsonArray("quests").add(QuestService.JSON.toJsonTree(quest));}
         }
         documents.put(config.toPath().toAbsolutePath(),root);
+        Map<Path,byte[]> encoded=new LinkedHashMap<Path,byte[]>();long sourceBytes=0;
+        for(Map.Entry<Path,JsonObject> e:documents.entrySet()) {
+            byte[] bytes=QuestService.JSON.toJson(e.getValue()).getBytes(StandardCharsets.UTF_8);
+            sourceBytes+=bytes.length;if(sourceBytes>QuestNetwork.MAX_BOOK_BYTES)throw new IOException("Quest book exceeds 16 MiB");
+            encoded.put(e.getKey(),bytes);
+        }
         Map<Path,byte[]> previous=new LinkedHashMap<Path,byte[]>();List<Path> changed=new ArrayList<Path>();
         try{
             for(Map.Entry<Path,JsonObject> e:documents.entrySet()){
                 Path path=e.getKey();byte[] old=Files.exists(path)?Files.readAllBytes(path):null;previous.put(path,old);
                 if(old!=null)Files.copy(path,path.resolveSibling(path.getFileName()+".bak"),StandardCopyOption.REPLACE_EXISTING);
-                replace(path,QuestService.JSON.toJson(e.getValue()).getBytes(StandardCharsets.UTF_8));changed.add(path);
+                replace(path,encoded.get(path));changed.add(path);
             }
         }catch(IOException failure){Collections.reverse(changed);for(Path path:changed)try{byte[] old=previous.get(path);if(old==null)Files.deleteIfExists(path);else replace(path,old);}catch(IOException rollback){failure.addSuppressed(rollback);}throw failure;}
     }

@@ -4,7 +4,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.*;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.relauncher.*;
-import java.util.concurrent.ArrayBlockingQueue;
 import dev.sigmarix.quests.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
@@ -14,7 +13,7 @@ import org.lwjgl.input.Keyboard;
 
 @SideOnly(Side.CLIENT)
 public final class ClientProxy extends CommonProxy {
-    private final ArrayBlockingQueue<String> queue=new ArrayBlockingQueue<String>(16);
+    private final QuestMessageQueue<String> queue=new QuestMessageQueue<String>(16,2L*QuestNetwork.MAX_BYTES,String::length);
     private final KeyBinding key=new KeyBinding("key.sigmarixquests.open",Keyboard.KEY_GRAVE,"key.categories.misc");
     private boolean opening;
     private int screenRenderType;

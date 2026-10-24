@@ -61,7 +61,7 @@ public class QuestService {
         if (expectedRevision != revision) throw new IllegalArgumentException("Book changed; refresh before editing");
         validate(next);
         byte[] bytes = JSON.toJson(next).getBytes(StandardCharsets.UTF_8);
-        if (bytes.length > 900000) throw new IllegalArgumentException("Book too large (900 KB maximum)");
+        if (bytes.length > QuestNetwork.MAX_BOOK_BYTES) throw new IllegalArgumentException("Book too large (16 MiB maximum)");
         QuestBookFiles.write(config,next,fileLayout);
         install(next);
     }

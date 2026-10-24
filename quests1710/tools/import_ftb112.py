@@ -659,8 +659,8 @@ def main():
         mappings = json.loads(args.mappings.read_text(encoding='utf-8')) if args.mappings else None
         book = convert(args.folder, mappings)
         encoded = json.dumps(book, ensure_ascii=False, indent=2).encode('utf-8')
-        if len(encoded) > 900000:
-            raise ValueError('Converted book exceeds the 900 KB server limit')
+        if len(encoded) > 16 * 1024 * 1024:
+            raise ValueError('Converted book exceeds the 16 MiB server limit')
         with args.output.open('xb') as out:
             out.write(encoded)
     except (OSError, ValueError) as error:
