@@ -204,6 +204,7 @@ public final class QuestNetwork {
         public int[] choices=new int[0];
         public int x,y,z;
         public QuestCore.Book book;
+        public QuestJsonDelta.Patch bookDelta;
         public TeamSettings teamSettings;
         public QuestDeviceConfig deviceSettings;
     }

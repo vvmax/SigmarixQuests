@@ -12,7 +12,13 @@ order. Since 0.27, the combined UTF-8 source limit is 16 MiB, with at most 64 fr
 Single-file books have the same 16 MiB limit. Saves and snapshots in both
 directions use 30,000-byte chunks, bounded to 32 MiB uncompressed / 16 MiB
 compressed per assembled message. Both endpoints must run the same mod version.
-This is full-book transport, not incremental or per-chapter network updates.
+Since 0.28, initial sync and forced refresh send a full snapshot; subsequent
+updates use per-viewer field patches, including progress. Editor saves send book
+patches when the editor baseline revision matches. Quests and chapters use stable
+IDs, including separate order lists. Nested arrays are replaced as field values.
+Stale saves are rejected before patch application; a missing client baseline
+triggers full resynchronization. A full transfer is also used when the patch
+would be larger or the bounded server cache has evicted that viewer.
 
 The server validates the whole book and network envelope before installing it.
 Editor saves partition the current chapters/quests back into their original

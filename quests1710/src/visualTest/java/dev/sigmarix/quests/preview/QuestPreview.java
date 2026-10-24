@@ -25,6 +25,7 @@ public final class QuestPreview {
     private long oldRevision,lastSmokeStep,lastBookAttempt;
     private QuestNetwork.Action pendingBookEdit;
     private boolean restarted;
+    private int deltaRequestBytes,deltaResponseBytes;
     private double skinViewX,skinViewY,skinViewZ;
     private volatile boolean detectorRequested,openCollectorRequested,inputRequested,openProgressRequested,openOpenerRequested,skinRequested;
     private volatile boolean placeDevice,euRequested,euPassed,manaRequested,manaPassed,emcRequested,emcReady,emcPassed;
@@ -488,7 +489,7 @@ public final class QuestPreview {
                 QuestCore.Task check=new QuestCore.Task(); check.id="confirm"; check.type="check"; check.manual=true; check.title="Confirm with custom icon"; check.description="A named task with a resource-pack icon"; check.icon="sigmarixquests:custom_icon"; check.iconNbt="{icon:"+QuestService.JSON.toJson(remoteImage)+",color:16763972}"; manual.tasks.add(check); QuestCore.Task callback=new QuestCore.Task(); callback.id="callback"; callback.type="custom"; callback.target=""; callback.manual=true; callback.count=3; callback.title="Server script action"; manual.tasks.add(callback); edit.book.quests.add(manual);
                 QuestCore.Quest dependent=new QuestCore.Quest(); dependent.id="smoke-dependent"; dependent.title="Task dependency"; dependent.dependencies.add("task:smoke-manual/confirm");
                 QuestCore.Task next=new QuestCore.Task(); next.type="check"; dependent.tasks.add(next); edit.book.quests.add(dependent);
-                if(new File(mc.mcDataDir,"../build/preview/large-book-smoke").exists()) {
+                if(new File(mc.mcDataDir,"../build/preview/large-book-smoke").exists() || new File(mc.mcDataDir,"../build/preview/delta-book-smoke").exists()) {
                     java.util.Random random=new java.util.Random(270);
                     for(int n=0;n<128;n++) {
                         QuestCore.Quest large=new QuestCore.Quest();large.id="large_"+n;large.title="Large network quest "+n;
@@ -501,7 +502,7 @@ public final class QuestPreview {
                 if(snap==null) return;
                 if(snap.revision==oldRevision) { if(pendingBookEdit!=null && realNow-lastBookAttempt>java.util.concurrent.TimeUnit.SECONDS.toNanos(1)) { ClientProxy.send(pendingBookEdit); lastBookAttempt=realNow; } return; }
                 if(!snap.book.title.equals("Network edit smoke")) throw new IllegalStateException("Editor did not save");
-                if(new File(mc.mcDataDir,"../build/preview/large-book-smoke").exists()) {
+                if(new File(mc.mcDataDir,"../build/preview/large-book-smoke").exists() || new File(mc.mcDataDir,"../build/preview/delta-book-smoke").exists()) {
                     QuestCore.Quest expected=pendingBookEdit.book.quests.stream().filter(q->q.id.equals("large_127")).findFirst().get();
                     QuestCore.Quest actual=snap.book.quests.stream().filter(q->q.id.equals("large_127")).findFirst().get();
                     if(!expected.description.equals(actual.description))throw new IllegalStateException("Large book text changed in transit");
@@ -510,11 +511,39 @@ public final class QuestPreview {
                     if(bytes<=1024*1024 || compressed<=1024*1024)throw new IllegalStateException("Large book fixture is too small");
                     java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/large-book-smoke.txt").toPath(),
                         ("PASS: real Forge client->server save and server->client snapshot; "+bytes+" raw bytes; "+compressed+" compressed bytes; exact description preserved").getBytes(StandardCharsets.UTF_8));
+                    if(new File(mc.mcDataDir,"../build/preview/delta-book-smoke").exists()) {
+                        QuestNetwork.Action smallEdit=new QuestNetwork.Action();smallEdit.action="save";smallEdit.revision=snap.revision;
+                        smallEdit.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(snap.book),QuestCore.Book.class);smallEdit.book.title="Delta edit smoke";
+                        java.lang.reflect.Field synchronizer=ClientProxy.class.getDeclaredField("sync");synchronizer.setAccessible(true);
+                        QuestNetwork.Action delta=((QuestSnapshotSync.Client)synchronizer.get(QuestsMod.proxy)).save(smallEdit);
+                        deltaRequestBytes=QuestService.JSON.toJson(delta).getBytes(StandardCharsets.UTF_8).length;
+                        if(delta.book!=null || delta.bookDelta==null || deltaRequestBytes>2048)throw new IllegalStateException("Editor resent the full book");
+                        oldRevision=snap.revision;ClientProxy.send(smallEdit);stage=116;waiting=0;return;
+                    }
                     mc.shutdown();return;
                 }
 
                 QuestNetwork.Action stale=new QuestNetwork.Action(); stale.action="save"; stale.revision=oldRevision; stale.book=original;
                 ClientProxy.send(stale); stage=6; break;
+            case 116:
+                if(snap==null || snap.revision==oldRevision)return;
+                if(!snap.book.title.equals("Delta edit smoke"))throw new IllegalStateException("Delta save failed");
+                java.lang.reflect.Field wireSize=ClientProxy.class.getDeclaredField("lastSyncBytes");wireSize.setAccessible(true);deltaResponseBytes=wireSize.getInt(QuestsMod.proxy);
+                if(deltaResponseBytes>2048)throw new IllegalStateException("Server resent full book after a one-field edit");
+                QuestNetwork.Action outdated=new QuestNetwork.Action();outdated.action="save";outdated.revision=oldRevision;outdated.book=original;
+                ClientProxy.send(outdated);stage=117;waiting=0;return;
+            case 117:
+                if(snap==null || !snap.message.startsWith("Error: Book changed"))return;
+                if(!snap.book.title.equals("Delta edit smoke"))throw new IllegalStateException("Stale editor overwrote delta save");
+                QuestNetwork.Action fullRefresh=new QuestNetwork.Action();fullRefresh.action="refresh";ClientProxy.send(fullRefresh);stage=118;waiting=0;return;
+            case 118:
+                if(snap==null || !snap.message.isEmpty())return;
+                java.lang.reflect.Field fullSize=ClientProxy.class.getDeclaredField("lastSyncBytes");fullSize.setAccessible(true);
+                if(fullSize.getInt(QuestsMod.proxy)<1024*1024)return;
+                if(!snap.book.title.equals("Delta edit smoke"))throw new IllegalStateException("Full refresh lost delta save");
+                java.nio.file.Files.write(new File(mc.mcDataDir,"../build/preview/delta-book-smoke.txt").toPath(),
+                    ("PASS: real Forge large-book edit delta; request="+deltaRequestBytes+" bytes; response="+deltaResponseBytes+" bytes; stale save rejected; forced full refresh="+fullSize.getInt(QuestsMod.proxy)+" bytes").getBytes(StandardCharsets.UTF_8));
+                mc.shutdown();return;
             case 6:
                 if(!pinPassed) { if(snap==null || !snap.message.startsWith("Error: Book changed")) return; QuestBookScreen pinBook=new QuestBookScreen(); mc.displayGuiScreen(pinBook); java.lang.reflect.Field selectedPin=QuestBookScreen.class.getDeclaredField("selected"); selectedPin.setAccessible(true); selectedPin.set(pinBook,"welcome"); pinBook.refresh(); press(pinBook,13); stage=50; waiting=0; return; }
                 if(!textFramePassed){if(snap==null)return;Class<?> frame=Class.forName("dev.sigmarix.quests.client.QuestTextEditorFrame");java.lang.reflect.Method open=frame.getDeclaredMethod("open",QuestCore.Quest.class);open.setAccessible(true);QuestCore.Quest welcome=snap.book.quests.stream().filter(q->q.id.equals("welcome")).findFirst().get();open.invoke(null,welcome);stage=105;waiting=0;return;}

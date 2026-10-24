@@ -14,6 +14,8 @@ import org.lwjgl.input.Keyboard;
 @SideOnly(Side.CLIENT)
 public final class ClientProxy extends CommonProxy {
     private final QuestMessageQueue<String> queue=new QuestMessageQueue<String>(16,2L*QuestNetwork.MAX_BYTES,String::length);
+    private final QuestSnapshotSync.Client sync=new QuestSnapshotSync.Client();
+    private boolean resyncPending;private int resyncTicks,lastSyncBytes;
     private final KeyBinding key=new KeyBinding("key.sigmarixquests.open",Keyboard.KEY_GRAVE,"key.categories.misc");
     private boolean opening;
     private int screenRenderType;
@@ -42,7 +44,7 @@ public final class ClientProxy extends CommonProxy {
         });
     }
     @Override public Object deviceScreen(net.minecraft.entity.player.EntityPlayer player,QuestDevice tile) { return tile instanceof QuestStorage?new QuestStorageScreen(player,(QuestStorage)tile):new QuestDeviceScreen(player,tile); }
-    public static void send(QuestNetwork.Action action) { if(!action.action.equals("save") && snapshot!=null) action.revision=snapshot.revision; QuestNetwork.sendRequest(QuestService.JSON.toJson(action)); }
+    public static void send(QuestNetwork.Action action) { if(!action.action.equals("save") && snapshot!=null) action.revision=snapshot.revision; QuestNetwork.Action wire=action.action.equals("save")?((ClientProxy)QuestsMod.proxy).sync.save(action):action; QuestNetwork.sendRequest(QuestService.JSON.toJson(wire)); }
     @Override public void openIcon() { opening=false; Minecraft.getMinecraft().displayGuiScreen(new QuestIconScreen()); }
     @Override public void open() { if(Minecraft.getMinecraft().thePlayer==null) return; opening=true; send(new QuestNetwork.Action()); }
     @Override public void receive(String json) { queue.offer(json); }
@@ -51,14 +53,18 @@ public final class ClientProxy extends CommonProxy {
     @SubscribeEvent public void tick(TickEvent.ClientTickEvent event) {
         if(event.phase!=TickEvent.Phase.END) return;
         Minecraft mc=Minecraft.getMinecraft();
-        if(mc.theWorld==null) { QuestWorldMaps.clear(); QuestImages.clear(); QuestToasts.disconnect(); queue.clear(); snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; pinTicks=0; opening=false; return; }
+        if(mc.theWorld==null) { QuestWorldMaps.clear(); QuestImages.clear(); QuestToasts.disconnect(); queue.clear(); sync.clear();resyncPending=false;resyncTicks=0; snapshot=null; QuestLoot.clientBook=null; neiRevision=Long.MIN_VALUE; syncTicks=0; pinTicks=0; opening=false; return; }
         if(snapshot==null && mc.thePlayer!=null && ++syncTicks%20==0) send(new QuestNetwork.Action());
+        if(resyncPending && ++resyncTicks%20==0) { QuestNetwork.Action refresh=new QuestNetwork.Action();refresh.action="refresh";send(refresh); }
         QuestToasts.pump();
         if(snapshot!=null && (!snapshot.pinned.isEmpty() || snapshot.autoPin) && mc.currentScreen==null && ++pinTicks%40==0) send(new QuestNetwork.Action());
         String json;
         while((json=queue.poll())!=null) {
             try {
-                QuestNetwork.Snapshot received=QuestService.JSON.fromJson(json,QuestNetwork.Snapshot.class);
+                com.google.gson.JsonObject document=new com.google.gson.JsonParser().parse(json).getAsJsonObject();
+                boolean frame=document.has("syncFrame");
+                QuestNetwork.Snapshot received=frame?sync.receive(QuestService.JSON.fromJson(document,QuestSnapshotSync.Frame.class)):QuestService.JSON.fromJson(document,QuestNetwork.Snapshot.class);
+                if(frame) { resyncPending=false;resyncTicks=0;lastSyncBytes=json.getBytes(java.nio.charset.StandardCharsets.UTF_8).length; }
                 if(received==null) throw new IllegalArgumentException("Empty server response");
                 if(received.screen!=null) { QuestWorldMaps.receive(received.screen); continue; }
                 if(received.book==null) {
@@ -76,7 +82,13 @@ public final class ClientProxy extends CommonProxy {
                 else if(mc.currentScreen instanceof QuestBookScreen) ((QuestBookScreen)mc.currentScreen).refresh();
                 else if(mc.currentScreen instanceof QuestEditorScreen) ((QuestEditorScreen)mc.currentScreen).saved(snapshot);
                 else if(mc.currentScreen instanceof QuestObjectScreen) ((QuestObjectScreen)mc.currentScreen).saved(snapshot);
-            } catch(RuntimeException ex) { mc.thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component("Quest sync failed: "+ex.getMessage())); }
+            } catch(RuntimeException ex) {
+                if(!resyncPending) {
+                    mc.thePlayer.addChatMessage(dev.sigmarix.quests.QuestMessages.component("Quest sync failed: "+ex.getMessage()));
+                    sync.clear();resyncPending=true;resyncTicks=0;
+                    QuestNetwork.Action refresh=new QuestNetwork.Action();refresh.action="refresh";send(refresh);
+                }
+            }
         }
     }
 }
