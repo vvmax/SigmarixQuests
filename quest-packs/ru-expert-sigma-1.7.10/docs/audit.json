@@ -54,6 +54,6 @@
   },
   "limitations": [
     "Registry names and class presence do not prove every recipe or machine mode is obtainable in the running game.",
-    "Live client/server smoke test with this campaign has not been performed; native 0.27 persistence and transport tests pass."
+    "Live client/server smoke test with this campaign has not been performed; native 0.28 persistence, transport and delta tests pass."
   ]
 }

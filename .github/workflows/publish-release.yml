@@ -1,0 +1,41 @@
+name: Publish release files
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
+        type: string
+      assets_ref:
+        description: Branch or commit containing verified .release-assets files
+        required: true
+        type: string
+      target:
+        description: Tested source commit for the release tag
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.assets_ref }}
+      - name: Check uploaded file hashes
+        working-directory: .release-assets
+        run: sha256sum --check *.sha256
+      - name: Publish verified files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_TARGET: ${{ inputs.target }}
+        run: |
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --target "$RELEASE_TARGET" --title "Sigmarix Quests ${RELEASE_TAG#v}" \
+            --notes-file .release-assets/release-notes.md --prerelease \
+            .release-assets/*.jar .release-assets/*.zip .release-assets/*.sha256

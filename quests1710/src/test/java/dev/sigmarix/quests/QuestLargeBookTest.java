@@ -89,4 +89,31 @@ public class QuestLargeBookTest {
             }
         }
     }
+    @Test public void campaignProgressAndOneQuestEditUse028DeltasAndRecoverBaseline() throws Exception {
+        QuestCore.Book book=QuestBookFiles.read(config().resolve("quests.json").toFile()).book;
+        QuestNetwork.Snapshot snapshot=new QuestNetwork.Snapshot();snapshot.book=book;snapshot.revision=1;
+        QuestSnapshotSync.Server server=new QuestSnapshotSync.Server();QuestSnapshotSync.Client client=new QuestSnapshotSync.Client();UUID player=UUID.randomUUID();
+        String initial=server.next(player,snapshot);
+        QuestNetwork.Snapshot first=client.receive(QuestService.JSON.fromJson(initial,QuestSnapshotSync.Frame.class));
+        assertEquals(QuestService.JSON.toJson(book),QuestService.JSON.toJson(first.book));
+        snapshot.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(book),QuestCore.Book.class);
+        snapshot.book.quests.get(350).description+=" Проверка дельты.";
+        snapshot.states.put("start_wood","complete");snapshot.revision=2;
+        String change=server.next(player,snapshot);assertTrue(change.length()<initial.length()/100);
+        QuestSnapshotSync.Frame frame=QuestService.JSON.fromJson(QuestNetwork.decode(QuestNetwork.encode(change)),QuestSnapshotSync.Frame.class);
+        assertNull(frame.full);assertNotNull(frame.delta);
+        QuestNetwork.Snapshot restored=client.receive(frame);restored.book.validate();
+        assertEquals(QuestService.JSON.toJson(snapshot.book),QuestService.JSON.toJson(restored.book));
+        assertEquals("complete",restored.states.get("start_wood"));
+        QuestNetwork.Action edit=new QuestNetwork.Action();edit.action="save";edit.revision=2;
+        edit.book=QuestService.JSON.fromJson(QuestService.JSON.toJson(restored.book),QuestCore.Book.class);edit.book.quests.get(350).title+=" — проверка";
+        QuestNetwork.Action wire=client.save(edit);assertNull(wire.book);assertNotNull(wire.bookDelta);
+        QuestCore.Book edited=QuestJsonDelta.applyBook(restored.book,wire.bookDelta);edited.validate();
+        assertEquals(QuestService.JSON.toJson(edit.book),QuestService.JSON.toJson(edited));
+        QuestSnapshotSync.Client recovered=new QuestSnapshotSync.Client();
+        try {recovered.receive(frame);fail("Missing baseline accepted");} catch(IllegalArgumentException expected) {}
+        server.forget(player);
+        QuestNetwork.Snapshot refreshed=recovered.receive(QuestService.JSON.fromJson(server.next(player,snapshot),QuestSnapshotSync.Frame.class));
+        assertEquals(QuestService.JSON.toJson(snapshot.book),QuestService.JSON.toJson(refreshed.book));
+    }
 }

@@ -31,6 +31,7 @@ public final class QuestsMod {
     private static final QuestMessageQueue<Pending> QUEUE=new QuestMessageQueue<Pending>(128,2L*QuestNetwork.MAX_BYTES,p->p.json.length());
     private static final Map<UUID,Long> LAST_REQUEST=new HashMap<UUID,Long>(),LAST_VIEW=new HashMap<UUID,Long>(),LAST_SCREEN=new HashMap<UUID,Long>();
     private static final Set<UUID> PENDING_VIEWS=new HashSet<UUID>();
+    private static final QuestSnapshotSync.Server SNAPSHOTS=new QuestSnapshotSync.Server();
     private static final Map<UUID,String> LAST_MESSAGE=new HashMap<UUID,String>();
     private static final class Pending {
         final UUID player; final String json;
@@ -61,12 +62,12 @@ public final class QuestsMod {
         }
     };
     @Mod.EventHandler public void starting(FMLServerStartingEvent event) throws IOException {
-        QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); LAST_SCREEN.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); ticks=0;
+        QUEUE.clear(); SNAPSHOTS.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); LAST_SCREEN.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); ticks=0;
         QuestEvents.off("task_completed",taskToast); QuestEvents.on("task_completed",taskToast);
         QuestScripts.load(new File(config.getParentFile(),"scripts"));
         service=new QuestService(config); service.loadActiveProfile(); event.registerServerCommand(new QuestCommand());
     }
-    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { QuestEvents.off("task_completed",taskToast); service=null; QuestScripts.clear(); QUEUE.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); LAST_SCREEN.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
+    @Mod.EventHandler public void stopped(FMLServerStoppedEvent event) { QuestEvents.off("task_completed",taskToast); service=null; QuestScripts.clear(); QUEUE.clear(); SNAPSHOTS.clear(); LAST_REQUEST.clear(); LAST_VIEW.clear(); LAST_SCREEN.clear(); PENDING_VIEWS.clear(); LAST_MESSAGE.clear(); }
     @SubscribeEvent(priority=cpw.mods.fml.common.eventhandler.EventPriority.LOWEST) public void onDeath(LivingDeathEvent event) {
         if(service!=null && !event.entity.worldObj.isRemote && event.source.getEntity() instanceof EntityPlayerMP)
             service.credit((EntityPlayerMP)event.source.getEntity(),"kill",EntityList.getEntityString(event.entityLiving),1);
@@ -91,8 +92,8 @@ public final class QuestsMod {
                 service.interact(player,event.world,event.x,event.y,event.z);
         }
     }
-    @SubscribeEvent public void login(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) { if(service!=null) { service.clearObservations(event.player.getUniqueID()); PENDING_VIEWS.add(event.player.getUniqueID()); } }
-    @SubscribeEvent public void logout(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent event) { UUID id=event.player.getUniqueID(); if(service!=null) service.clearObservations(id); LAST_REQUEST.remove(id); LAST_VIEW.remove(id); LAST_SCREEN.remove(id); PENDING_VIEWS.remove(id); LAST_MESSAGE.remove(id); }
+    @SubscribeEvent public void login(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) { if(service!=null) { SNAPSHOTS.forget(event.player.getUniqueID()); service.clearObservations(event.player.getUniqueID()); PENDING_VIEWS.add(event.player.getUniqueID()); } }
+    @SubscribeEvent public void logout(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent event) { UUID id=event.player.getUniqueID(); if(service!=null) service.clearObservations(id); LAST_REQUEST.remove(id); LAST_VIEW.remove(id); LAST_SCREEN.remove(id); PENDING_VIEWS.remove(id); LAST_MESSAGE.remove(id); SNAPSHOTS.forget(id); }
     @SubscribeEvent public void serverTick(TickEvent.ServerTickEvent event) {
         if(event.phase!=TickEvent.Phase.END || service==null) return;
         ticks++;
@@ -137,7 +138,7 @@ public final class QuestsMod {
                 QuestNetwork.Snapshot response=new QuestNetwork.Snapshot(); response.screen=QuestWorldMap.create(service,player.getUniqueID(),(QuestDevice)raw);
                 QuestNetwork.sendResponse(QuestService.JSON.toJson(response),player); return;
             }
-            if(action.action.equals("view") || action.action.equals("refresh")) { if(action.action.equals("refresh")) LAST_MESSAGE.remove(player.getUniqueID()); PENDING_VIEWS.add(player.getUniqueID()); return; }
+            if(action.action.equals("view") || action.action.equals("refresh")) { if(action.action.equals("refresh")) { LAST_MESSAGE.remove(player.getUniqueID()); SNAPSHOTS.forget(player.getUniqueID()); } PENDING_VIEWS.add(player.getUniqueID()); return; }
             Long last=LAST_REQUEST.get(player.getUniqueID());
             if(last!=null && ticks-last<2) {
                 QuestNetwork.Snapshot error=new QuestNetwork.Snapshot(); error.message="Error: Please wait before another action"; error.revision=service.revision;
@@ -246,7 +247,11 @@ public final class QuestsMod {
                 case "repeat": if(quest==null) throw new IllegalArgumentException("Unknown quest"); service.repeat(player,quest); message="Quest reset"; break;
                 case "progress_reset": case "progress_complete":
                     QuestProgressActions.apply(service,player,action.id,action.action.equals("progress_complete"),action.text.equals("dependencies"));message="Progress updated";break;
-                case "save": if(!editor(player)) throw new IllegalArgumentException("Operator permission required"); service.save(action.book,action.revision); message="Book saved (backup written)"; break;
+                case "save":
+                    if(!editor(player)) throw new IllegalArgumentException("Operator permission required");
+                    if((action.book==null)==(action.bookDelta==null))throw new IllegalArgumentException("Provide a book or a book delta");
+                    service.save(action.book!=null?action.book:QuestJsonDelta.applyBook(service.book,action.bookDelta),action.revision);
+                    message="Book saved (backup written)"; break;
                 default: throw new IllegalArgumentException("Unknown action");
             }
         } catch(Exception ex) {
@@ -291,7 +296,7 @@ public final class QuestsMod {
                 snapshot.taskStates.put(q.id+":"+task.id,service.dependencies(id).satisfied("task:"+q.id+"/"+task.id,false));
             }
         }
-        QuestNetwork.sendResponse(QuestService.JSON.toJson(snapshot),player);
+        QuestNetwork.sendResponse(SNAPSHOTS.next(id,snapshot),player);
     }
     private static String playerName(UUID id) {
         com.mojang.authlib.GameProfile profile=MinecraftServer.getServer().func_152358_ax().func_152652_a(id);

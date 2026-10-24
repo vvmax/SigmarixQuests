@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "transport": "Sigmarix Quests 0.27.0-SNAPSHOT, a4a9d16, bidirectional full-book chunk transport",
+  "transport": "Sigmarix Quests 0.28.0-SNAPSHOT, d6a27d3, initial snapshot plus revision-checked deltas",
   "files": {
     "config/sigmarixquests/quests.json": "b137e808a0114b48e0bd29cd2ebe10aeb798d2055b6012346364f1839d0561c6",
     "config/sigmarixquests/chapters/01_start.json": "ba960d2a6333002f718510e5d70408f602cbc73eaf34c2aca2dd313d3d71f547",

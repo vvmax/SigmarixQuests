@@ -1,0 +1,40 @@
+{
+  "version": "0.28.0-SNAPSHOT",
+  "artifact": {
+    "file": "quests1710-0.28.0-SNAPSHOT.jar",
+    "sha256": "8fd1f5f98a122b038266baefb6fe9ff5cfef9e9e5d03f11a44907fdce3dc6d14"
+  },
+  "transport": {
+    "editor_saves": "field patches against editor revision; full fallback when stale or larger",
+    "snapshot_sync": "per-viewer field patches with sequence validation",
+    "list_identity": "quest/chapter ID plus explicit order",
+    "nested_arrays": "field replacement",
+    "first_connection_and_refresh": "full snapshot",
+    "recovery": "automatic full refresh on missing baseline",
+    "cache_limits": {
+      "viewers": 16,
+      "json_characters": 67108864
+    }
+  },
+  "tests": {
+    "junit": 76,
+    "forge_integration": 155,
+    "python": 43
+  },
+  "live_client_server": {
+    "passed": true,
+    "request_bytes": 281,
+    "response_bytes": 467,
+    "full_refresh_bytes": 2175186,
+    "stale_save_rejected": true,
+    "fixture_marker": "build/preview/delta-book-smoke",
+    "result_file": "build/preview/delta-book-smoke.txt"
+  },
+  "limits": {
+    "book_utf8_bytes": 16777216,
+    "quests": 4096,
+    "snapshot_raw_bytes": 33554432,
+    "snapshot_compressed_bytes": 16777216,
+    "chunk_bytes": 30000
+  }
+}
