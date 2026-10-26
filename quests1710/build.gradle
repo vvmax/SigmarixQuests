@@ -219,3 +219,86 @@ if (providers.gradleProperty('questNEI').isPresent()) {
 
 // The distributed book is tested as external data, not copied into the mod resources.
 tasks.named("test") { inputs.dir("../quest-packs/ru-six-mods-1.7.10/config") }
+
+// Assemble a remote-client artifact from SRG bytecode; never changes the full JAR.
+sourceSets {
+    clientPackTool {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.compileClasspath + sourceSets.rfApi.output
+    }
+}
+tasks.register('clientOnlyJar', JavaExec) {
+    dependsOn 'reobfJar', 'clientPackToolClasses'
+    classpath = sourceSets.clientPackTool.runtimeClasspath
+    mainClass = 'dev.sigmarix.quests.packaging.ClientJarBuilder'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(8) }
+    args layout.buildDirectory.file("libs/quests1710-${project.version}.jar").get().asFile.absolutePath,
+        layout.buildDirectory.file("libs/quests1710-${project.version}-client.jar").get().asFile.absolutePath,
+        layout.buildDirectory.file('reports/client-only-package.json').get().asFile.absolutePath
+}
+
+sourceSets {
+    clientSmoke {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath + sourceSets.rfApi.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+tasks.register('clientSmokeJar', Jar) {
+    dependsOn clientSmokeClasses
+    from(sourceSets.clientSmoke.output) { include '**/QuestClientOnlySmoke*.class' }
+    archiveFileName='client-smoke-fixture.jar'
+    destinationDirectory=layout.buildDirectory.dir('client-smoke')
+}
+tasks.register('clientHostJar', Jar) {
+    dependsOn clientSmokeClasses
+    from(sourceSets.clientSmoke.output) { include '**/QuestClientOnlyHost*.class' }
+    archiveFileName='client-host-fixture.jar'
+    destinationDirectory=layout.buildDirectory.dir('client-smoke')
+}
+tasks.register('prepareClientOnlySmoke') {
+    dependsOn 'clientOnlyJar', 'clientSmokeJar', 'clientHostJar', 'packageMcLauncher', 'packagePatchedMc', 'extractNatives2'
+    doLast {
+        def run=tasks.named('runClient').get()
+        def outputPaths=sourceSets.main.output.files.collect { it.canonicalPath } as Set
+        def cp=run.classpath.filter { !outputPaths.contains(it.canonicalPath) && !it.canonicalPath.startsWith(layout.buildDirectory.dir('libs').get().asFile.canonicalPath+File.separator) }.asPath
+        def parent=layout.buildDirectory.dir('client-smoke').get().asFile; parent.mkdirs()
+        ['host','client'].each { role ->
+            def folder=new File(parent,role);new File(folder,'mods').mkdirs()
+            copy { from tasks.named(role=='host'?'clientHostJar':'clientSmokeJar').get().archiveFile; into new File(folder,'mods'); rename { 'smoke.jar' } }
+            def argList=new ArrayList(run.calculateArgs())
+            ['--username':role=='host'?'FullHost':'ThinTester','--gameDir':folder.absolutePath].each { key,value ->
+                int at=argList.indexOf(key);if(at>=0) argList[at+1]=value;else { argList.add(key);argList.add(value) }
+            }
+            def nativeDir=run.systemProperties['java.library.path'] ?: fileTree(layout.buildDirectory.dir('tmp')).matching { include '**/liblwjgl64.so' }.singleFile.parent
+            def command=[run.javaLauncher.get().executablePath.asFile.absolutePath,'-Djava.library.path='+nativeDir]+run.calculateJvmArgs()+['-Dsq.smoke.dir='+parent.absolutePath,'-cp',cp,run.mainClass.get()]+argList
+            new File(parent,role+'-command.json').text=groovy.json.JsonOutput.toJson([command:command,cwd:folder.absolutePath])
+        }
+    }
+}
+
+tasks.register('remapClientSmokeHost', JavaExec) {
+    dependsOn 'clientOnlyJar'
+    classpath=sourceSets.clientPackTool.runtimeClasspath
+    mainClass='dev.sigmarix.quests.packaging.ClientJarBuilder'
+    javaLauncher=javaToolchains.launcherFor { languageVersion=JavaLanguageVersion.of(8) }
+    args '--mcp', providers.gradleProperty('clientSmokeHostJar').getOrElse(layout.buildDirectory.file("libs/quests1710-${project.version}.jar").get().asFile.absolutePath),
+        layout.buildDirectory.file('client-smoke/host/mods/quests-full.jar').get().asFile.absolutePath,
+        file('build/unpacked/conf/fields.csv').absolutePath,file('build/unpacked/conf/methods.csv').absolutePath
+}
+tasks.register('remapClientSmokeClient', JavaExec) {
+    dependsOn 'clientOnlyJar'
+    classpath=sourceSets.clientPackTool.runtimeClasspath
+    mainClass='dev.sigmarix.quests.packaging.ClientJarBuilder'
+    javaLauncher=javaToolchains.launcherFor { languageVersion=JavaLanguageVersion.of(8) }
+    args '--mcp', layout.buildDirectory.file("libs/quests1710-${project.version}-client.jar").get().asFile.absolutePath,
+        layout.buildDirectory.file('client-smoke/client/mods/quests-client.jar').get().asFile.absolutePath,
+        file('build/unpacked/conf/fields.csv').absolutePath,file('build/unpacked/conf/methods.csv').absolutePath
+}
+tasks.named('prepareClientOnlySmoke') { dependsOn 'remapClientSmokeHost','remapClientSmokeClient' }
+tasks.register('verifyClientOnlyJar', JavaExec) {
+    dependsOn 'remapClientSmokeClient'
+    classpath=sourceSets.clientPackTool.runtimeClasspath
+    mainClass='dev.sigmarix.quests.packaging.ClientJarBuilder'
+    javaLauncher=javaToolchains.launcherFor { languageVersion=JavaLanguageVersion.of(8) }
+    args '--verify',layout.buildDirectory.file('client-smoke/client/mods/quests-client.jar').get().asFile.absolutePath
+}

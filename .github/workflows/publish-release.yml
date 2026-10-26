@@ -15,6 +15,13 @@ on:
         description: Tested source commit for the release tag
         required: true
         type: string
+      mode:
+        description: Create a release or attach a client build to an existing release
+        type: choice
+        default: create
+        options:
+          - create
+          - upload-client
 
 permissions:
   contents: write
@@ -30,6 +37,7 @@ jobs:
         working-directory: .release-assets
         run: sha256sum --check *.sha256
       - name: Publish verified files
+        if: inputs.mode != 'upload-client'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag }}
@@ -39,3 +47,14 @@ jobs:
             --target "$RELEASE_TARGET" --title "Sigmarix Quests ${RELEASE_TAG#v}" \
             --notes-file .release-assets/release-notes.md --prerelease \
             .release-assets/*.jar .release-assets/*.zip .release-assets/*.sha256
+      - name: Attach client build to existing release
+        if: inputs.mode == 'upload-client'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            .release-assets/*-client.jar .release-assets/*-client.jar.sha256
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body > /tmp/release-body.md
+          cat .release-assets/client-notes.md >> /tmp/release-body.md
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --notes-file /tmp/release-body.md

@@ -21,6 +21,19 @@ public final class QuestNetwork {
         channel.registerMessage(RequestChunkHandler.class, RequestChunk.class, 3, Side.SERVER);
         channel.registerMessage(ResponseChunkHandler.class, ResponseChunk.class, 4, Side.CLIENT);
     }
+    public static void initClient() {
+        channel=NetworkRegistry.INSTANCE.newSimpleChannel("sigmarixquests");
+        ClientRequestSink sink=new ClientRequestSink();
+        channel.registerMessage(sink,Request.class,0,Side.SERVER);
+        channel.registerMessage(ResponseHandler.class,Response.class,1,Side.CLIENT);
+        channel.registerMessage(NoticeHandler.class,Notice.class,2,Side.CLIENT);
+        channel.registerMessage(new ClientChunkSink(),RequestChunk.class,3,Side.SERVER);
+        channel.registerMessage(ResponseChunkHandler.class,ResponseChunk.class,4,Side.CLIENT);
+    }
+    public static class ClientRequestSink implements IMessageHandler<IMessage,IMessage> {
+        public IMessage onMessage(IMessage message,MessageContext context) { throw new IllegalStateException("Client-only quest build cannot handle server actions"); }
+    }
+    public static final class ClientChunkSink extends ClientRequestSink {}
     public static byte[] encode(String text) throws IOException {
         byte[] raw=text.getBytes(StandardCharsets.UTF_8);
         if(raw.length>MAX_BYTES) throw new IOException("Quest payload too large");

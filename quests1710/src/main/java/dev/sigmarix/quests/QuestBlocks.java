@@ -14,6 +14,12 @@ public final class QuestBlocks {
     public static final Block[] devices=new Block[10];
     public static final QuestCrateParcel crateParcel=new QuestCrateParcel();
     public static void register() {
+        registerContent();
+        QuestHooks.TASKS.put("sigmarix:redstone",(player,task)->false);
+        QuestHooks.TASKS.put("sigmarix:player",(player,task)->false);
+        QuestHooks.REWARDS.put("sigmarix:notice",(player,reward)->QuestService.say(player,reward.text));
+    }
+    public static void registerContent() {
         String[] ids={"task_screen","progress_screen","quest_barrier","reward_collector","redstone_detector","player_detector","loot_crate_opener","quest_chest","loot_crate_storage","progress_detector"};
         for(int i=0;i<ids.length;i++) { devices[i]=new DeviceBlock(i,ids[i]); GameRegistry.registerBlock(devices[i],ids[i]); }
         GameRegistry.registerTileEntity(QuestDevice.class,"sigmarixquests:device");
@@ -21,9 +27,7 @@ public final class QuestBlocks {
         GameRegistry.registerItem(new LootCrateItem(),"loot_crate");
         GameRegistry.registerItem(new CustomIconItem(),"custom_icon");
         GameRegistry.registerItem(crateParcel,"crate_parcel");
-        QuestHooks.TASKS.put("sigmarix:redstone",(player,task)->false);
-        QuestHooks.TASKS.put("sigmarix:player",(player,task)->false);
-        QuestHooks.REWARDS.put("sigmarix:notice",(player,reward)->QuestService.say(player,reward.text));
+
     }
     public static void recipes() {
         GameRegistry.addShapelessRecipe(new ItemStack(GameRegistry.findItem("sigmarixquests","custom_icon")),net.minecraft.init.Items.paper,net.minecraft.init.Items.redstone);
