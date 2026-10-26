@@ -1,7 +1,7 @@
 {
   "artifact": "quests1710-0.28.1-SNAPSHOT-client.jar",
   "clientClasses": 186,
-  "retainedMethods": 1484,
+  "retainedMethods": 1482,
   "removedMethods": 48,
   "remoteServerVersion": "0.28.1-SNAPSHOT",
   "singleplayerSupported": false,
@@ -36,9 +36,9 @@
     "dev.sigmarix.quests.QuestsMod$Pending",
     "dev.sigmarix.quests.QuestsMod$QuestCommand"
   ],
-  "sha256": "244df0c97ad21d33aa4f71ff81773dfa5189595bdb5933f8c992ceb33f175079",
-  "bytes": 1188364,
-  "internal_member_references_checked": 10465,
+  "sha256": "15317a560b70968c2d3d7bdf0454f8f9930f7bfded11b9c5246598a9d4de6e6a",
+  "bytes": 1188036,
+  "internal_member_references_checked": 10473,
   "live_tcp_test": {
     "passed": true,
     "host_original_sha256": "71455df3b080bea77631c4651ed1a9dcf4bed2676a6903c33a693ee748616c9e",
@@ -50,5 +50,10 @@
   "full_build_tests": {
     "junit": 76,
     "forge_integration": 155
+  },
+  "singleplayer_behavior": "silently inactive; world selection and integrated world startup allowed",
+  "singleplayer_test": {
+    "passed": true,
+    "result": "PASS: singleplayer menu unchanged; integrated world loaded; client quest requests and book silently inactive; no warning screen"
   }
 }

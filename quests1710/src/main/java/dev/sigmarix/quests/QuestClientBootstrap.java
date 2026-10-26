@@ -15,15 +15,11 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 @SideOnly(Side.CLIENT)
 public final class QuestClientBootstrap {
     public static void preInit(QuestsMod mod,FMLPreInitializationEvent event) {
+        dev.sigmarix.quests.client.ClientProxy.remoteOnly=true;
         QuestNetwork.initClient();
         cpw.mods.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(mod,new QuestGuiHandler());
         GameRegistry.registerItem(new QuestsMod.QuestBookItem(),"quest_book");
         QuestBlocks.registerContent();
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new QuestClientBootstrap());
-    }
-    public static void rejectServer() { throw new IllegalStateException("Client-only Sigmarix Quests: use the full JAR for singleplayer or a server"); }
-    @SubscribeEvent public void open(GuiOpenEvent event) {
-        if(event.gui instanceof GuiSelectWorld) event.gui=new GuiErrorScreen("Сборка для подключения к серверам","Для одиночной игры установите полную версию Sigmarix Quests.");
     }
     public static QuestCore.LootSettings lootSettings(ItemStack stack) {
         QuestCore.Book book=QuestLoot.clientBook;

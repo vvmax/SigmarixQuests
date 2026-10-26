@@ -4,9 +4,26 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
+import shutil
 import time
 
 root = Path(__file__).resolve().parents[1] / 'build' / 'client-smoke'
+if sys.argv[1:] == ['--singleplayer']:
+    fixture = root / 'client' / 'mods' / 'smoke.jar'
+    previous = fixture.read_bytes()
+    (root / 'PASS-SP.txt').unlink(missing_ok=True)
+    try:
+        shutil.copy2(root / 'client-singleplayer-fixture.jar', fixture)
+        spec = json.loads((root / 'client-command.json').read_text())
+        with (root / 'singleplayer.log').open('w') as log:
+            result = subprocess.run(spec['command'], cwd=spec['cwd'], stdout=log, stderr=subprocess.STDOUT, timeout=120)
+        if result.returncode or not (root / 'PASS-SP.txt').exists():
+            raise SystemExit('Singleplayer test failed; see singleplayer.log')
+        print((root / 'PASS-SP.txt').read_text())
+    finally:
+        fixture.write_bytes(previous)
+    raise SystemExit(0)
 for name in ('port.txt', 'PASS.txt', 'open-device', 'open-storage'):
     (root / name).unlink(missing_ok=True)
 processes = []

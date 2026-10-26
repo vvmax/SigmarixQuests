@@ -36,7 +36,7 @@ public class QuestClientDevice extends TileEntity implements net.minecraft.inven
     public AxisAlignedBB detectorBounds(){return AxisAlignedBB.getBoundingBox(xCoord+.5-detectorRadius,yCoord+detectorOffsetY,zCoord+.5-detectorRadius,xCoord+.5+detectorRadius,yCoord+detectorOffsetY+detectorHeight,zCoord+.5+detectorRadius);}
     public AxisAlignedBB getRenderBoundingBox(){return AxisAlignedBB.getBoundingBox(xCoord-8,yCoord,zCoord-8,xCoord+9,yCoord+9,zCoord+9);}
     public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet){String old=screenSkin;int meta=screenSkinMeta;net.minecraft.item.ItemStack held=input;readFromNBT(packet.func_148857_g());input=held;if(worldObj!=null && (!old.equals(screenSkin)||meta!=screenSkinMeta))worldObj.markBlockForUpdate(xCoord,yCoord,zCoord);}
-    public int getSizeInventory(){return opener()?10:collector()?9:1;}
+    public int getSizeInventory(){return worldObj!=null&&!worldObj.isRemote?0:opener()?10:collector()?9:1;}
     public net.minecraft.item.ItemStack getStackInSlot(int slot){return collector()?slot>=0&&slot<9?collectorItems[slot]:null:opener()&&slot>0&&slot<=9?collectorItems[slot-1]:slot==0?input:null;}
     public void setInventorySlotContents(int slot,net.minecraft.item.ItemStack stack){if(collector()&&slot>=0&&slot<9)collectorItems[slot]=stack;else if(opener()&&slot>0&&slot<=9)collectorItems[slot-1]=stack;else if(slot==0)input=stack;}
     public net.minecraft.item.ItemStack decrStackSize(int slot,int count){net.minecraft.item.ItemStack stack=getStackInSlot(slot);if(stack==null||count<=0)return null;net.minecraft.item.ItemStack result=stack.splitStack(Math.min(count,stack.stackSize));if(stack.stackSize<=0)setInventorySlotContents(slot,null);return result;}

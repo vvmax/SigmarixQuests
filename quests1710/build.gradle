@@ -302,3 +302,9 @@ tasks.register('verifyClientOnlyJar', JavaExec) {
     javaLauncher=javaToolchains.launcherFor { languageVersion=JavaLanguageVersion.of(8) }
     args '--verify',layout.buildDirectory.file('client-smoke/client/mods/quests-client.jar').get().asFile.absolutePath
 }
+tasks.register('clientSingleplayerSmokeJar', Jar) {
+    dependsOn clientSmokeClasses
+    from(sourceSets.clientSmoke.output) { include '**/QuestClientOnlySingleplayer*.class' }
+    archiveFileName='client-singleplayer-fixture.jar'
+    destinationDirectory=layout.buildDirectory.dir('client-smoke')
+}

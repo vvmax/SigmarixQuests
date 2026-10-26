@@ -10,7 +10,7 @@ public final class QuestClientStorage extends QuestClientDevice {
     public QuestClientStorage(){} public QuestClientStorage(boolean crates){crateOnly=crates;}
     public boolean crates(){return crateOnly;}
     public void onDataPacket(NetworkManager manager,S35PacketUpdateTileEntity packet){super.readFromNBT(packet.func_148857_g());crateOnly=packet.func_148857_g().getBoolean("crateOnly");}
-    @Override public int getSizeInventory() { return crateOnly?54:27; }
+    @Override public int getSizeInventory() { return worldObj!=null&&!worldObj.isRemote?0:crateOnly?54:27; }
     @Override public ItemStack getStackInSlot(int slot) { return slot>=0 && slot<getSizeInventory()?stacks[slot]:null; }
     @Override public ItemStack decrStackSize(int slot,int amount) {
         ItemStack stack=getStackInSlot(slot); if(stack==null || amount<=0) return null;
