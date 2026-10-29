@@ -1418,3 +1418,5 @@ quests.text.387d7a59dbaaef00=ВКЛ
 quests.text.ad50489054ddaae0=ВЫКЛ
 quests.text.f32d5a3b17e61429=Поддержать
 quests.text.f69f233005f15802=Книга
+
+quests.text.reward_item_unavailable.prefix=Предмет награды недоступен: %s

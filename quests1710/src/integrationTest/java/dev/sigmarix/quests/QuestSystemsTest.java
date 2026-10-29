@@ -39,6 +39,63 @@ public class QuestSystemsTest {
         QuestCore.Task t=new QuestCore.Task(); t.id="t"+quest.tasks.size(); t.type=type; t.target=target; t.count=count; t.consume=consume; quest.tasks.add(t); return t;
     }
     public static final class CustomRewardListener {final List<QuestCustomRewardEvent> events=new ArrayList<QuestCustomRewardEvent>();@cpw.mods.fml.common.eventhandler.SubscribeEvent public void reward(QuestCustomRewardEvent event){events.add(event);}}
+    @Test public void deletedItemsSurviveBookLoadAndSaveWithoutMatchingOrClaiming() throws Exception {
+        String missing="PowerConverters3:powerconverters.common";
+        QuestCore.Task itemTask=task("item",missing,1,false);
+        quest.icon=missing; itemTask.icon=missing;
+        itemTask.filter=new QuestItemFilter(); itemTask.filter.value=missing;
+        QuestCore.Reward reward=new QuestCore.Reward(); reward.id="removed"; reward.item=missing; reward.icon=missing; quest.rewards.add(reward);
+        QuestCore.Book book=new QuestCore.Book(); book.quests.add(quest);
+        java.nio.file.Path folder=java.nio.file.Files.createTempDirectory("quests-missing-item");
+        try {
+            QuestService configured=new QuestService(folder.resolve("quests.json").toFile());
+            configured.save(book,configured.revision); configured.load();
+            assertEquals(missing,configured.book.quests.get(0).tasks.get(0).target);
+            assertEquals(missing,configured.book.quests.get(0).rewards.get(0).item);
+            configured.save(configured.book,configured.revision);
+            assertNull(QuestService.item(missing));
+            assertFalse(QuestService.matches(new ItemStack(Items.stick),itemTask));
+            assertFalse(itemTask.filter.matches(new ItemStack(Items.stick)));
+            // Returning a registry entry needs no migration or book reload.
+            itemTask.target="minecraft:stick"; itemTask.filter.value="minecraft:stick";
+            assertTrue(QuestService.matches(new ItemStack(Items.stick),itemTask));
+            data.complete(player.getUniqueID(),quest.id);
+            quest.autoClaim=true;
+            service.autoClaim(player,quest);
+            assertFalse(service.claimed(player.getUniqueID(),quest));
+            try { service.claimReward(player,quest,reward.id,Collections.<Integer>emptyList()); fail(); }
+            catch(IllegalArgumentException expected) { assertTrue(expected.getMessage().contains(missing)); }
+            assertFalse(service.claimed(player.getUniqueID(),quest));
+            assertFalse(service.collectStored(player.getUniqueID(),quest,"",new Random(1),stacks->true,stack->fail()));
+            book.emergencyItems.add(reward); service.book=book;
+            try { service.emergency(player); fail(); } catch(IllegalArgumentException expected) {}
+            assertEquals(0,service.emergencyWait(player));
+            verify(player,never()).addExperience(anyInt());
+        } finally {
+            java.nio.file.Files.deleteIfExists(folder.resolve("quests.json"));
+            java.nio.file.Files.deleteIfExists(folder.resolve("quests.json.bak"));
+            java.nio.file.Files.deleteIfExists(folder);
+        }
+    }
+    @Test public void missingLootLeavesCrateAndMixedRewardsUntouched() {
+        task("check",null,1,false);
+        QuestCore.Reward missing=new QuestCore.Reward(); missing.id="missing"; missing.item="removed:reward";
+        QuestCore.Reward xp=new QuestCore.Reward(); xp.type="xp"; xp.count=7; xp.id="xp";
+        quest.rewards.add(xp); quest.rewards.add(missing); service.finish(player,quest);
+        try { service.claim(player,quest,Collections.<Integer>emptyList()); fail(); } catch(IllegalArgumentException expected) {}
+        assertFalse(data.rewardClaimed(player.getUniqueID(),quest.id,"xp",false));
+        verify(player,never()).addExperience(anyInt());
+        service.book.lootTables.put("removed",Collections.singletonList(missing));
+        ItemStack crate=new ItemStack(Items.stick,2);
+        assertFalse(service.openLootAutomated(player.getUniqueID(),null,"removed",crate,new Random(1),stack->fail()));
+        assertEquals(2,crate.stackSize);
+        try { service.openLoot(player,"removed",crate); fail(); } catch(IllegalArgumentException expected) {}
+        assertEquals(2,crate.stackSize);
+        QuestCore.Task ore=new QuestCore.Task(); ore.target="ore:removedOre"; ore.type="item";
+        assertFalse(QuestService.matches(new ItemStack(Items.stick),ore));
+        QuestItemFilter filter=new QuestItemFilter(); filter.type="ore"; filter.value="removedOre";
+        filter.validate(true); assertFalse(filter.matches(new ItemStack(Items.stick)));
+    }
     @Test public void nativeCustomRewardPostsServerEventWithoutRequiringNamedHookAndRejectsReplay() throws Exception{
         task("check",null,1,false);QuestCore.Reward reward=new QuestCore.Reward();reward.id="custom_native";reward.type="custom";quest.rewards.add(reward);CustomRewardListener listener=new CustomRewardListener();
         java.lang.reflect.Field controllerField=cpw.mods.fml.common.Loader.class.getDeclaredField("modController");controllerField.setAccessible(true);Object old=controllerField.get(cpw.mods.fml.common.Loader.instance());cpw.mods.fml.common.LoadController controller=new cpw.mods.fml.common.LoadController(cpw.mods.fml.common.Loader.instance());java.lang.reflect.Field activeField=controller.getClass().getDeclaredField("activeContainer");activeField.setAccessible(true);cpw.mods.fml.common.ModMetadata metadata=new cpw.mods.fml.common.ModMetadata();metadata.modId="quest-event-tests";metadata.name="Quest event tests";activeField.set(controller,new cpw.mods.fml.common.DummyModContainer(metadata));controllerField.set(cpw.mods.fml.common.Loader.instance(),controller);try{net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(listener);}finally{controllerField.set(cpw.mods.fml.common.Loader.instance(),old);}

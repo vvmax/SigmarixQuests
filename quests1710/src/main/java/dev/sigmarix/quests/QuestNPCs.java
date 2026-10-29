@@ -37,6 +37,7 @@ public final class QuestNPCs {
             noppes.npcs.controllers.PlayerMail mail=new noppes.npcs.controllers.PlayerMail(); mail.readNBT(source);
             for(QuestCore.MailItem entry:reward.attachments) {
                 net.minecraft.item.Item item=QuestService.item(entry.item);
+                if(item==null) continue; // Preserve missing attachment IDs in book data.
                 if(entry.count>item.getItemStackLimit() || mail.items[entry.slot]!=null) throw new IllegalArgumentException("Invalid or occupied NPC mail attachment slot");
                 mail.items[entry.slot]=new net.minecraft.item.ItemStack(item,entry.count,entry.meta); mail.items[entry.slot].setTagCompound(QuestService.tag(entry.nbt));
             }
@@ -49,6 +50,7 @@ public final class QuestNPCs {
             }
         }
         static void references(QuestCore.Reward reward) {
+            for(QuestCore.MailItem entry:reward.attachments) if(QuestService.item(entry.item)==null) throw new IllegalArgumentException("Reward item is unavailable: "+entry.item);
             if(reward.type.equals("npc_mail")) {
                 noppes.npcs.controllers.PlayerMail mail=mail(reward);
                 if(mail.questId>=0 && !noppes.npcs.controllers.QuestController.instance.quests.containsKey(mail.questId)) throw new IllegalArgumentException("Unknown NPC mail quest");

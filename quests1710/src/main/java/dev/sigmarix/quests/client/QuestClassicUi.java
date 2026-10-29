@@ -55,7 +55,7 @@ public final class QuestClassicUi extends Gui {
     }
     public static void inventoryItem(Minecraft mc,String id,int meta,String nbt,int x,int y,int size){item(mc,id,meta,nbt,x,y,size,false);}
     private static void item(Minecraft mc,String id,int meta,String nbt,int x,int y,int size,boolean questIcon) {
-        Item item=id==null?null:(Item)Item.itemRegistry.getObject(id); if(item==null) return;
+        Item item=id==null?null:(Item)Item.itemRegistry.getObject(id); if(item==null) { if(id!=null && !id.isEmpty()) { drawRect(x,y,x+size,y+size,0xFF330033); mc.fontRenderer.drawString("?",x+(size-6)/2,y+(size-8)/2,0xFFFF55FF); } return; }
         if(questIcon && item instanceof QuestBlocks.CustomIconItem) { ItemStack iconStack=new ItemStack(item,1,meta); try { iconStack.setTagCompound(QuestService.tag(nbt)); } catch(RuntimeException invalid) {} texture(QuestIcons.resource(iconStack),x,y,size,size,0xFF000000|QuestIcons.color(iconStack)); return; }
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS); GL11.glPushMatrix();
         try { ItemStack stack=new ItemStack(item,1,meta); stack.setTagCompound(QuestService.tag(nbt)); GL11.glTranslated(x,y,100); GL11.glScaled(size/16D,size/16D,1); RenderHelper.enableGUIStandardItemLighting(); if(item==net.minecraft.init.Items.experience_bottle && !stack.isItemEnchanted())items.renderItemIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0);else items.renderItemAndEffectIntoGUI(mc.fontRenderer,mc.getTextureManager(),stack,0,0); }

@@ -1418,3 +1418,5 @@ quests.text.387d7a59dbaaef00=ON
 quests.text.ad50489054ddaae0=OFF
 quests.text.f32d5a3b17e61429=Support
 quests.text.f69f233005f15802=Book
+
+quests.text.reward_item_unavailable.prefix=Reward item is unavailable: %s

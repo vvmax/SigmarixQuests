@@ -17,7 +17,6 @@ public final class QuestItemFilter {
         if(registries) {
             QuestService.tag(nbt);
             if(type.equals("item")) QuestService.item(value);
-            if(type.equals("ore") && OreDictionary.getOres(value).isEmpty()) throw new IllegalArgumentException("Unknown ore filter: "+value);
             if(type.equals("custom") && !QuestHooks.ITEM_FILTERS.containsKey(value)) throw new IllegalArgumentException("Unknown custom item filter: "+value);
         }
         for(QuestItemFilter child:children) { if(child==null) throw new IllegalArgumentException("Null filter child"); child.validate(registries,depth+1,nodes); }

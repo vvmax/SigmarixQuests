@@ -9,7 +9,7 @@ import net.minecraft.nbt.*;
 public final class QuestClientService {
     public static final Gson JSON=QuestJson.create();
     public static Item item(String id) {
-        if (id == null || !Item.itemRegistry.containsKey(id)) throw new IllegalArgumentException("Unknown item: " + id);
+        if (id == null || !Item.itemRegistry.containsKey(id)) return null;
         return (Item) Item.itemRegistry.getObject(id);
     }
 
