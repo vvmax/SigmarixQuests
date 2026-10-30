@@ -1,0 +1,62 @@
+{
+  "quests": 696,
+  "sections": 46,
+  "rootGroups": 7,
+  "tasks": 940,
+  "taskTypes": {
+    "item": 908,
+    "custom": 18,
+    "kill": 1,
+    "fluid": 1,
+    "ic2_energy": 1,
+    "energy": 2,
+    "observation": 8,
+    "botania_mana": 1
+  },
+  "customHandlers": [
+    "sigma.dimension",
+    "sigma.tc_research",
+    "sigma.witch_vampire",
+    "sigma.witch_werewolf"
+  ],
+  "dependencyDepth": 23,
+  "definitionBytes": 600944,
+  "largestCompactChapter": [
+    35799,
+    "04_ic2.json"
+  ],
+  "classTargets": [
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityArcFurnace",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityCrusher",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityDieselGenerator",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityExcavator",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityFermenter",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityMetalPress",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntityRefinery",
+    "blusunrize.immersiveengineering.common.blocks.metal.TileEntitySqueezer",
+    "micdoodle8.mods.galacticraft.core.dimension.WorldProviderMoon",
+    "micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids",
+    "micdoodle8.mods.galacticraft.planets.mars.dimension.WorldProviderMars",
+    "net.divinerpg.dimensions.arcana.WorldProviderArcana",
+    "net.divinerpg.dimensions.iceika.WorldProviderIceika",
+    "net.divinerpg.dimensions.twilight.apalachia.WorldProviderApalachia",
+    "net.divinerpg.dimensions.twilight.eden.WorldProviderEden",
+    "net.divinerpg.dimensions.twilight.mortum.WorldProviderMortum",
+    "net.divinerpg.dimensions.twilight.skythern.WorldProviderSkythern",
+    "net.divinerpg.dimensions.twilight.wildwood.WorldProviderWildwood",
+    "net.divinerpg.dimensions.vethea.WorldProviderVethea",
+    "net.minecraft.world.WorldProviderHell"
+  ],
+  "installedClassTargetsVerified": true,
+  "stackEvidence": {
+    "ordinary_recipe_stack": 748,
+    "registry_name_only_or_special_recipe": 160
+  },
+  "limitations": [
+    "Registry names and class presence do not prove every recipe or machine mode is obtainable in the running game.",
+    "Live client/server smoke test with this campaign has not been performed; native 0.28 persistence, transport and delta tests pass."
+  ],
+  "xpPoints": 48,
+  "illustratedAssets": 9,
+  "richGuidePages": 23
+}

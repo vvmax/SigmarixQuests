@@ -1,0 +1,26 @@
+{
+  "reviewedQuests": 696,
+  "oldEdges": 753,
+  "newEdges": 857,
+  "removedEdges": 430,
+  "addedEdges": 534,
+  "xpPoints": 48,
+  "xpMilestones": [
+    "start_diamond",
+    "ic2_eu",
+    "ie_steel",
+    "mek_injection",
+    "ae_order",
+    "tc_infusion",
+    "bot_terrasteel",
+    "bm_imbued",
+    "wit_attune",
+    "for_alveary",
+    "gen_advanced",
+    "gc_moon",
+    "de_awakenedcore",
+    "ava_neutron",
+    "ava_infinity",
+    "ava_photonic"
+  ]
+}
